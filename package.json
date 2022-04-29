@@ -1,0 +1,33 @@
+{
+  "name":        "siennajs",
+  "version":     "0.3.0",
+  "description": "Interact with Sienna Network smart contracts through JS.",
+  "author":      "Sienna Network",
+  "license":     "MIT",
+  "private":     false,
+  "main":        "index.ts",
+  "homepage": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs#readme",
+  "repository": {
+    "type": "git",
+    "url":  "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs"
+  },
+  "bugs": {
+    "url": "https://github.com/SiennaNetwork/sienna/issues"
+  },
+  "dependencies": {
+    "@fadroma/client-scrt-grpc": "workspace:*",
+    "@fadroma/tokens":           "workspace:*",
+    "@waiting/base64":           "^4.2.9",
+    "secretjs":                  "^0.17.5"
+  },
+  "devDependencies": {
+    "typescript": "^4.2.4"
+  },
+  "exclude": [
+    "node_modules"
+  ],
+  "scripts": {
+    "build": "pnpm exec tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
