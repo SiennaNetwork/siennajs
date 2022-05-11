@@ -15,8 +15,8 @@
     "url": "https://github.com/SiennaNetwork/sienna/issues"
   },
   "dependencies": {
-    "@fadroma/client-scrt-grpc": "workspace:*",
-    "@fadroma/tokens":           "workspace:*",
+    "@fadroma/client-scrt-grpc": "^1",
+    "@fadroma/tokens":           "^0",
     "@waiting/base64":           "^4.2.9",
     "secretjs":                  "^0.17.5"
   },
