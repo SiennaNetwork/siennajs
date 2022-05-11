@@ -1,3 +1,3 @@
-import { Client } from '@hackbg/fadroma'
+import { Client } from '@fadroma/client'
 
 export class LendOverseer extends Client { }

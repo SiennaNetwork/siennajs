@@ -1,4 +1,5 @@
-import { Agent, Contract, Client, Snip20 } from '@hackbg/fadroma'
+import { Agent, Client } from '@fadroma/client'
+import { Snip20 } from '@hackbg/fadroma'
 import { b64encode } from "@waiting/base64"
 import { EnigmaUtils } from "secretjs"
 import { AMMExchange, ExchangeInfo } from './Exchange'

@@ -1,4 +1,4 @@
-import { Client } from '@hackbg/fadroma';
+import { Client } from '@fadroma/client';
 
 export class LendOracle extends Client {}
 

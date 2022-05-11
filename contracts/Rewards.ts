@@ -1,5 +1,6 @@
-import { Console, bold } from '@hackbg/fadroma'
-import { Client, Snip20 } from '@hackbg/fadroma'
+import { Console, bold } from '@hackbg/konzola'
+import { Client } from '@fadroma/client'
+import { Snip20 } from '@fadroma/tokens'
 import { LPToken } from './LPToken'
 
 export type RewardsAPIVersion = 'v2'|'v3'

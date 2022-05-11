@@ -1,4 +1,4 @@
-import { Client, Agent } from '@fadroma/client-scrt-grpc'
+import { Client, Agent } from '@fadroma/client'
 
 export interface IDOSaleStatus {
   total_allocation:   string

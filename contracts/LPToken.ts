@@ -1,4 +1,4 @@
-import { Snip20 } from '@hackbg/fadroma'
+import { Snip20 } from '@fadroma/tokens'
 
 export class LPToken extends Snip20 {
 

@@ -15,10 +15,11 @@
     "url": "https://github.com/SiennaNetwork/sienna/issues"
   },
   "dependencies": {
-    "@fadroma/client-scrt-grpc": "^1",
-    "@fadroma/tokens":           "^0",
-    "@waiting/base64":           "^4.2.9",
-    "secretjs":                  "^0.17.5"
+    "@hackbg/konzola": "^1",
+    "@fadroma/client": "^1",
+    "@fadroma/tokens": "^0",
+    "@waiting/base64": "^4.2.9",
+    "secretjs":        "^0.17.5"
   },
   "devDependencies": {
     "typescript": "^4.2.4"

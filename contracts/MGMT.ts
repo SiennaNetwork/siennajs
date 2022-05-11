@@ -1,4 +1,5 @@
-import { Client, Snip20 } from '@hackbg/fadroma'
+import { Client } from '@fadroma/client'
+import { Snip20 } from '@fadroma/tokens'
 
 type Link = { address: string, code_hash: string }
 

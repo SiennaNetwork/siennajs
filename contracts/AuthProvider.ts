@@ -1,4 +1,4 @@
-import { Client } from "@hackbg/fadroma";
+import { Client } from "@fadroma/client";
 
 export class Provider extends Client {
     async create_group(name: any, members: any) {

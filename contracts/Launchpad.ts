@@ -1,4 +1,4 @@
-import { Client, Agent, randomHex } from "@hackbg/fadroma"
+import { Client, Agent, randomHex } from "@fadroma/client"
 
 // @ts-ignore
 const decoder = new TextDecoder();

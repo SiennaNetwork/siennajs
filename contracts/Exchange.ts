@@ -1,4 +1,5 @@
-import { Agent, Client, Snip20 } from '@hackbg/fadroma'
+import { Agent, Client } from '@fadroma/client'
+import { Snip20 } from '@fadroma/tokens'
 import { AMMVersion } from './Factory'
 import { LPToken } from './LPToken'
 import { Uint128 } from '../lib/core'

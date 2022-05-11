@@ -1,4 +1,5 @@
-import { Client, Snip20 } from '@hackbg/fadroma'
+import { Client } from '@fadroma/client'
+import { Snip20 } from '@fadroma/tokens'
 
 export type RPTRecipient = string
 export type RPTAmount = string

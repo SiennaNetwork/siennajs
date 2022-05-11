@@ -1,3 +1,3 @@
-import { Client } from '@hackbg/fadroma'
+import { Client } from '@fadroma/client'
 
 export class InterestModel extends Client { }
