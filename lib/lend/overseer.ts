@@ -119,10 +119,14 @@ class OverseerQuerier extends Querier {
         return this.run(msg)
     }
 
-    async current_liquidity(auth: LendAuth): Promise<AccountLiquidity> {
+    async current_liquidity(auth: LendAuth, block?: number): Promise<AccountLiquidity> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+
         const msg = {
             account_liquidity: {
-                block: (await this.client.getBlock()).header.height,
+                block,
                 method: await auth.create_method<OverseerPermissions>(this.address, 'account_info'),
                 market: null,
                 redeem_amount: '0',
@@ -143,11 +147,16 @@ class OverseerQuerier extends Querier {
     async liquidity_after_redeem(
         auth: LendAuth,
         market: Address,
-        redeem_amount: Uint256
+        redeem_amount: Uint256,
+        block?: number
     ): Promise<AccountLiquidity> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+
         const msg = {
             account_liquidity: {
-                block: (await this.client.getBlock()).header.height,
+                block,
                 method: await auth.create_method<OverseerPermissions>(this.address, 'account_info'),
                 market,
                 redeem_amount,
@@ -161,18 +170,23 @@ class OverseerQuerier extends Querier {
     /**
      * The hypothetical liquidity after a borrow operation from a market.
      * 
-     * @param method 
+     * @param auth 
      * @param market - The market to borrow from. Must have been entered that market.
      * @param borrow_amount - The amount to borrow.
      */
     async liquidity_after_borrow(
         auth: LendAuth,
         market: Address,
-        borrow_amount: Uint256
+        borrow_amount: Uint256,
+        block?: number
     ): Promise<AccountLiquidity> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+
         const msg = {
             account_liquidity: {
-                block: (await this.client.getBlock()).header.height,
+                block,
                 method: await auth.create_method<OverseerPermissions>(this.address, 'account_info'),
                 market,
                 redeem_amount: '0',

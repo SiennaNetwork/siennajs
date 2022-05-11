@@ -86,6 +86,17 @@ export interface MarketBorrower {
     markets: Market[]
 }
 
+export interface SimulateLiquidationResult {
+    /**
+     * The amount that would be seized by that liquidation minus protocol fees.
+     */
+    seize_amount: Uint256,
+    /**
+     * If the liquidation would be unsuccessful this will contain amount by which the seize amount falls flat. Otherwise, it's 0.
+     */
+    shortfall: Uint256
+}
+
 export type MarketPermissions = 'account_info' | 'balance' | 'id'
 
 export class MarketContract extends SmartContract<MarketExecutor, MarketQuerier> {
@@ -207,6 +218,14 @@ class MarketExecutor extends ViewingKeyExecutor {
         return snip20.exec(fee, this.memo).send(this.address, amount, msg)
     }
 
+    /**
+     * Tries to liquidate an existing borrower in this market.
+     * 
+     * @param borrower - the ID corresponding to the borrower to liquidate.
+     * @param collateral - the collateral market address to receive a premium on.
+     * @param amount - the amount to liquidate by.
+     * @param underlying_asset - The address of the underlying token for this market. Omitting it will result in an extra query.
+     */
     async liquidate(
         amount: Uint256,
         borrower: string,
@@ -238,6 +257,37 @@ class MarketExecutor extends ViewingKeyExecutor {
 }
 
 class MarketQuerier extends Querier {
+    /**
+     * Dry runs a liquidation returning a result indicating the amount of `collateral` which would be seized
+     * and whether the liquidation would be successful depending on whether the borrower posseses the seized collateral amount.
+     * Otherwise, throws any other error that might occur during the actual liquidation. If you haven't taken the close factor
+     * into account already, you might want to look for an error that starts with "Repay amount is too high." as that indicates
+     * that you are trying to liquidate a bigger portion of the borrower's collateral than permitted by the close factor.
+     * 
+     * @param borrower - the ID corresponding to the borrower to liquidate.
+     * @param collateral - the collateral market address to receive a premium on.
+     * @param amount - the amount to liquidate by.
+     */
+    async simulate_liquidation(
+        borrower: string,
+        collateral: Address,
+        amount: Uint256,
+        block?: number
+    ): Promise<SimulateLiquidationResult> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+        
+        const msg = {
+            block,
+            borrower,
+            collateral,
+            amount
+        }
+
+        return this.run(msg)
+    }
+
     async token_info(): Promise<TokenInfo> {
         return new Snip20Contract(this.address, undefined, this.client)
             .query()
@@ -250,10 +300,14 @@ class MarketQuerier extends Querier {
             .get_balance(address, key)
     }
 
-    async underlying_balance(auth: LendAuth): Promise<Uint128> {
+    async underlying_balance(auth: LendAuth, block?: number): Promise<Uint128> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+
         const msg = {
             balance_underlying: {
-                block: (await this.client.getBlock()).header.height,
+                block,
                 method: await auth.create_method<MarketPermissions>(this.address, 'balance')
             }
         }
@@ -261,10 +315,14 @@ class MarketQuerier extends Querier {
         return this.run(msg)
     }
 
-    async state(): Promise<MarketState> {
+    async state(block?: number): Promise<MarketState> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+
         const msg = {
             state: {
-                block: (await this.client.getBlock()).header.height
+                block
             }
         }
 
@@ -279,40 +337,56 @@ class MarketQuerier extends Querier {
         return this.run(msg)
     }
 
-    async borrow_rate(): Promise<Decimal256> {
+    async borrow_rate(block?: number): Promise<Decimal256> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+
         const msg = {
             borrow_rate: {
-                block: (await this.client.getBlock()).header.height
+                block
             }
         }
 
         return this.run(msg)
     }
 
-    async supply_rate(): Promise<Decimal256> {
+    async supply_rate(block?: number): Promise<Decimal256> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+
         const msg = {
             supply_rate: {
-                block: (await this.client.getBlock()).header.height
+                block
             }
         }
 
         return this.run(msg)
     }
 
-    async exchange_rate(): Promise<Decimal256> {
+    async exchange_rate(block?: number): Promise<Decimal256> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+
         const msg = {
             exchange_rate: {
-                block: (await this.client.getBlock()).header.height
+                block
             }
         }
 
         return this.run(msg)
     }
 
-    async account(auth: LendAuth): Promise<MarketAccount> {
+    async account(auth: LendAuth, block?: number): Promise<MarketAccount> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+
         const msg = {
             account: {
-                block: (await this.client.getBlock()).header.height,
+                block,
                 method: await auth.create_method<MarketPermissions>(this.address, 'account_info')
             }
         }
@@ -336,10 +410,14 @@ class MarketQuerier extends Querier {
     /**
      * Max limit is 10.
      */
-    async borrowers(pagination: Pagination): Promise<PaginatedResponse<MarketBorrower>> {
+    async borrowers(pagination: Pagination, block?: number): Promise<PaginatedResponse<MarketBorrower>> {
+        if (!block) {
+            block = (await this.client.getBlock()).header.height
+        }
+
         const msg = {
             borrowers: {
-                block: (await this.client.getBlock()).header.height,
+                block,
                 pagination
             }
         }
