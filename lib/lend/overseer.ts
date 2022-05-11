@@ -14,6 +14,10 @@ export interface Market {
      */
     symbol: string,
     /**
+     * The decimals that the market has. Corresponds to the decimals of the underlying token.
+     */
+    decimals: number,
+    /**
      * The percentage rate at which tokens can be borrowed given the size of the collateral.
      */
     ltv_ratio: Decimal256
