@@ -161,13 +161,7 @@ export abstract class AMMFactory extends Client {
   }
 
   /** Get the full list of raw exchange info from the factory. */
-  async listExchanges (): Promise<{
-    address: string,
-    pair: {
-      token_0: TokenType,
-      token_1: TokenType
-    }
-  }[]> {
+  async listExchanges (): Promise<FactoryExchangeInfo[]> {
     const result = []
     const limit = 30
     let start = 0
@@ -195,4 +189,43 @@ export abstract class AMMFactory extends Client {
     )
   }
 
+  async get_pair_info(): Promise<PairInfo> {
+    const { pair_info }: { pair_info: PairInfo } = await this.query('pair_info')
+    return pair_info
+  }
+
+  async simulate_swap (amount: TokenTypeAmount): Promise<SwapSimulationResponse> {
+    const msg = {
+      swap_simulation: {
+        offer: amount
+      }
+    }
+
+    return this.run(msg)
+  }
+
+}
+
+export interface FactoryExchangeInfo {
+  address: string,
+  pair: {
+    token_0: TokenType,
+    token_1: TokenType
+  }
+}
+
+export interface PairInfo {
+    amount_0:         Uint128
+    amount_1:         Uint128
+    factory:          ContractInfo
+    liquidity_token:  ContractInfo
+    pair:             TokenPair
+    total_liquidity:  Uint128
+    contract_version: number
+}
+
+export interface SwapSimulationResponse {
+    return_amount:     Uint128
+    spread_amount:     Uint128
+    commission_amount: Uint128
 }

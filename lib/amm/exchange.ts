@@ -17,16 +17,6 @@ export interface SwapSimulationResponse {
     commission_amount: Uint128
 }
 
-export interface PairInfo {
-    amount_0: Uint128
-    amount_1: Uint128
-    factory: ContractInfo
-    liquidity_token: ContractInfo
-    pair: TokenPair
-    total_liquidity: Uint128
-    contract_version: number
-}
-
 export class ExchangeContract extends SmartContract<ExchangeExecutor, ExchangeQuerier> {
     exec(fee?: Fee, memo?: string): ExchangeExecutor {
         return new ExchangeExecutor(
@@ -137,4 +127,14 @@ class ExchangeQuerier extends Querier {
 
 interface GetPairInfoResponse {
     pair_info: PairInfo
+}
+
+export interface PairInfo {
+    amount_0: Uint128
+    amount_1: Uint128
+    factory: ContractInfo
+    liquidity_token: ContractInfo
+    pair: TokenPair
+    total_liquidity: Uint128
+    contract_version: number
 }

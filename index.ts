@@ -1,3 +1,5 @@
+export * from '@fadroma/tokens'
+
 export * from './lib/core'
 export * from './lib/permit'
 export * from './lib/contract'
@@ -6,8 +8,6 @@ export * as amm from './lib/amm/index'
 export * as lend from './lib/lend/index'
 export * as rewards_v2 from './lib/rewards/rewards_v2'
 export * as rewards_v3 from './lib/rewards/rewards_v3'
-
-export * from '@fadroma/tokens'
 
 export * from './contracts/Sienna'
 export * from './contracts/MGMT'

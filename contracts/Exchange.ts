@@ -61,6 +61,31 @@ export class AMMExchange extends Client {
     return pair_info
   }
 
+  async swap (
+    amount:           TokenTypeAmount,
+    recipient?:       Address,
+    expected_return?: Decimal,
+    fee = create_fee('100000')
+  ): Promise<ExecuteResult> {
+    if (get_token_type(amount.token) == TypeOfToken.Native) {
+      const msg = {
+        swap: {
+          offer: amount,
+          to: recipient,
+          expected_return
+        }
+      }
+      const transfer = add_native_balance(amount)
+      return this.run(msg, '55000', transfer)
+    }
+    const msg = { swap: { to: recipient, expected_return } }
+    const token_addr = (amount.token as CustomToken).custom_token.contract_addr;
+    const snip20 = new Snip20Contract(token_addr, this.client)
+    return snip20
+      .exec(fee, this.memo)
+      .send(this.address, amount.amount, msg)
+  }
+
 }
 
 /** An exchange is an interaction between 4 contracts. */
@@ -78,5 +103,3 @@ export interface ExchangeInfo {
   /** The bare-bones data needed to retrieve the above. */
   raw:      any
 }
-
-

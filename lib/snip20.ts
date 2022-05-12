@@ -89,8 +89,6 @@ export interface Coin {
     denom: string
 }
 
-export type Snip20Permit = Permit<'allowance' | 'balance' | 'history' | 'owner'>
-
 export class Snip20Contract extends SmartContract<Snip20Executor, Snip20Querier> {
     exec(fee?: Fee, memo?: string): Snip20Executor {
         return new Snip20Executor(this.address, this.execute_client, fee, memo)
@@ -363,15 +361,6 @@ class Snip20Querier extends Querier {
 
         const result = await this.run(msg) as GetExchangeRateResponse
         return result.exchange_rate
-    }
-}
-
-function create_permit_msg(query: object, permit: Snip20Permit): object {
-    return {
-        with_permit: {
-            query,
-            permit
-        }
     }
 }
 
