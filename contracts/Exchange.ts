@@ -1,5 +1,6 @@
 import { Agent, Client } from '@fadroma/client'
-import { Snip20 } from '@fadroma/tokens'
+import { Snip20, TokenTypeAmount } from '@fadroma/tokens'
+
 import { AMMVersion } from './Factory'
 import { LPToken } from './LPToken'
 import { Uint128 } from '../lib/core'
@@ -86,6 +87,26 @@ export class AMMExchange extends Client {
       .send(this.address, amount.amount, msg)
   }
 
+  async simulateSwap (amount: TokenTypeAmount): Promise<SwapSimulationResponse> {
+    return this.query({ swap_simulation: { offer: amount } })
+  }
+
+  async simulateSwapReverse (ask_asset: TokenTypeAmount): Promise<ReverseSwapSimulationResponse> {
+    return this.query({ reverse_simulation: { ask_asset } })
+  }
+
+}
+
+export interface SwapSimulationResponse {
+  return_amount:     Uint128
+  spread_amount:     Uint128
+  commission_amount: Uint128
+}
+
+export interface ReverseSwapSimulationResponse {
+  offer_amount:      Uint128
+  spread_amount:     Uint128
+  commission_amount: Uint128
 }
 
 /** An exchange is an interaction between 4 contracts. */

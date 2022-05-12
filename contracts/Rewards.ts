@@ -96,7 +96,7 @@ export abstract class Rewards extends Client {
     async getUserInfo (
       key     = "",
       address = this.agent.address,
-      at      = Math.floor(+ new Date() / 1000)
+      at      = now()
     ) {
       const result: { rewards: { user_info } } = await this.query({ rewards: { user_info: { address, key, at } } })
       return result.rewards.user_info
@@ -328,3 +328,8 @@ export interface Rewards_v3_Account {
   /** How many units of time (seconds) remain until the user can claim? */
   bonding: Duration;
 }
+
+export type Uint128 = string
+export type Uint256 = string
+export type Duration = number
+export type Moment   = number

@@ -1,12 +1,12 @@
+import { Signer, Permit, createPermitMsg } from '@fadroma/tokens'
+import { ExecuteResult } from 'secretjs'
+
 import {
     Address, Uint128, Fee, ViewingKey,
     create_coin, create_base64_msg
 } from './core'
 import { SmartContract, Querier } from './contract'
 import { ViewingKeyExecutor } from './executors/viewing_key_executor'
-import { Signer, Permit } from './permit'
-
-import { ExecuteResult } from 'secretjs'
 
 export interface TokenInfo {
     name: string,
@@ -252,7 +252,7 @@ class Snip20Querier extends Querier {
     }
 
     async permit_get_balance(signer: Signer): Promise<Uint128> {
-        const msg = create_permit_msg(
+        const msg = createPermitMsg(
             { balance: {} },
             await signer.sign({
                 permit_name: `SiennaJS permit for ${this.address}`,
@@ -270,7 +270,7 @@ class Snip20Querier extends Querier {
      * The address of the signer has to correspond to either `owner` or `spender`.
      */
     async permit_get_allowance(signer: Signer, owner: Address, spender: Address): Promise<Allowance> {
-        const msg = create_permit_msg(
+        const msg = createPermitMsg(
             {
                 allowance: {
                     owner,
@@ -298,7 +298,7 @@ class Snip20Querier extends Querier {
         page_size: number,
         page?: number
     ): Promise<TransferHistory> {
-        const msg = create_permit_msg(
+        const msg = createPermitMsg(
             {
                 transfer_history: {
                     page,
@@ -326,7 +326,7 @@ class Snip20Querier extends Querier {
         page_size: number,
         page?: number
     ): Promise<TransactionHistory> {
-        const msg = create_permit_msg(
+        const msg = createPermitMsg(
             {
                 transaction_history: {
                     page,
