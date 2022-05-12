@@ -1,7 +1,6 @@
 export * from '@fadroma/tokens'
 
 export * from './lib/core'
-export * from './lib/permit'
 export * from './lib/contract'
 export * as snip20 from './lib/snip20'
 export * as amm from './lib/amm/index'

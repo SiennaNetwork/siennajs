@@ -1,10 +1,7 @@
-import { Agent, Client } from '@fadroma/client'
-import { Snip20, TokenTypeAmount } from '@fadroma/tokens'
+import { Agent, Client, Address, Uint128, Decimal } from '@fadroma/client'
+import { Snip20, TokenType, TokenTypeAmount, TokenPair } from '@fadroma/tokens'
 
-import { AMMVersion } from './Factory'
 import { LPToken } from './LPToken'
-import { Uint128 } from '../lib/core'
-import { TokenType, TokenPair } from '../lib/amm/token'
 
 export class AMMExchange extends Client {
 
@@ -13,11 +10,10 @@ export class AMMExchange extends Client {
     address: string,
     token_0: Snip20|TokenType,
     token_1: Snip20|TokenType,
-    version = 'v2'
   ): Promise<ExchangeInfo> {
     const exchangeCodeId   = await agent.getCodeId(address)
     const exchangeCodeHash = await agent.getHash(address)
-    const EXCHANGE = new AMMExchange(agent, {
+    const EXCHANGE = agent.getClient(AMMExchange, {
       codeId:   exchangeCodeId,
       codeHash: exchangeCodeHash,
       address,
@@ -36,7 +32,7 @@ export class AMMExchange extends Client {
       },
       name,     // The human-friendly name of the exchange
       EXCHANGE, // The exchange contract
-      LP_TOKEN: new LPToken(agent, { // The LP token contract
+      LP_TOKEN: agent.getClient(LPToken, { // The LP token contract
         codeId:   lpTokenCodeId,
         codeHash: lpTokenCodeHash,
         address:  lpTokenAddress,
@@ -44,7 +40,6 @@ export class AMMExchange extends Client {
       TOKEN_0,  // One token of the pair
       TOKEN_1,  // The other token of the pair
     }
-
   }
 
   async addLiquidity (
@@ -67,7 +62,7 @@ export class AMMExchange extends Client {
     recipient?:       Address,
     expected_return?: Decimal,
     fee = create_fee('100000')
-  ): Promise<ExecuteResult> {
+  ) {
     if (get_token_type(amount.token) == TypeOfToken.Native) {
       const msg = {
         swap: {

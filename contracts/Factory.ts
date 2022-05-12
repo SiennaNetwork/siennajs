@@ -1,40 +1,10 @@
-import { Agent, Client } from '@fadroma/client'
+import { Client, Uint128 } from '@fadroma/client'
+import { NativeToken, TokenType, TokenPair } from '@fadroma/tokens'
 import { Snip20 } from '@hackbg/fadroma'
 import { b64encode } from "@waiting/base64"
 import { EnigmaUtils } from "secretjs"
+
 import { AMMExchange, ExchangeInfo } from './Exchange'
-
-import { ContractInstantiationInfo } from './schema/init_msg.d'
-import { TokenType, TokenPair, ContractStatusLevel, HumanAddr } from './schema/handle_msg.d'
-import { Exchange } from './schema/query_response.d'
-
-export type AMMFactoryTemplates = {
-  pair_contract:       ContractInstantiationInfo
-  lp_token_contract:   ContractInstantiationInfo
-  snip20_contract?:    ContractInstantiationInfo
-  ido_contract?:       ContractInstantiationInfo
-  launchpad_contract?: ContractInstantiationInfo
-  router_contract?:    ContractInstantiationInfo
-}
-
-export type AMMVersion = "v1"|"v2"
-
-export type CreateExchangesRequest = {
-  templates: AMMFactoryTemplates
-  pairs: Array<{
-    name?: string,
-    pair: {
-      token_0: Snip20|TokenType,
-      token_1: Snip20|TokenType
-    }
-  }>
-}
-
-export type CreateExchangesResult = Array<{
-  name?:   string,
-  token_0: Snip20|TokenType,
-  token_1: Snip20|TokenType
-}>
 
 export abstract class AMMFactory extends Client {
 
@@ -192,12 +162,52 @@ export abstract class AMMFactory extends Client {
     )
   }
 
-  async get_pair_info(): Promise<PairInfo> {
+  async getPairInfo(): Promise<PairInfo> {
     const { pair_info }: { pair_info: PairInfo } = await this.query('pair_info')
     return pair_info
   }
 
 }
+
+export interface IContractTemplate {
+  id:        number,
+  code_hash: string,
+}
+
+export class ContractTemplate implements IContractTemplate {
+  constructor(
+    readonly id:        number,
+    readonly code_hash: string,
+  ) {}
+}
+
+export interface AMMFactoryTemplates {
+  pair_contract:       IContractTemplate
+  lp_token_contract:   IContractTemplate
+  snip20_contract?:    IContractTemplate
+  ido_contract?:       IContractTemplate
+  launchpad_contract?: IContractTemplate
+  router_contract?:    IContractTemplate
+}
+
+export type AMMVersion = "v1"|"v2"
+
+export interface CreateExchangesRequest {
+  templates: AMMFactoryTemplates
+  pairs: Array<{
+    name?: string,
+    pair: {
+      token_0: Snip20|TokenType,
+      token_1: Snip20|TokenType
+    }
+  }>
+}
+
+export type CreateExchangesResult = Array<{
+  name?:   string,
+  token_0: Snip20|TokenType,
+  token_1: Snip20|TokenType
+}>
 
 export interface FactoryExchangeInfo {
   address: string,

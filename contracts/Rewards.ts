@@ -1,4 +1,4 @@
-import { Client } from '@fadroma/client'
+import { Client, Uint128, Uint256, Duration, Moment } from '@fadroma/client'
 import { Snip20 } from '@fadroma/tokens'
 import { Console } from '@hackbg/konzola'
 
@@ -332,8 +332,3 @@ export interface Rewards_v3_Account {
   /** How many units of time (seconds) remain until the user can claim? */
   bonding: Duration;
 }
-
-export type Uint128 = string
-export type Uint256 = string
-export type Duration = number
-export type Moment   = number

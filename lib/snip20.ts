@@ -1,4 +1,4 @@
-import { Signer, Permit, createPermitMsg } from '@fadroma/tokens'
+import { Signer, Permit, createPermitMsg } from '@fadroma/client-scrt'
 import { ExecuteResult } from 'secretjs'
 
 import {
