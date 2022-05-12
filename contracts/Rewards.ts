@@ -44,6 +44,10 @@ export abstract class Rewards extends Client {
       return this.execute({ lock: { amount } })
     }
 
+    retrieve (amount: string) {
+      return this.execute({ retrieve: { amount } })
+    }
+
     claim () {
       return this.execute({ claim: {} })
     }
