@@ -1,5 +1,10 @@
 import { Client, Address, Uint256, Decimal256 } from '@fadroma/client'
 
+import { Fee, Address, Pagination, ContractInfo, Decimal256, Uint256 } from '../core'
+import { ViewingKeyComponentExecutor } from '../executors/viewing_key_executor'
+import { LendAuth } from './auth'
+import { PaginatedResponse } from '.'
+
 export type OverseerPermissions = 'account_info'
 
 export class LendOverseer extends Client {
