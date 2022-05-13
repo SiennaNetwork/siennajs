@@ -1,8 +1,16 @@
-import { Client, Uint128, Uint256, Duration, Moment, ContractLink } from '@fadroma/client'
+import {
+  Address,
+  Client,
+  ContractLink,
+  Duration,
+  Moment,
+  Uint128,
+  Uint256,
+} from '@fadroma/client'
 import { Snip20 } from '@fadroma/tokens'
 import { Console } from '@hackbg/konzola'
 
-import { LPToken } from './LPToken'
+import { LPToken } from './SiennaSwap'
 
 export type RewardsAPIVersion = 'v2'|'v3'
 
@@ -19,13 +27,15 @@ export abstract class Rewards extends Client {
   static "v2" = class Rewards_v2 extends Rewards {
 
     async getPoolInfo (at = now()) {
-      const result: { pool_info } = await this.query({ pool_info: { at } })
+      const result: { pool_info: Rewards_v2_Pool } =
+        await this.query({ pool_info: { at } })
       return result.pool_info
     }
 
     async getUserInfo (key = "", address = this.agent.address, at = now()) {
       at = at || (await this.agent.block).header.height
-      const result: { user_info } = await this.query({user_info: { address, key, at } })
+      const result: { user_info: Rewards_v2_Account } =
+        await this.query({user_info: { address, key, at } })
       return result.user_info
     }
 
@@ -61,13 +71,14 @@ export abstract class Rewards extends Client {
   static "v3" = class Rewards_v3 extends Rewards {
 
     async getConfig () {
-      const result = await this.query({ rewards: "config" })
+      const result: { rewards: { config: Rewards_v3_Config } } =
+        await this.query({ rewards: "config" })
       return result.rewards.config
     }
 
     async getStakedToken () {
       const { lp_token: { address, code_hash } } = await this.getConfig()
-      return new LPToken({ address, codeHash: code_hash, agent: this.agent })
+      return this.agent.getClient(LPToken, { address, codeHash: code_hash })
     }
 
     setStakedToken (address: string, code_hash: string) {
@@ -103,7 +114,7 @@ export abstract class Rewards extends Client {
       at      = now()
     ) {
       const result: { rewards: { user_info } } = await this.query({ rewards: { user_info: { address, key, at } } })
-      return result.rewards.user_info
+      return result.rewards.user_info as Rewards_v3_Account
     }
 
     lock (amount: string) {
@@ -209,26 +220,26 @@ export class Immigration extends Client {
 }
 
 export interface Rewards_v2_Pool {
-    lp_token: ContractLink;
-    reward_token: ContractLink;
-    /** The current reward token balance that this pool has. */
-    pool_balance: Uint128;
-    /** Amount of rewards already claimed. */
-    pool_claimed: Uint128;
-    /** How many blocks does the user have to wait
-      * before being able to claim again. */
-    pool_cooldown: number;
-    /** When liquidity was last updated. */
-    pool_last_update: number;
-    /** The total liquidity ever contained in this pool. */
-    pool_lifetime: Uint128;
-    /** How much liquidity is there in the entire pool right now. */
-    pool_locked: Uint128;
-    /** How many blocks does the user need to have provided liquidity for
-      * in order to be eligible for rewards. */
-    pool_threshold: number;
-    /** The time for which the pool was not empty. */
-    pool_liquid: Uint128;
+  lp_token: ContractLink;
+  reward_token: ContractLink;
+  /** The current reward token balance that this pool has. */
+  pool_balance: Uint128;
+  /** Amount of rewards already claimed. */
+  pool_claimed: Uint128;
+  /** How many blocks does the user have to wait
+    * before being able to claim again. */
+  pool_cooldown: number;
+  /** When liquidity was last updated. */
+  pool_last_update: number;
+  /** The total liquidity ever contained in this pool. */
+  pool_lifetime: Uint128;
+  /** How much liquidity is there in the entire pool right now. */
+  pool_locked: Uint128;
+  /** How many blocks does the user need to have provided liquidity for
+    * in order to be eligible for rewards. */
+  pool_threshold: number;
+  /** The time for which the pool was not empty. */
+  pool_liquid: Uint128;
 }
 
 export interface Rewards_v2_Account {

@@ -1,8 +1,29 @@
-import { Agent, Client, Address, Uint128, Decimal, Fee, IContractLink } from '@fadroma/client'
-import { NativeToken, TokenType, TokenTypeAmount, TokenPair, getTokenType, TypeOfToken } from '@fadroma/tokens'
+import {
+  Agent,
+  Client,
+  Address,
+  Uint128,
+  Decimal,
+  Fee,
+  ContractLink
+} from '@fadroma/client'
+import {
+  CustomToken,
+  NativeToken,
+  TokenPair,
+  TokenPairAmount,
+  TokenType,
+  TokenTypeAmount,
+  TypeOfToken,
+  addNativeBalance,
+  addNativeBalancePair,
+  getTokenType,
+} from '@fadroma/tokens'
 import { Snip20 } from '@hackbg/fadroma'
 import { b64encode } from "@waiting/base64"
 import { EnigmaUtils } from "secretjs"
+
+export type ContractStatusLevel = "Operational" | "Paused" | "Migrating"
 
 export abstract class AMMFactory extends Client {
 
@@ -18,7 +39,7 @@ export abstract class AMMFactory extends Client {
 
   setStatus (
     level:        ContractStatusLevel,
-    new_address?: HumanAddr,
+    new_address?: Address,
     reason:       string = ""
   ) {
     return this.execute({
@@ -55,7 +76,7 @@ export abstract class AMMFactory extends Client {
   }
 
   /** Creates multiple exchanges in the same transaction. */
-  async createExchanges (input: CreateExchangesRequest): Promise<CreateExchangesResult> {
+  async createExchanges (input: CreateExchangesRequest): Promise<CreateExchangesResults> {
     const {
       templates = await this.getTemplates(),
       pairs,
@@ -64,8 +85,8 @@ export abstract class AMMFactory extends Client {
       console.warn('Creating 0 exchanges.')
       return []
     }
-    const newPairs = []
-    await this.agent.bundle().wrap(async bundle=>{
+    const newPairs: CreateExchangesResults = []
+    await this.agent.bundle().wrap(async (bundle: typeof this.agent.Bundle)=>{
       const agent = this.agent
       // @ts-ignore
       this.agent = bundle
@@ -201,11 +222,13 @@ export interface CreateExchangesRequest {
   }>
 }
 
-export type CreateExchangesResult = Array<{
+export interface CreateExchangesResult {
   name?:   string,
   token_0: Snip20|TokenType,
   token_1: Snip20|TokenType
-}>
+}
+
+export type CreateExchangesResults = Array<CreateExchangesResult>
 
 export interface FactoryExchangeInfo {
   address: string,
@@ -218,8 +241,8 @@ export interface FactoryExchangeInfo {
 export interface PairInfo {
   amount_0:         Uint128
   amount_1:         Uint128
-  factory:          IContractLink
-  liquidity_token:  IContractLink
+  factory:          ContractLink
+  liquidity_token:  ContractLink
   pair:             TokenPair
   total_liquidity:  Uint128
   contract_version: number
@@ -230,11 +253,11 @@ export interface GetAllPairsResponse {
 }
 
 export interface Pair {
-  asset_infos:     Array<NativeToken | Token>
+  asset_infos:     Array<NativeToken | CustomToken>
   contract_addr:   string
   liquidity_token: string
   token_code_hash: string
-};
+}
 
 export class AMMExchange extends Client {
 
@@ -287,14 +310,15 @@ export class AMMExchange extends Client {
 
   async provideLiquidity (amount: TokenPairAmount, tolerance?: Decimal) {
     const msg = { add_liquidity: { deposit: amount, slippage_tolerance: tolerance } }
-    return this.execute(msg, '100000', addNativeBalancePair(amount))
+    const opt = { fee: new Fee('100000', 'uscrt'), send: addNativeBalancePair(amount) }
+    return this.execute(msg, opt)
   }
 
   async withdrawLiquidity(amount: Uint128, recipient: Address) {
     const info = await this.getPairInfo()
     const snip20 = this.agent
       .getClient(Snip20, { address: info.liquidity_token.address })
-      .withFees({ exec: this.fee || new Fee('110000', 'uscrt') })
+      .withFees({ exec: new Fee('110000', 'uscrt') })
       .send(this.address, amount, { remove_liquidity: { recipient } })
   }
 
@@ -311,8 +335,8 @@ export class AMMExchange extends Client {
   ) {
     if (getTokenType(amount.token) == TypeOfToken.Native) {
       const msg = { swap: { offer: amount, to: recipient, expected_return } }
-      const transfer = addNativeBalance(amount)
-      return this.execute(msg, '55000', transfer)
+      const opt = { fee: new Fee('55000', 'uscrt'), send: addNativeBalance(amount) }
+      return this.execute(msg, opt)
     }
     const token_addr = (amount.token as CustomToken).custom_token.contract_addr;
     return this.agent.getClient(Snip20, { address: token_addr })

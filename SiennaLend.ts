@@ -1,7 +1,7 @@
-import { Client, Fee, Address, Decimal256, Uint128, Uint256, IContractLink } from '@fadroma/client'
+import { Client, Fee, Address, Decimal256, Uint128, Uint256, ContractLink } from '@fadroma/client'
 import { Permit, Signer, ViewingKey } from '@fadroma/client-scrt'
 import { Snip20, TokenInfo } from '@fadroma/tokens'
-import { Pagination, PaginatedResponse } from '../lib/LendPagination'
+import { Pagination, PaginatedResponse } from './Pagination'
 
 export type LendAuthStrategy =
   | { type: 'permit', signer: Signer }
@@ -66,7 +66,7 @@ export interface LendSimulatedLiquidation {
 }
 
 export interface LendOverseerMarket {
-  contract:  IContractLink,
+  contract:  ContractLink,
   /** The symbol of the underlying asset. Note that this is the same as the symbol
     * that the oracle expects, not what the actual token has in its storage. */
   symbol:    string,
@@ -126,54 +126,75 @@ export class LendAuth {
 
 export class LendMarket extends Client {
 
+  txFees = {
+    accrueInterest:       new Fee( '40000', 'uscrt'),
+    borrow:               new Fee( '80000', 'uscrt'),
+    deposit:              new Fee( '60000', 'uscrt'),
+    liquidate:            new Fee('130000', 'uscrt'),
+    redeemFromSL:         new Fee( '60000', 'uscrt'),
+    redeemFromUnderlying: new Fee( '60000', 'uscrt'),
+    repay:                new Fee( '90000', 'usrct'),
+    transfer:             new Fee( '80000', 'uscrt'),
+  }
+
   /** Convert and burn the specified amount of slToken to the underlying asset
     * based on the current exchange rate and transfer them to the user. */
-  async redeemFromSL (burn_amount: Uint256) {
-    return this.execute({ redeem_token: { burn_amount } }, '60000')
+  async redeemFromSL <R> (burn_amount: Uint256): Promise<R> {
+    const msg = { redeem_token: { burn_amount } }
+    const opt = { fee: this.txFees.redeemFromSL }
+    return this.execute(msg, opt)
   }
 
   /** Burn slToken amount of tokens equivalent to the specified amount
     * based on the current exchange rate and transfer the specified amount
     * of the underyling asset to the user. */
-  async redeemFromUnderlying (receive_amount: Uint256) {
-    return this.execute({ redeem_underlying: { receive_amount } }, '60000')
+  async redeemFromUnderlying <R> (receive_amount: Uint256): Promise<R> {
+    const msg = { redeem_underlying: { receive_amount } }
+    const opt = { fee: this.txFees.redeemFromUnderlying }
+    return this.execute(msg, opt)
   }
 
-  async borrow (amount: Uint256) {
-    return this.execute({ borrow: { amount } }, '80000')
+  async borrow <R> (amount: Uint256): Promise<R> {
+    const msg = { borrow: { amount } }
+    const opt = { fee: this.txFees.borrow }
+    return this.execute(msg, opt)
   }
 
-  async transfer (amount: Uint256, recipient: Address) {
-    return this.execute({ transfer: { amount, recipient } }, '80000')
+  async transfer <R> (amount: Uint256, recipient: Address): Promise<R> {
+    const msg = { transfer: { amount, recipient } }
+    const opt = { fee: this.txFees.transfer }
+    return this.execute(msg, opt)
   }
 
   /** This function is automatically called before every transaction to update to
     * the latest state of the market but can also be called manually through here. */
-  async accrueInterest () {
-    return this.execute({ accrueInterest: { } }, '40000')
+  async accrueInterest <R> (): Promise<R> {
+    const msg = { accrueInterest: { } }
+    const opt = { fee: this.txFees.accrueInterest }
+    return this.execute(msg, opt)
   }
 
-  async deposit (amount: Uint256, underlying_asset?: Address) {
-    return this.agent.getClient(Snip20, {
-      address: underlying_asset || (await this.getUnderlyingAsset()).address
-    }).withFees({ exec: this.fee || new Fee('60000', 'uscrt') })
+  async deposit <R> (amount: Uint256, underlying_asset?: Address): Promise<R> {
+    const address = underlying_asset || (await this.getUnderlyingAsset()).address
+    return this.agent.getClient(Snip20, { address })
+      .withFees({ exec: this.txFees.deposit })
       .send(this.address, amount, 'deposit')
   }
 
-  async repay (
+  async repay <R> (
     amount: Uint256,
     /** Optionally specify a borrower ID to repay someone else's debt. */
     borrower?: string,
     underlying_asset?: Address
-  ) {
-    return this.agent.getClient(Snip20, {
-      address: underlying_asset || await this.getUnderlyingAsset()
-    }).withFees({ exec: this.fee || new Fee('90000', 'usrct') })
+  ): Promise<R> {
+    const address = underlying_asset || (await this.getUnderlyingAsset()).address
+    return this.agent.getClient(Snip20, { address })
+      .withFees({ exec: this.txFees.repay })
       .send(this.address, amount, { repay: { borrower } })
   }
 
   /** Try to liquidate an existing borrower in this market. */
-  async liquidate(
+  async liquidate <R> (
     /** @param amount - the amount to liquidate by. */
     amount: Uint256,
     /** @param borrower - the ID corresponding to the borrower to liquidate. */
@@ -183,9 +204,9 @@ export class LendMarket extends Client {
     /** @param underlying_asset - The address of the underlying token for this market. Omitting it will result in an extra query. */
     underlying_asset?: Address
   ) {
-    return this.agent.getClient(Snip20, {
-      address: underlying_asset || await this.getUnderlyingAsset()
-    }).withFees({ exec: this.fee || new Fee('130000', 'uscrt') })
+    const address = underlying_asset || (await this.getUnderlyingAsset()).address
+    return this.agent.getClient(Snip20, { address })
+      .withFees({ exec: this.txFees.liquidate })
       .send(this.address, amount, { liquidate: { borrower, collateral } })
   }
 
@@ -230,7 +251,7 @@ export class LendMarket extends Client {
     return this.query({ state: { block } })
   }
 
-  async getUnderlyingAsset (): Promise<IContractLink> {
+  async getUnderlyingAsset (): Promise<ContractLink> {
     return this.query({ underlying_asset: {} })
   }
 
@@ -265,7 +286,7 @@ export class LendMarket extends Client {
   async getBorrowers (
     pagination: Pagination,
     block?:     number
-  ): Promise<PaginatedResponse<MarketBorrower>> {
+  ): Promise<PaginatedResponse<LendMarketBorrower>> {
     block = block || await this.agent.height
     return this.query({ borrowers: { block, pagination } })
   }
@@ -274,16 +295,25 @@ export class LendMarket extends Client {
 
 export class LendOverseer extends Client {
 
+  txFees = {
+    enter: new Fee('40000', 'uscrt'),
+    exit:  new Fee('50000', 'uscrt')
+  }
+
   async enter (markets: Address[]) {
-    return this.execute({ enter: { markets } }, '40000')
+    const msg = { enter: { markets } }
+    const opt = { fee: this.txFees.enter }
+    return this.execute(msg, opt)
   }
 
   async exit (market_address: Address) {
-    return this.execute({ exit: { market_address } }, '50000')
+    const msg = { exit: { market_address } }
+    const opt = { fee: this.txFees.exit }
+    return this.execute(msg, opt)
   }
 
   /** Max limit per page is `30`. */
-  async getMarkets (pagination: Pagination): Promise<PaginatedResponse<Market>> {
+  async getMarkets (pagination: Pagination): Promise<PaginatedResponse<LendMarket>> {
     return this.query({ markets: { pagination } })
   }
 
@@ -292,7 +322,7 @@ export class LendOverseer extends Client {
   }
 
   async getEnteredMarkets (auth: LendAuth): Promise<LendOverseerMarket[]> {
-    const method = await auth.createMethod<OverseerPermissions>(this.address, 'account_info')
+    const method = await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info')
     return this.query({ entered_markets: { method } })
   }
 
@@ -303,7 +333,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? await this.agent.height,
-        method: await auth.createMethod<OverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
         market: null,
         redeem_amount: '0',
         borrow_amount: '0'
@@ -323,7 +353,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? await this.agent.height,
-        method: await auth.createMethod<OverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
         market,
         redeem_amount,
         borrow_amount: '0'
@@ -363,7 +393,7 @@ export class LendOverseer extends Client {
     return this.query({ seize_amount: { borrowed, collateral, repay_amount } })
   }
 
-  async config(): Promise<LendOverseerConfig> {
+  async config (): Promise<LendOverseerConfig> {
     return this.query({ config: {} })
   }
 }

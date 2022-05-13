@@ -1,36 +1,55 @@
-import { Client, Address, Uint128, Moment, Duration, Fee, ContractLink, IContractLink, Coin } from "@fadroma/client"
-import { ViewingKeyClient, ViewingKey } from '@fadroma/client-scrt'
-import { Snip20, getTokenType, TypeOfToken, CustomToken, TokenType } from '@fadroma/tokens'
+import {
+  Address,
+  Client,
+  Coin,
+  Duration,
+  Fee,
+  ContractLink,
+  Moment,
+  Uint128,
+} from "@fadroma/client"
+import {
+  ViewingKey,
+  ViewingKeyClient,
+} from '@fadroma/client-scrt'
+import {
+  CustomToken,
+  Snip20,
+  TokenType,
+  TypeOfToken,
+  getTokenType,
+} from '@fadroma/tokens'
 
 export class Launchpad extends Client {
 
-  static fees = {
-    lockNative:   '280000',
-    lockSnip20:   '350000',
-    unlockNative: '280000',
-    unlockSnip20: '350000'
+  txFees = {
+    lockNative:   new Fee('280000', 'uscrt'),
+    lockSnip20:   new Fee('350000', 'uscrt'),
+    unlockNative: new Fee('280000', 'uscrt'),
+    unlockSnip20: new Fee('350000', 'uscrt'),
   }
 
-  async lock (amount: Uint128, token_address?: Address) {
-    const { fees } = Launchpad
+  async lock <R> (amount: Uint128, token_address?: Address): Promise<R> {
     token_address = await this.verifyTokenAddress(token_address)
     if (!token_address) {
       const msg = { lock: { amount } }
-      return await this.execute(msg, Launchpad.fees.lockNative, [new Coin(amount, 'uscrt')])
+      const opt = { fee: this.txFees.lockNative, send: [new Coin(amount, 'uscrt')] }
+      return await this.execute(msg, opt)
     }
     return this.agent.getClient(Snip20, { address: token_address })
-      .withFees({ exec: this.fee || new Fee(fees.lockSnip20, 'uscrt') })
+      .withFees({ exec: this.txFees.lockSnip20 })
       .send(this.address, amount, { lock: {} })
   }
 
-  async unlock (entries: number, token_address?: Address) {
+  async unlock <R> (entries: number, token_address?: Address): Promise<R> {
     token_address = await this.verifyTokenAddress(token_address)
     const msg = { unlock: { entries } }
     if (!token_address) {
-      return await this.execute(msg, Launchpad.fees.unlockNative)
+      const opt = { fee: this.txFees.unlockNative }
+      return await this.execute(msg, opt)
     }
     return this.agent.getClient(Snip20, { address: token_address })
-      .withFees({ exec: this.fee || new Fee(Launchpad.fees.unlockNative, 'uscrt') })
+      .withFees({ exec: this.txFees.unlockSnip20 })
       .send(this.address, '0', msg)
   }
 
@@ -54,7 +73,7 @@ export class Launchpad extends Client {
     return drawn_addresses
   }
 
-  vk = new ViewingKeyClient(this, this.agent)
+  vk = new ViewingKeyClient(this.agent, this)
 
   admin = new LaunchpadAdmin(this.agent, this)
 
@@ -82,19 +101,25 @@ export class Launchpad extends Client {
 
 export class LaunchpadAdmin extends Client {
 
-  fees = {
-    addToken:    '3000000',
-    removeToken: '3000000'
+  txFees = {
+    addToken:    new Fee('3000000', 'uscrt'),
+    removeToken: new Fee('3000000', 'uscrt')
   }
 
-  async addToken (config: TokenSettings) {
-    return await this.execute({ admin_add_token: { config } }, LaunchpadAdmin.fees.addToken)
+  async addToken <R> (config: TokenSettings): Promise<R> {
+    const msg = { admin_add_token: { config } }
+    const opt = { fee: this.txFees.addToken }
+    return await this.execute(msg, opt)
   }
+
   /** This action will remove the token from the contract
     * and will refund all locked balances on that token back to users */
-  async removeToken (index: number) {
-    return await this.execute({ admin_remove_token: { index } }, LaunchpadAdmin.fees.removeToken)
+  async removeToken <R> (index: number): Promise<R> {
+    const msg = { admin_remove_token: { index } }
+    const opt = { fee: this.txFees.removeToken }
+    return await this.execute(msg, opt)
   }
+
 }
 
 export interface LaunchpadInfo {
@@ -145,23 +170,27 @@ export class IDO extends Client {
    *
    *  IMPORTANT: if custom buy token is set, you have to use the SNIP20
    *  receiver callback interface to initiate pre_lock. */
-  preLock (amount: Amount) {
-    return this.execute({ amount }, undefined, [{ amount: `${amount}`, denom: "uscrt" }])
+  preLock <R> (amount: Uint128): Promise<R> {
+    const msg = { amount }
+    const opt = { send: [{ amount: `${amount}`, denom: "uscrt" }] }
+    return this.execute(msg, opt)
   }
 
   /** This method will perform the native token swap.
     *
     * IMPORTANT: if custom buy token is set, you have to use the SNIP20
     * receiver callback interface to initiate swap. */
-  async swap (amount: Uint128, recipient?: Address) {
+  async swap <R> (amount: Uint128, recipient?: Address): Promise<R> {
     const info = await this.getSaleInfo()
     if (getTokenType(info.input_token) == TypeOfToken.Native) {
-      return this.execute({ swap: { amount, recipient } }, '280000', [ new Coin(amount, 'uscrt') ])
+      const msg = { swap: { amount, recipient } }
+      const opt = { fee: new Fee('280000', 'uscrt'), send: [ new Coin(amount, 'uscrt') ] }
+      return this.execute(msg, opt)
     }
     const token_addr = (info.input_token as CustomToken).custom_token.contract_addr
     return this.agent
       .getClient(Snip20, { address: token_addr })
-      .withFees({ exec: this.fee || new Fee('350000', 'uscrt') })
+      .withFees({ exec: new Fee('350000', 'uscrt') })
       .send(this.address, amount, { swap: { recipient } })
   }
 
@@ -169,7 +198,7 @@ export class IDO extends Client {
     const info = await this.getSaleInfo()
     return this.agent
       .getClient(Snip20, { address: info.sold_token.address })
-      .withFees({ exec: this.fee || new Fee('300000', 'uscrt') })
+      .withFees({ exec: new Fee('300000', 'uscrt') })
       .send(this.address, sale_amount, { activate: { end_time, start_time } })
   }
 
@@ -196,7 +225,7 @@ export class IDO extends Client {
 
   /** Check if the address can participate in an IDO */
   async getEligibility (address: Address = this.agent.address) {
-    const { eligibility }: { eligibility: IDOEligibilityInfo } =
+    const { eligibility }: { eligibility: IDOEligibility } =
       await this.query({ eligibility_info: { address } });
     return eligibility
   }
@@ -206,22 +235,36 @@ export class IDO extends Client {
 }
 
 export class IDOAdmin extends Client {
+
+  txFees = {
+    refund: new Fee('300000', 'uscrt'),
+    claim:  new Fee('300000', 'uscrt'),
+    add:    new Fee('300000', 'uscrt')
+  }
+
   /** After the sale ends, admin can use this method to
     * refund all tokens that weren't sold in the IDO sale */
-  async refund (recipient?: Address) {
-    return this.execute({ admin_refund: { address: recipient } }, '300000')
+  async refund <R> (recipient?: Address): Promise<R> {
+    const msg = { admin_refund: { address: recipient } }
+    const opt = { fee: this.txFees.refund }
+    return this.execute(msg, opt)
   }
 
   /** After the sale ends, admin will use this method to
     * claim all the profits accumulated during the sale */
-  async claim (recipient?: Address) {
-    return this.execute({ admin_claim: { address: recipient } }, '300000')
+  async claim <R> (recipient?: Address): Promise<R> {
+    const msg = { admin_claim: { address: recipient } }
+    const opt = { fee: this.txFees.claim }
+    return this.execute(msg, opt)
   }
 
   /** Add addresses on whitelist for IDO contract */
-  async addAddresses (addresses: Address[]) {
-    return this.execute({ admin_add_addresses: { addresses } }, '300000')
+  async addAddresses <R> (addresses: Address[]): Promise<R> {
+    const msg = { admin_add_addresses: { addresses } }
+    const opt = { fee: this.txFees.add }
+    return this.execute(msg, opt)
   }
+
 }
 
 export enum IDOSaleType {
@@ -242,7 +285,7 @@ export class TokenSaleConfig {
     readonly max_seats: number,
     /** The price for a single token. */
     readonly rate: Uint128,
-    readonly sold_token: IContractLink,
+    readonly sold_token: ContractLink,
     /** The addresses that are eligible to participate in the sale. */
     readonly whitelist: Address[],
     /** Sale type settings */
@@ -254,7 +297,7 @@ export interface IDOSaleInfo {
   /** The token that is used to buy the sold SNIP20. */
   input_token:    TokenType
   /** The token that is being sold. */
-  sold_token:     IContractLink
+  sold_token:     ContractLink
   /** The minimum amount that each participant is allowed to buy. */
   min_allocation: Uint128
   /** The total amount that each participant is allowed to buy. */

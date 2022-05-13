@@ -28,7 +28,7 @@
     "node_modules"
   ],
   "scripts": {
-    "build": "pnpm exec tsc",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }

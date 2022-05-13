@@ -121,13 +121,15 @@ export abstract class MGMT extends Client {
 export type RPTRecipient = string
 export type RPTAmount = string
 export type RPTConfig = [RPTRecipient, RPTAmount][]
+export type RPTStatus = unknown
 
 export abstract class RPT extends Client {
 
   static "legacy" = class RPT_TGE extends RPT {
     /** query contract status */
-    async status() {
-      return (await this.query({ status: {} })).status
+    async status () {
+      const { status }: { status: RPTStatus } = await this.query({ status: {} })
+      return status
     }
 
     /** set the vesting recipients */
