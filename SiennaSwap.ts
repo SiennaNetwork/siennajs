@@ -1,5 +1,5 @@
-import { Agent, Client, Address, Uint128, Decimal } from '@fadroma/client'
-import { NativeToken, TokenType, TokenTypeAmount, TokenPair } from '@fadroma/tokens'
+import { Agent, Client, Address, Uint128, Decimal, Fee, IContractLink } from '@fadroma/client'
+import { NativeToken, TokenType, TokenTypeAmount, TokenPair, getTokenType, TypeOfToken } from '@fadroma/tokens'
 import { Snip20 } from '@hackbg/fadroma'
 import { b64encode } from "@waiting/base64"
 import { EnigmaUtils } from "secretjs"
@@ -218,8 +218,8 @@ export interface FactoryExchangeInfo {
 export interface PairInfo {
   amount_0:         Uint128
   amount_1:         Uint128
-  factory:          ContractInfo
-  liquidity_token:  ContractInfo
+  factory:          IContractLink
+  liquidity_token:  IContractLink
   pair:             TokenPair
   total_liquidity:  Uint128
   contract_version: number
@@ -285,6 +285,19 @@ export class AMMExchange extends Client {
     return result
   }
 
+  async provideLiquidity (amount: TokenPairAmount, tolerance?: Decimal) {
+    const msg = { add_liquidity: { deposit: amount, slippage_tolerance: tolerance } }
+    return this.execute(msg, '100000', addNativeBalancePair(amount))
+  }
+
+  async withdrawLiquidity(amount: Uint128, recipient: Address) {
+    const info = await this.getPairInfo()
+    const snip20 = this.agent
+      .getClient(Snip20, { address: info.liquidity_token.address })
+      .withFees({ exec: this.fee || new Fee('110000', 'uscrt') })
+      .send(this.address, amount, { remove_liquidity: { recipient } })
+  }
+
   async getPairInfo () {
     const { pair_info } = await this.query("pair_info")
     return pair_info
@@ -296,23 +309,15 @@ export class AMMExchange extends Client {
     expected_return?: Decimal,
     fee = new Fee('100000', 'uscrt')
   ) {
-    if (get_token_type(amount.token) == TypeOfToken.Native) {
-      const msg = {
-        swap: {
-          offer: amount,
-          to: recipient,
-          expected_return
-        }
-      }
-      const transfer = add_native_balance(amount)
-      return this.run(msg, '55000', transfer)
+    if (getTokenType(amount.token) == TypeOfToken.Native) {
+      const msg = { swap: { offer: amount, to: recipient, expected_return } }
+      const transfer = addNativeBalance(amount)
+      return this.execute(msg, '55000', transfer)
     }
-    const msg = { swap: { to: recipient, expected_return } }
     const token_addr = (amount.token as CustomToken).custom_token.contract_addr;
-    const snip20 = new Snip20Contract(token_addr, this.client)
-    return snip20
-      .exec(fee, this.memo)
-      .send(this.address, amount.amount, msg)
+    return this.agent.getClient(Snip20, { address: token_addr })
+      .withFees({ exec: fee })
+      .send(this.address, amount.amount, { swap: { to: recipient, expected_return } })
   }
 
   async simulateSwap (amount: TokenTypeAmount): Promise<SwapSimulationResponse> {
@@ -358,13 +363,11 @@ export class AMMSnip20 extends Snip20 {}
 export class LPToken extends Snip20 {
 
   async getPairName (): Promise<string> {
-    const { agent } = this
-    const { chain } = agent
     const { name } = await this.getTokenInfo()
     const fragments = name.split(' ')
     const [t0addr, t1addr] = fragments[fragments.length-1].split('-')
-    const t0 = new Snip20({ agent, address: t0addr })
-    const t1 = new Snip20({ agent, address: t1addr })
+    const t0 = this.agent.getClient(Snip20, { address: t0addr })
+    const t1 = this.agent.getClient(Snip20, { address: t1addr })
     const [t0info, t1info] = await Promise.all([t0.getTokenInfo(), t1.getTokenInfo()])
     return `${t0info.symbol}-${t1info.symbol}`
   }

@@ -1,4 +1,4 @@
-import { Client, Uint128, Uint256, Duration, Moment } from '@fadroma/client'
+import { Client, Uint128, Uint256, Duration, Moment, ContractLink } from '@fadroma/client'
 import { Snip20 } from '@fadroma/tokens'
 import { Console } from '@hackbg/konzola'
 
@@ -209,8 +209,8 @@ export class Immigration extends Client {
 }
 
 export interface Rewards_v2_Pool {
-    lp_token: ContractInfo;
-    reward_token: ContractInfo;
+    lp_token: ContractLink;
+    reward_token: ContractLink;
     /** The current reward token balance that this pool has. */
     pool_balance: Uint128;
     /** Amount of rewards already claimed. */
@@ -264,11 +264,11 @@ export interface Rewards_v2_Account {
  * Reward pool configuration
  */
 export interface Rewards_v3_Config {
-  lp_token?: ContractInfo;
-  reward_token?: ContractInfo;
-  reward_vk?: string;
-  bonding?: number;
-  timekeeper?: Address;
+  lp_token?:     ContractLink;
+  reward_token?: ContractLink;
+  reward_vk?:    string;
+  bonding?:      number;
+  timekeeper?:   Address;
 }
 
 export interface Rewards_v3_Clock {

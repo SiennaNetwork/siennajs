@@ -1,157 +1,139 @@
-import { Client, Agent, randomHex } from "@fadroma/client"
-import { Coin } from "@fadroma/tokens"
+import { Client, Agent, Address, Uint128, Moment, Duration, Fee, randomHex, ContractLink, IContractLink } from "@fadroma/client"
+import { ViewingKeyClient } from '@fadroma/client-scrt'
+import { Coin, Snip20 } from '@fadroma/tokens'
+import { getTokenType, TypeOfToken, CustomToken, TokenType } from '../amm/token'
+import { SmartContract, Querier } from '../contract'
+import { ViewingKeyExecutor } from '../executors/viewing_key_executor'
+import { ViewingKey } from '../core'
+import { getTokenType, TypeOfToken, CustomToken, TokenType } from '../amm/token'
 
 // @ts-ignore
 const decoder = new TextDecoder();
 const decode = (buffer: any) => decoder.decode(buffer).trim();
 
-export class LaunchpadClient extends Client {
+export class Launchpad extends Client {
 
-  /**
-   * This action will remove the token from the contract
-   * and will refund all locked balances on that token back to users
-   *
-   * @param {number} amount
-   * @param {Agent} [agent]
-   * @returns
-   */
-  async adminRemoveToken(index: number, agent?: Agent) {
-    return this.execute({admin_remove_token: { index }});
+  /** This method will perform the native token lock.
+   *  NOTE: For any other token, use snip20 receiver interface */
+  async lockNative (amount: Uint128, denom = "uscrt",) {
+    return this.execute({ lock: { amount } }, undefined, [new Coin(amount, denom)])
   }
 
-  /**
-   * This method will perform the native token lock.
-   *
-   * NOTE: For any other token, use snip20 receiver interface
-   *
-   * @param {string|number|bigint} amount
-   * @param {string} [denom]
-   * @param {Agent} [agent]
-   * @returns
-   */
-  async lock(
-    amount: string | number | bigint,
-    denom: string = "uscrt",
-    agent?: Agent
-  ) {
-    return this.tx.lock({ amount: `${amount}` }, agent, undefined, [
-      { amount: `${amount}`, denom },
-    ]);
+  async lock(amount: Uint128, token_address?: Address): Promise<ExecuteResult> {
+    token_address = await this.verify_token_address(token_address);
+
+    if (!token_address) {
+      const msg = {
+        lock: {
+          amount
+        }
+      }
+
+      return await this.execute(msg, "280000", [new Coin(amount, 'uscrt')])
+    }
+
+    const msg = {
+      lock: {}
+    }
+
+    const fee = this.fee || new Fee('350000', 'uscrt')
+    const snip20 = this.agent.getClient(Snip20, { address: token_address })
+    return snip20.exec(fee, this.memo).send(this.address, amount, msg)
   }
 
-  /**
-   * This method will perform the native token unlock
-   *
-   * NOTE: For any other token, use snip20 receiver interface
-   *
-   * @param {string|number|bigint} entries
-   * @param {Agent} [agent]
-   * @returns
-   */
-  async unlock(entries: string | number | bigint, agent?: Agent) {
-    return this.tx.unlock({ entries }, agent);
+  /** This method will perform the native token unlock
+    * NOTE: For any other token, use snip20 receiver interface */
+  async unlockNative (entries: string | number | bigint, agent?: Agent) {
+    return this.execute({ unlock: { entries } })
   }
 
-  /**
-   * Get the configuration information about the Launchpad contract
-   *
-   * @returns Promise<Array<{
-   *  "token_type": { "native_token": { "denom": "uscrt" } },
-   *  "segment": "25000000000",
-   *  "bounding_period": 604800,
-   *  "active": true,
-   *  "token_decimals": 6,
-   *  "locked_balance": "100000000000"
-   * }>>
-   */
-  async info() {
-    return this.q.launchpad_info();
+  async unlock (entries: number, token_address?: Address): Promise<ExecuteResult> {
+    token_address = await this.verifyTokenAddress(token_address);
+    const msg = { unlock: { entries } }
+    if (!token_address) {
+      return await this.execute(msg, "280000")
+    }
+    const fee = this.fee || new Fee('400000', 'uscrt')
+    const snip20 = this.agent.getClient(Snip20, { address: token_address })
+    return snip20.exec(fee, this.memo).send(this.address, '0', msg)
   }
 
-  /**
-   * Get the balance and entry information for a user
-   *
-   * @param {string} address
-   * @param {string} key
-   * @returns Promise<Array<{
-   *  "token_type": { "native_token": { "denom": "uscrt" } },
-   *  "balance": "100000000000",
-   *  "entries": [
-   *    "1629402109",
-   *    "1629402109",
-   *    "1629402109",
-   *    "1629402109",
-   *  ],
-   *  "last_draw": null,
-   * }>>
-   */
-  async userInfo(address: string, key: string) {
-    return this.q.user_info({
-      address,
-      key,
-    });
+  /** Get the configuration information about the Launchpad contract */
+  async getInfo (): Promise<LaunchpadInfo> {
+    const result: { launchpad_info: LaunchpadInfo } = await this.query("launchpad_info")
+    return result.launchpad_info
   }
 
-  /**
-   * Do a test draw of the addresses
-   *
-   * @param {number} number
-   * @param {string[]} tokens
-   * @returns Promise<{
-   *  "drawn_addresses": [
-   *    "secret1h9we43xcfyljvadjj6wfw6444t8kty4kmajdhl",
-   *    "secret1tld98vmz8gq0j738cwvu2feccfwl8wz3tnuu9e",
-   *    "secret1avs82agh6g46xna6qklmjnnaj7yq3974ur8qpe",
-   *    "secret1udwpspt6czruhrhadtchsjzgznrq8yq9emu6m4"
-   *  ]
-   * }>
-   */
-  async draw(number: number, tokens: string[]) {
-    return this.q.draw({
-      number,
-      tokens,
-      // @ts-ignore
-      timestamp: parseInt(new Date().valueOf() / 1000),
-    });
+  /** Get balance and entry information for a user */
+  async getUserInfo (address: string, key: string): Promise<LaunchpadUserInfo> {
+    const result: { user_info: LaunchpadUserInfo } = await this.query({ user_info: { address, key } })
+    return result.user_info
   }
 
-  /**
-   * Create viewing key for the agent
-   *
-   * @param {Agent} agent
-   * @param {string} entropy
-   * @returns
-   */
-  createViewingKey = (agent: Agent, entropy = randomHex(32)) =>
-    this.tx
-      .create_viewing_key({ entropy, padding: null }, agent)
-      .then((tx) => ({
-        tx,
-        key: JSON.parse(decode(tx.data)).create_viewing_key.key,
-      }));
+  /** Do a test draw of the addresses */
+  async draw (number: number, tokens: string[]): Promise<Address[]> {
+    const timestamp = Math.floor(+ new Date() / 1000)
+    const { drawn_addresses }: { drawn_addresses: Address[] } =
+      await this.query({ draw: { number, tokens, timestamp } })
+    return drawn_addresses
+  }
 
-  /**
-   * Set viewing key for the agent
-   *
-   * @param {Agent} agent
-   * @param {string} key
-   * @returns
-   */
-  setViewingKey = (agent: Agent, key: string) =>
-    this.tx.set_viewing_key({ key }, agent).then((tx) => ({
-      tx,
-      status: JSON.parse(decode(tx.data)).set_viewing_key.key,
-    }));
+  vk = new ViewingKeyClient(this, this.agent)
+
+  admin = new LaunchpadAdmin(this.agent, this)
+
+  tokens: TokenType[] = []
+
+  async verifyTokenAddress (address?: Address): Promise<Address | undefined> {
+    if (this.tokens === undefined) {
+      const info = await this.getInfo()
+      this.tokens = info.map(token => token.token_type);
+    }
+    for (const token of this.tokens) {
+      if (getTokenType(token) == TypeOfToken.Native && !address) {
+        return undefined;
+      }
+      if (
+        getTokenType(token) == TypeOfToken.Custom &&
+        (token as CustomToken).custom_token.contract_addr === address
+      ) {
+        return address;
+      }
+    }
+    throw new Error(`Unsupported token address provided for locking`);
+  }
 }
 
+export class LaunchpadAdmin extends Client {
+  async addToken (config: TokenSettings) {
+    return await this.execute({ admin_add_token: { config } }, '3000000')
+  }
+  /** This action will remove the token from the contract
+    * and will refund all locked balances on that token back to users */
+  async removeToken (index: number) {
+    return await this.execute({ admin_remove_token: { index } }, '3000000')
+  }
+}
 
-import { Address, Uint128 } from '../core'
-import { get_token_type, TypeOfToken, CustomToken, TokenType } from '../amm/token'
-import { SmartContract, Querier } from '../contract'
-import { ViewingKeyExecutor } from '../executors/viewing_key_executor'
-import { Snip20Contract } from '../snip20'
+export interface LaunchpadInfo {
+  token_type:      TokenType
+  segment:         Uint128
+  bounding_period: Duration
+  active:          boolean
+  token_decimals:  number
+  locked_balance:  Uint128
+}
 
-import { SigningCosmWasmClient, ExecuteResult } from 'secretjs'
+export interface LaunchpadUserInfo {
+  token_type: TokenType
+  balance:    Uint128
+  entries:    Moment[]
+  last_draw:  unknown
+}
+
+export interface LaunchpadDraw {
+  drawn_addresses: Address[]
+}
 
 export type MaybeTokenAddress = Address | null
 
@@ -175,174 +157,6 @@ export interface QueryAccountToken {
   entries: number[],
 }
 
-export class LaunchpadContract extends SmartContract<LaunchpadExecutor, LaunchpadQuerier> {
-  exec(fee?: Fee, memo?: string): LaunchpadExecutor {
-    return new LaunchpadExecutor(
-      this.address,
-      () => this.query.apply(this),
-      this.execute_client,
-      fee,
-      memo
-    )
-  }
-  
-  query(): LaunchpadQuerier {
-    return new LaunchpadQuerier(this.address, this.query_client)
-  }
-}
-
-export class LaunchpadExecutor extends ViewingKeyExecutor {
-  tokens?: TokenType[];
-
-  constructor(
-    address: Address,
-    private querier: () => LaunchpadQuerier,
-    client?: SigningCosmWasmClient,
-    fee?: Fee,
-    memo?: string,
-  ) {
-    super(address, client, fee, memo)
-  }
-
-  private async verify_token_address(address?: Address): Promise<Address | undefined> {
-    if (this.tokens === undefined) {
-      this.tokens = (await this.querier().info()).map(token => token.token_type);
-    }
-
-    for (const token of this.tokens) {
-      if (get_token_type(token) == TypeOfToken.Native && !address) {
-        return undefined;
-      }
-
-      if (
-        get_token_type(token) == TypeOfToken.Custom &&
-        (token as CustomToken).custom_token.contract_addr === address) {
-        return address;
-      }
-    }
-
-    throw new Error(`Unsupported token address provided for locking`);
-  }
-
-  async lock(amount: Uint128, token_address?: Address): Promise<ExecuteResult> {
-    token_address = await this.verify_token_address(token_address);
-
-    if (!token_address) {
-      const msg = {
-        lock: {
-          amount
-        }
-      }
-
-      return await this.run(msg, "280000", [new Coin(amount, 'uscrt')])
-    }
-
-    const msg = {
-      lock: {}
-    }
-
-    const fee = this.fee || new Fee('350000', 'uscrt')
-    const snip20 = new Snip20Contract(token_address, this.client)
-    return snip20.exec(fee, this.memo).send(this.address, amount, msg)
-  }
-
-  async unlock(entries: number, token_address?: Address): Promise<ExecuteResult> {
-    token_address = await this.verify_token_address(token_address);
-
-    const msg = { unlock: { entries } }
-
-    if (!token_address) {
-      return await this.run(msg, "280000")
-    }
-
-    const fee = this.fee || new Fee('400000', 'uscrt')
-    const snip20 = new Snip20Contract(token_address, this.client)
-    return snip20.exec(fee, this.memo).send(this.address, '0', msg)
-  }
-
-  async admin_add_token(config: TokenSettings) {
-    const msg = {
-      admin_add_token: {
-        config,
-      },
-    }
-
-    return await this.run(
-      msg,
-      "3000000"
-    )
-  }
-
-  async admin_remove_token(index: number, fee?: Fee) {
-    const msg = {
-      admin_remove_token: {
-        index,
-      },
-    }
-
-    return await this.run(
-      msg,
-      "3000000"
-    )
-  }
-}
-
-export class LaunchpadQuerier extends Querier {
-  async info(): Promise<QueryTokenConfig[]> {
-    const msg = "launchpad_info" as unknown as object
-
-    const result = await this.run(msg) as LaunchpadInfoResponse
-
-    return result.launchpad_info
-  }
-
-  async user_info(address: Address, key: string): Promise<QueryAccountToken[]> {
-    const msg = {
-      user_info: {
-        address,
-        key
-      },
-    }
-
-    const result = await this.run(msg) as UserInfoResponse
-
-    return result.user_info
-  }
-
-  async draw(number: number, tokens: MaybeTokenAddress[]): Promise<Address[]> {
-    const msg = {
-      draw: {
-        tokens,
-        number,
-        timestamp: parseInt(`${new Date().valueOf() / 1000}`),
-      },
-    }
-
-    const result = await this.run(msg) as DrawnAddressesResponse
-
-    return result.drawn_addresses
-  }
-}
-
-interface LaunchpadInfoResponse {
-  launchpad_info: QueryTokenConfig[]
-}
-
-interface UserInfoResponse {
-  user_info: QueryAccountToken[],
-}
-
-interface DrawnAddressesResponse {
-  drawn_addresses: Address[]
-}
-
-import { Client, Address, Uint128, Moment, Fee } from '@fadroma/client'
-import { Snip20 } from '@fadroma/tokens'
-
-import { ContractInfo, ViewingKey } from '../core'
-import { get_token_type, TypeOfToken, CustomToken, TokenType } from '../amm/token'
-import { SmartContract, Querier } from '../contract'
-
 export class IDO extends Client {
 
   /** This method will perform the native token pre_lock.
@@ -359,7 +173,7 @@ export class IDO extends Client {
     * receiver callback interface to initiate swap. */
   async swap (amount: Uint128, recipient?: Address) {
     const info = await this.getSaleInfo()
-    if (get_token_type(info.input_token) == TypeOfToken.Native) {
+    if (getTokenType(info.input_token) == TypeOfToken.Native) {
       return this.execute({ swap: { amount, recipient } }, '280000', [ new Coin(amount, 'uscrt') ])
     }
     const token_addr = (info.input_token as CustomToken).custom_token.contract_addr;
@@ -446,7 +260,7 @@ export class TokenSaleConfig {
     readonly max_seats: number,
     /** The price for a single token. */
     readonly rate: Uint128,
-    readonly sold_token: ContractInfo,
+    readonly sold_token: IContractLink,
     /** The addresses that are eligible to participate in the sale. */
     readonly whitelist: Address[],
     /** Sale type settings */
@@ -458,7 +272,7 @@ export interface IDOSaleInfo {
   /** The token that is used to buy the sold SNIP20. */
   input_token:    TokenType;
   /** The token that is being sold. */
-  sold_token:     ContractInfo;
+  sold_token:     IContractLink;
   /** The minimum amount that each participant is allowed to buy. */
   min_allocation: Uint128;
   /** The total amount that each participant is allowed to buy. */

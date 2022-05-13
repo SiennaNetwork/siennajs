@@ -1,12 +1,11 @@
-import { Client, Fee, Address, Decimal256, Uint128, Uint256 } from '@fadroma/client'
+import { Client, Fee, Address, Decimal256, Uint128, Uint256, IContractLink } from '@fadroma/client'
 import { Permit, Signer, ViewingKey } from '@fadroma/client-scrt'
 import { Snip20, TokenInfo } from '@fadroma/tokens'
 
-import { ContractInfo } from '../core'
 import { ViewingKeyExecutor } from '../executors/viewing_key_executor'
 import { ViewingKeyComponentExecutor } from '../executors/viewing_key_executor'
 import { Pagination, PaginatedResponse } from '../lib/LendPagination'
-import { Fee, Address, ContractInfo, Decimal256, Uint256 } from '../core'
+import { Fee, Address, Decimal256, Uint256 } from '../core'
 
 export type LendAuthStrategy =
   | { type: 'permit', signer: Signer }
@@ -71,7 +70,7 @@ export interface LendSimulatedLiquidation {
 }
 
 export interface LendOverseerMarket {
-  contract:  ContractInfo,
+  contract:  IContractLink,
   /** The symbol of the underlying asset. Note that this is the same as the symbol
     * that the oracle expects, not what the actual token has in its storage. */
   symbol:    string,
@@ -235,7 +234,7 @@ export class LendMarket extends Client {
     return this.query({ state: { block } })
   }
 
-  async getUnderlyingAsset (): Promise<ContractInfo> {
+  async getUnderlyingAsset (): Promise<IContractLink> {
     return this.query({ underlying_asset: {} })
   }
 
@@ -297,7 +296,7 @@ export class LendOverseer extends Client {
   }
 
   async getEnteredMarkets (auth: LendAuth): Promise<LendOverseerMarket[]> {
-    const method = await auth.create_method<OverseerPermissions>(this.address, 'account_info')
+    const method = await auth.createMethod<OverseerPermissions>(this.address, 'account_info')
     return this.query({ entered_markets: { method } })
   }
 
@@ -308,7 +307,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? (await this.client.getBlock()).header.height,
-        method: await auth.create_method<OverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<OverseerPermissions>(this.address, 'account_info'),
         market: null,
         redeem_amount: '0',
         borrow_amount: '0'
@@ -328,7 +327,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? (await this.client.getBlock()).header.height,
-        method: await auth.create_method<OverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<OverseerPermissions>(this.address, 'account_info'),
         market,
         redeem_amount,
         borrow_amount: '0'
@@ -348,7 +347,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? (await this.client.getBlock()).header.height,
-        method: await auth.create_method<OverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
         market,
         redeem_amount: '0',
         borrow_amount

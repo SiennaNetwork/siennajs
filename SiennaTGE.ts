@@ -1,11 +1,15 @@
+import { Client, Address } from '@fadroma/client'
 import { Snip20 } from '@fadroma/tokens'
 
 export class SiennaSnip20 extends Snip20 {}
 
-import { Client } from '@fadroma/client'
-import { Snip20 } from '@fadroma/tokens'
-
-type Link = { address: string, code_hash: string }
+export interface VestingProgress {
+  time:     number
+  launcher: number
+  elapsed:  number
+  unlocked: string
+  claimed:  string
+}
 
 export abstract class MGMT extends Client {
 
@@ -22,13 +26,7 @@ export abstract class MGMT extends Client {
     }
 
     /** Check how much is claimable by someone at a certain time */
-    async progress(address: any, time = +new Date()): Promise<{
-      time: number
-      launcher: number
-      elapsed: number
-      unlocked: string
-      claimed: string
-    }> {
+    async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
       time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
       const { progress } = await this.query({ progress: { address, time } })
       return progress
@@ -110,13 +108,7 @@ export abstract class MGMT extends Client {
       return this.query({ config: {} })
     }
 
-    async progress(address: any, time = +new Date()): Promise<{
-      time: number
-      launcher: number
-      elapsed: number
-      unlocked: string
-      claimed: string
-    }> {
+    async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
       time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
       const { progress } = await this.query({ progress: { address, time } })
       return progress
@@ -125,8 +117,6 @@ export abstract class MGMT extends Client {
   }
 
 }
-import { Client } from '@fadroma/client'
-import { Snip20 } from '@fadroma/tokens'
 
 export type RPTRecipient = string
 export type RPTAmount = string
