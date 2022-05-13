@@ -1,11 +1,7 @@
 import { Client, Fee, Address, Decimal256, Uint128, Uint256, IContractLink } from '@fadroma/client'
 import { Permit, Signer, ViewingKey } from '@fadroma/client-scrt'
 import { Snip20, TokenInfo } from '@fadroma/tokens'
-
-import { ViewingKeyExecutor } from '../executors/viewing_key_executor'
-import { ViewingKeyComponentExecutor } from '../executors/viewing_key_executor'
 import { Pagination, PaginatedResponse } from '../lib/LendPagination'
-import { Fee, Address, Decimal256, Uint256 } from '../core'
 
 export type LendAuthStrategy =
   | { type: 'permit', signer: Signer }
@@ -202,7 +198,7 @@ export class LendMarket extends Client {
     * an error that starts with "Repay amount is too high." as that indicates that you are
     * trying to liquidate a bigger portion of the borrower's collateral than permitted by
     * the close factor. */
-  async simulate_liquidation(
+  async simulateLiquidation (
     /** @param borrower - the ID corresponding to the borrower to liquidate. */
     borrower: string,
     /** @param collateral - the collateral market address to receive a premium on. */
@@ -210,8 +206,8 @@ export class LendMarket extends Client {
     /** @param amount - the amount to liquidate by. */
     amount: Uint256,
     block?: number
-  ): Promise<SimulateLiquidationResult> {
-    block = block || (await this.client.getBlock()).header.height
+  ): Promise<LendSimulatedLiquidation> {
+    block = block || await this.agent.height
     return this.query({ block, borrower, collateral, amount })
   }
 
@@ -224,13 +220,13 @@ export class LendMarket extends Client {
   }
 
   async getUnderlyingBalance (auth: LendAuth, block?: number): Promise<Uint128> {
-    block = block || (await this.client.getBlock()).header.height
+    block = block || await this.agent.height
     const method = await auth.createMethod<LendMarketPermissions>(this.address, 'balance')
     return this.query({ balance_underlying: { block, method } })
   }
 
   async getState (block?: number): Promise<LendMarketState> {
-    block = block || (await this.client.getBlock()).header.height
+    block = block || await this.agent.height
     return this.query({ state: { block } })
   }
 
@@ -239,22 +235,22 @@ export class LendMarket extends Client {
   }
 
   async getBorrowRate (block?: number): Promise<Decimal256> {
-    block = block || (await this.client.getBlock()).header.height
+    block = block || await this.agent.height
     return this.query({ borrow_rate: { block } })
   }
 
   async getSupplyRate (block?: number): Promise<Decimal256> {
-    block = block || (await this.client.getBlock()).header.height
+    block = block || await this.agent.height
     return this.query({ supply_rate: { block } })
   }
 
   async getExchangeRate (block?: number): Promise<Decimal256> {
-    block = block || (await this.client.getBlock()).header.height
+    block = block || await this.agent.height
     return this.query({ exchange_rate: { block } })
   }
 
   async getAccount (auth: LendAuth, block?: number): Promise<LendMarketAccount> {
-    block = block || (await this.client.getBlock()).header.height
+    block = block || await this.agent.height
     const method = await auth.createMethod<LendMarketPermissions>(this.address, 'account_info')
     return this.query({ account: { block, method } })
   }
@@ -270,7 +266,7 @@ export class LendMarket extends Client {
     pagination: Pagination,
     block?:     number
   ): Promise<PaginatedResponse<MarketBorrower>> {
-    block = block || (await this.client.getBlock()).header.height
+    block = block || await this.agent.height
     return this.query({ borrowers: { block, pagination } })
   }
 
@@ -306,7 +302,7 @@ export class LendOverseer extends Client {
   ): Promise<LendAccountLiquidity> {
     return this.query({
       account_liquidity: {
-        block:  block ?? (await this.client.getBlock()).header.height,
+        block:  block ?? await this.agent.height,
         method: await auth.createMethod<OverseerPermissions>(this.address, 'account_info'),
         market: null,
         redeem_amount: '0',
@@ -326,7 +322,7 @@ export class LendOverseer extends Client {
   ): Promise<LendAccountLiquidity> {
     return this.query({
       account_liquidity: {
-        block:  block ?? (await this.client.getBlock()).header.height,
+        block:  block ?? await this.agent.height,
         method: await auth.createMethod<OverseerPermissions>(this.address, 'account_info'),
         market,
         redeem_amount,
@@ -346,7 +342,7 @@ export class LendOverseer extends Client {
   ): Promise<LendAccountLiquidity> {
     return this.query({
       account_liquidity: {
-        block:  block ?? (await this.client.getBlock()).header.height,
+        block:  block ?? await this.agent.height,
         method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
         market,
         redeem_amount: '0',

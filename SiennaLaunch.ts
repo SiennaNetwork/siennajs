@@ -1,45 +1,36 @@
-import { Client, Agent, Address, Uint128, Moment, Duration, Fee, randomHex, ContractLink, IContractLink } from "@fadroma/client"
-import { ViewingKeyClient } from '@fadroma/client-scrt'
-import { Coin, Snip20 } from '@fadroma/tokens'
-import { getTokenType, TypeOfToken, CustomToken, TokenType } from '../amm/token'
-import { SmartContract, Querier } from '../contract'
-import { ViewingKeyExecutor } from '../executors/viewing_key_executor'
-import { ViewingKey } from '../core'
-import { getTokenType, TypeOfToken, CustomToken, TokenType } from '../amm/token'
+import { Client, Address, Uint128, Moment, Duration, Fee, ContractLink, IContractLink, Coin } from "@fadroma/client"
+import { ViewingKeyClient, ViewingKey } from '@fadroma/client-scrt'
+import { Snip20, getTokenType, TypeOfToken, CustomToken, TokenType } from '@fadroma/tokens'
 
 export class Launchpad extends Client {
 
-  /** This method will perform the native token lock.
-   *  NOTE: For any other token, use snip20 receiver interface */
-  async lockNative (amount: Uint128, denom = "uscrt",) {
-    return this.execute({ lock: { amount } }, undefined, [new Coin(amount, denom)])
+  static fees = {
+    lockNative:   '280000',
+    lockSnip20:   '350000',
+    unlockNative: '280000',
+    unlockSnip20: '350000'
   }
 
-  async lock(amount: Uint128, token_address?: Address) {
+  async lock (amount: Uint128, token_address?: Address) {
+    const { fees } = Launchpad
     token_address = await this.verifyTokenAddress(token_address)
     if (!token_address) {
       const msg = { lock: { amount } }
-      return await this.execute(msg, "280000", [new Coin(amount, 'uscrt')])
+      return await this.execute(msg, Launchpad.fees.lockNative, [new Coin(amount, 'uscrt')])
     }
     return this.agent.getClient(Snip20, { address: token_address })
-      .withFees({ exec: this.fee || new Fee('350000', 'uscrt') })
+      .withFees({ exec: this.fee || new Fee(fees.lockSnip20, 'uscrt') })
       .send(this.address, amount, { lock: {} })
-  }
-
-  /** This method will perform the native token unlock
-    * NOTE: For any other token, use snip20 receiver interface */
-  async unlockNative (entries: string | number | bigint, agent?: Agent) {
-    return this.execute({ unlock: { entries } })
   }
 
   async unlock (entries: number, token_address?: Address) {
     token_address = await this.verifyTokenAddress(token_address)
     const msg = { unlock: { entries } }
     if (!token_address) {
-      return await this.execute(msg, "280000")
+      return await this.execute(msg, Launchpad.fees.unlockNative)
     }
     return this.agent.getClient(Snip20, { address: token_address })
-      .withFees({ exec: this.fee || new Fee('400000', 'uscrt') })
+      .withFees({ exec: this.fee || new Fee(Launchpad.fees.unlockNative, 'uscrt') })
       .send(this.address, '0', msg)
   }
 
@@ -90,13 +81,19 @@ export class Launchpad extends Client {
 }
 
 export class LaunchpadAdmin extends Client {
+
+  fees = {
+    addToken:    '3000000',
+    removeToken: '3000000'
+  }
+
   async addToken (config: TokenSettings) {
-    return await this.execute({ admin_add_token: { config } }, '3000000')
+    return await this.execute({ admin_add_token: { config } }, LaunchpadAdmin.fees.addToken)
   }
   /** This action will remove the token from the contract
     * and will refund all locked balances on that token back to users */
   async removeToken (index: number) {
-    return await this.execute({ admin_remove_token: { index } }, '3000000')
+    return await this.execute({ admin_remove_token: { index } }, LaunchpadAdmin.fees.removeToken)
   }
 }
 
