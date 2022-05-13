@@ -7,10 +7,6 @@ import { ViewingKeyExecutor } from '../executors/viewing_key_executor'
 import { ViewingKey } from '../core'
 import { getTokenType, TypeOfToken, CustomToken, TokenType } from '../amm/token'
 
-// @ts-ignore
-const decoder = new TextDecoder();
-const decode = (buffer: any) => decoder.decode(buffer).trim();
-
 export class Launchpad extends Client {
 
   /** This method will perform the native token lock.
@@ -19,26 +15,15 @@ export class Launchpad extends Client {
     return this.execute({ lock: { amount } }, undefined, [new Coin(amount, denom)])
   }
 
-  async lock(amount: Uint128, token_address?: Address): Promise<ExecuteResult> {
-    token_address = await this.verify_token_address(token_address);
-
+  async lock(amount: Uint128, token_address?: Address) {
+    token_address = await this.verifyTokenAddress(token_address)
     if (!token_address) {
-      const msg = {
-        lock: {
-          amount
-        }
-      }
-
+      const msg = { lock: { amount } }
       return await this.execute(msg, "280000", [new Coin(amount, 'uscrt')])
     }
-
-    const msg = {
-      lock: {}
-    }
-
-    const fee = this.fee || new Fee('350000', 'uscrt')
-    const snip20 = this.agent.getClient(Snip20, { address: token_address })
-    return snip20.exec(fee, this.memo).send(this.address, amount, msg)
+    return this.agent.getClient(Snip20, { address: token_address })
+      .withFees({ exec: this.fee || new Fee('350000', 'uscrt') })
+      .send(this.address, amount, { lock: {} })
   }
 
   /** This method will perform the native token unlock
@@ -47,15 +32,15 @@ export class Launchpad extends Client {
     return this.execute({ unlock: { entries } })
   }
 
-  async unlock (entries: number, token_address?: Address): Promise<ExecuteResult> {
-    token_address = await this.verifyTokenAddress(token_address);
+  async unlock (entries: number, token_address?: Address) {
+    token_address = await this.verifyTokenAddress(token_address)
     const msg = { unlock: { entries } }
     if (!token_address) {
       return await this.execute(msg, "280000")
     }
-    const fee = this.fee || new Fee('400000', 'uscrt')
-    const snip20 = this.agent.getClient(Snip20, { address: token_address })
-    return snip20.exec(fee, this.memo).send(this.address, '0', msg)
+    return this.agent.getClient(Snip20, { address: token_address })
+      .withFees({ exec: this.fee || new Fee('400000', 'uscrt') })
+      .send(this.address, '0', msg)
   }
 
   /** Get the configuration information about the Launchpad contract */
@@ -87,20 +72,20 @@ export class Launchpad extends Client {
   async verifyTokenAddress (address?: Address): Promise<Address | undefined> {
     if (this.tokens === undefined) {
       const info = await this.getInfo()
-      this.tokens = info.map(token => token.token_type);
+      this.tokens = info.map(token => token.token_type)
     }
     for (const token of this.tokens) {
       if (getTokenType(token) == TypeOfToken.Native && !address) {
-        return undefined;
+        return undefined
       }
       if (
         getTokenType(token) == TypeOfToken.Custom &&
         (token as CustomToken).custom_token.contract_addr === address
       ) {
-        return address;
+        return address
       }
     }
-    throw new Error(`Unsupported token address provided for locking`);
+    throw new Error(`Unsupported token address provided for locking`)
   }
 }
 
@@ -176,7 +161,7 @@ export class IDO extends Client {
     if (getTokenType(info.input_token) == TypeOfToken.Native) {
       return this.execute({ swap: { amount, recipient } }, '280000', [ new Coin(amount, 'uscrt') ])
     }
-    const token_addr = (info.input_token as CustomToken).custom_token.contract_addr;
+    const token_addr = (info.input_token as CustomToken).custom_token.contract_addr
     return this.agent
       .getClient(Snip20, { address: token_addr })
       .withFees({ exec: this.fee || new Fee('350000', 'uscrt') })
@@ -270,23 +255,23 @@ export class TokenSaleConfig {
 
 export interface IDOSaleInfo {
   /** The token that is used to buy the sold SNIP20. */
-  input_token:    TokenType;
+  input_token:    TokenType
   /** The token that is being sold. */
-  sold_token:     IContractLink;
+  sold_token:     IContractLink
   /** The minimum amount that each participant is allowed to buy. */
-  min_allocation: Uint128;
+  min_allocation: Uint128
   /** The total amount that each participant is allowed to buy. */
-  max_allocation: Uint128;
+  max_allocation: Uint128
   /** The maximum number of participants allowed. */
-  max_seats:      number;
+  max_seats:      number
   /** Number of participants currently. */
-  taken_seats:    number;
+  taken_seats:    number
   /** The conversion rate at which the token is sold. */
-  rate:           Uint128;
+  rate:           Uint128
   /** Sale start time. */
-  start?:         number | null;
+  start?:         number | null
   /** Sale end time. */
-  end?:           number | null;
+  end?:           number | null
 }
 
 export interface IDOSaleStatus {
