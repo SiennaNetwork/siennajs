@@ -1,0 +1,380 @@
+import { Client, Fee, Address, Decimal256, Uint128, Uint256 } from '@fadroma/client'
+import { Permit, Signer, ViewingKey } from '@fadroma/client-scrt'
+import { Snip20, TokenInfo } from '@fadroma/tokens'
+
+import { ContractInfo } from '../core'
+import { ViewingKeyExecutor } from '../executors/viewing_key_executor'
+import { ViewingKeyComponentExecutor } from '../executors/viewing_key_executor'
+import { Pagination, PaginatedResponse } from '../lib/LendPagination'
+import { Fee, Address, ContractInfo, Decimal256, Uint256 } from '../core'
+
+export type LendAuthStrategy =
+  | { type: 'permit', signer: Signer }
+  | { type: 'vk', viewing_key: { address: Address, key: ViewingKey } }
+
+export type LendAuthMethod<T> =
+  | { permit: Permit<T>; }
+  | { viewing_key: { address: Address, key: ViewingKey } }
+
+export interface LendMarketState {
+  /** Block height that the interest was last accrued at */
+  accrual_block: number,
+  /** Accumulator of the total earned interest rate since the opening of the market */
+  borrow_index: Decimal256,
+  /** Total amount of outstanding borrows of the underlying in this market */
+  total_borrows: Uint256,
+  /** Total amount of reserves of the underlying held in this market */
+  total_reserves: Uint256,
+  /** Total number of tokens in circulation */
+  total_supply: Uint256,
+  /** The amount of the underlying token that the market has. */
+  underlying_balance: Uint128,
+  /** Values in the contract that rarely change. */
+  config: LendMarketConfig
+}
+
+export interface LendMarketConfig {
+  /** Initial exchange rate used when minting the first slTokens (used when totalSupply = 0) */
+  initial_exchange_rate: Decimal256,
+  /** Fraction of interest currently set aside for reserves */
+  reserve_factor: Decimal256,
+  /** Share of seized collateral that is added to reserves */
+  seize_factor: Decimal256
+}
+
+export interface LendMarketAccount {
+  /** Amount of slToken that this account has. */
+  sl_token_balance: Uint256,
+  /** How much the account has borrowed. */
+  borrow_balance: Uint256,
+  /** The current exchange rate in the market. */
+  exchange_rate: Decimal256
+}
+
+export interface LendMarketBorrower {
+  id: string,
+  /** Borrow balance at the last interaction of the borrower. */
+  principal_balance: Uint256,
+  /** Current borrow balance. */
+  actual_balance: Uint256,
+
+  liquidity: LendAccountLiquidity,
+
+  markets: LendMarket[]
+}
+
+export interface LendSimulatedLiquidation {
+  /** The amount that would be seized by that liquidation minus protocol fees. */
+  seize_amount: Uint256,
+  /** If the liquidation would be unsuccessful this will contain amount by which the seize amount falls flat. Otherwise, it's 0. */
+  shortfall: Uint256
+}
+
+export interface LendOverseerMarket {
+  contract:  ContractInfo,
+  /** The symbol of the underlying asset. Note that this is the same as the symbol
+    * that the oracle expects, not what the actual token has in its storage. */
+  symbol:    string,
+  /** The decimals that the market has. Corresponds to the decimals of the underlying token. */
+  decimals:  number,
+  /** The percentage rate at which tokens can be borrowed given the size of the collateral. */
+  ltv_ratio: Decimal256
+}
+
+/** One of the fields will always be 0, depending on the state of the account.*/
+export interface LendAccountLiquidity {
+  /** The USD value borrowable by the user, before it reaches liquidation. */
+  liquidity: Uint256,
+  /** If > 0 the account is currently below the collateral requirement and is subject to liquidation. */
+  shortfall: Uint256
+}
+
+export interface LendOverseerConfig {
+  /** The discount on collateral that a liquidator receives. */
+  premium:      Decimal256,
+  /** The percentage of a liquidatable account's borrow that can be repaid in a single liquidate transaction.
+    * If a user has multiple borrowed assets, the close factor applies to any single borrowed asset,
+    * not the aggregated value of a user’s outstanding borrowing. */
+  close_factor: Decimal256
+}
+
+export type LendMarketPermissions = 'account_info' | 'balance' | 'id'
+
+export type LendOverseerPermissions = 'account_info'
+
+export class LendAuth {
+
+  private constructor (private readonly strategy: LendAuthStrategy) { }
+
+  static vk (address: Address, key: ViewingKey): LendAuth {
+    return new this({ type: 'vk', viewing_key: { address, key } })
+  }
+
+  static permit (signer: Signer): LendAuth {
+    return new this({ type: 'permit', signer })
+  }
+
+  async createMethod <T> (address: Address, permission: T): Promise<LendAuthMethod<T>> {
+    if (this.strategy.type === 'permit') {
+      const permit = await this.strategy.signer.sign({
+        permit_name: `SiennaJS permit for ${address}`,
+        allowed_tokens: [ address ],
+        permissions: [ permission ]
+      })
+      return { permit }
+    } else {
+      return { viewing_key: this.strategy.viewing_key }
+    }
+  }
+
+}
+
+export class LendMarket extends Client {
+
+  /** Convert and burn the specified amount of slToken to the underlying asset
+    * based on the current exchange rate and transfer them to the user. */
+  async redeemFromSL (burn_amount: Uint256) {
+    return this.execute({ redeem_token: { burn_amount } }, '60000')
+  }
+
+  /** Burn slToken amount of tokens equivalent to the specified amount
+    * based on the current exchange rate and transfer the specified amount
+    * of the underyling asset to the user. */
+  async redeemFromUnderlying (receive_amount: Uint256) {
+    return this.execute({ redeem_underlying: { receive_amount } }, '60000')
+  }
+
+  async borrow (amount: Uint256) {
+    return this.execute({ borrow: { amount } }, '80000')
+  }
+
+  async transfer (amount: Uint256, recipient: Address) {
+    return this.execute({ transfer: { amount, recipient } }, '80000')
+  }
+
+  /** This function is automatically called before every transaction to update to
+    * the latest state of the market but can also be called manually through here. */
+  async accrueInterest () {
+    return this.execute({ accrueInterest: { } }, '40000')
+  }
+
+  async deposit (amount: Uint256, underlying_asset?: Address) {
+    return this.agent.getClient(Snip20, {
+      address: underlying_asset || (await this.getUnderlyingAsset()).address
+    }).withFees({ exec: this.fee || new Fee('60000', 'uscrt') })
+      .send(this.address, amount, 'deposit')
+  }
+
+  async repay (
+    amount: Uint256,
+    /** Optionally specify a borrower ID to repay someone else's debt. */
+    borrower?: string,
+    underlying_asset?: Address
+  ) {
+    return this.agent.getClient(Snip20, {
+      address: underlying_asset || await this.getUnderlyingAsset()
+    }).withFees({ exec: this.fee || new Fee('90000', 'usrct') })
+      .send(this.address, amount, { repay: { borrower } })
+  }
+
+  /** Try to liquidate an existing borrower in this market. */
+  async liquidate(
+    /** @param amount - the amount to liquidate by. */
+    amount: Uint256,
+    /** @param borrower - the ID corresponding to the borrower to liquidate. */
+    borrower: string,
+    /** @param collateral - the collateral market address to receive a premium on. */
+    collateral: Address,
+    /** @param underlying_asset - The address of the underlying token for this market. Omitting it will result in an extra query. */
+    underlying_asset?: Address
+  ) {
+    return this.agent.getClient(Snip20, {
+      address: underlying_asset || await this.getUnderlyingAsset()
+    }).withFees({ exec: this.fee || new Fee('130000', 'uscrt') })
+      .send(this.address, amount, { liquidate: { borrower, collateral } })
+  }
+
+  /** Dry run a liquidation returning a result indicating the amount of `collateral`
+    * which would be seized, and whether the liquidation would be successful depending
+    * on whether the borrower posseses the seized collateral amount.
+    * If it wouldn't, throw any other error that might occur during the actual liquidation.
+    *
+    * If you haven't taken the close factor into account already, you might want to look for
+    * an error that starts with "Repay amount is too high." as that indicates that you are
+    * trying to liquidate a bigger portion of the borrower's collateral than permitted by
+    * the close factor. */
+  async simulate_liquidation(
+    /** @param borrower - the ID corresponding to the borrower to liquidate. */
+    borrower: string,
+    /** @param collateral - the collateral market address to receive a premium on. */
+    collateral: Address,
+    /** @param amount - the amount to liquidate by. */
+    amount: Uint256,
+    block?: number
+  ): Promise<SimulateLiquidationResult> {
+    block = block || (await this.client.getBlock()).header.height
+    return this.query({ block, borrower, collateral, amount })
+  }
+
+  async getTokenInfo (): Promise<TokenInfo> {
+    return this.agent.getClient(Snip20, { address: this.address }).getTokenInfo()
+  }
+
+  async getBalance (address: Address, key: ViewingKey): Promise<Uint128> {
+    return this.agent.getClient(Snip20, { address: this.address }).getBalance(address, key)
+  }
+
+  async getUnderlyingBalance (auth: LendAuth, block?: number): Promise<Uint128> {
+    block = block || (await this.client.getBlock()).header.height
+    const method = await auth.createMethod<LendMarketPermissions>(this.address, 'balance')
+    return this.query({ balance_underlying: { block, method } })
+  }
+
+  async getState (block?: number): Promise<LendMarketState> {
+    block = block || (await this.client.getBlock()).header.height
+    return this.query({ state: { block } })
+  }
+
+  async getUnderlyingAsset (): Promise<ContractInfo> {
+    return this.query({ underlying_asset: {} })
+  }
+
+  async getBorrowRate (block?: number): Promise<Decimal256> {
+    block = block || (await this.client.getBlock()).header.height
+    return this.query({ borrow_rate: { block } })
+  }
+
+  async getSupplyRate (block?: number): Promise<Decimal256> {
+    block = block || (await this.client.getBlock()).header.height
+    return this.query({ supply_rate: { block } })
+  }
+
+  async getExchangeRate (block?: number): Promise<Decimal256> {
+    block = block || (await this.client.getBlock()).header.height
+    return this.query({ exchange_rate: { block } })
+  }
+
+  async getAccount (auth: LendAuth, block?: number): Promise<LendMarketAccount> {
+    block = block || (await this.client.getBlock()).header.height
+    const method = await auth.createMethod<LendMarketPermissions>(this.address, 'account_info')
+    return this.query({ account: { block, method } })
+  }
+
+  /** Will throw if the account hasn't borrowed at least once before. */
+  async getAccountId (auth: LendAuth): Promise<string> {
+    const method = await auth.createMethod<LendMarketPermissions>(this.address, 'id')
+    return this.query({ id: { method } })
+  }
+
+  /** Max limit is 10. */
+  async getBorrowers (
+    pagination: Pagination,
+    block?:     number
+  ): Promise<PaginatedResponse<MarketBorrower>> {
+    block = block || (await this.client.getBlock()).header.height
+    return this.query({ borrowers: { block, pagination } })
+  }
+
+}
+
+export class LendOverseer extends Client {
+
+  async enter (markets: Address[]) {
+    return this.execute({ enter: { markets } }, '40000')
+  }
+
+  async exit (market_address: Address) {
+    return this.execute({ exit: { market_address } }, '50000')
+  }
+
+  /** Max limit per page is `30`. */
+  async getMarkets (pagination: Pagination): Promise<PaginatedResponse<Market>> {
+    return this.query({ markets: { pagination } })
+  }
+
+  async getMarket (address: Address): Promise<LendOverseerMarket> {
+    return this.query({ market: { address } })
+  }
+
+  async getEnteredMarkets (auth: LendAuth): Promise<LendOverseerMarket[]> {
+    const method = await auth.create_method<OverseerPermissions>(this.address, 'account_info')
+    return this.query({ entered_markets: { method } })
+  }
+
+  async getCurrentLiquidity (
+    auth: LendAuth,
+    block?: number
+  ): Promise<LendAccountLiquidity> {
+    return this.query({
+      account_liquidity: {
+        block:  block ?? (await this.client.getBlock()).header.height,
+        method: await auth.create_method<OverseerPermissions>(this.address, 'account_info'),
+        market: null,
+        redeem_amount: '0',
+        borrow_amount: '0'
+      }
+    })
+  }
+
+  /** The hypothetical liquidity after a redeem operation from a market. */
+  async getLiquidityAfterRedeem (
+    auth: LendAuth,
+    /** The market to redeem from. Must have been entered that market. */
+    market: Address,
+    /** The amount to redeem. */
+    redeem_amount: Uint256,
+    block?: number
+  ): Promise<LendAccountLiquidity> {
+    return this.query({
+      account_liquidity: {
+        block:  block ?? (await this.client.getBlock()).header.height,
+        method: await auth.create_method<OverseerPermissions>(this.address, 'account_info'),
+        market,
+        redeem_amount,
+        borrow_amount: '0'
+      }
+    })
+  }
+
+  /** The hypothetical liquidity after a borrow operation from a market. */
+  async getLiquidityAfterBorrow (
+    auth: LendAuth,
+    /** The market to borrow from. Must have been entered that market. */
+    market: Address,
+    /** The amount to borrow. */
+    borrow_amount: Uint256,
+    block?: number
+  ): Promise<LendAccountLiquidity> {
+    return this.query({
+      account_liquidity: {
+        block:  block ?? (await this.client.getBlock()).header.height,
+        method: await auth.create_method<OverseerPermissions>(this.address, 'account_info'),
+        market,
+        redeem_amount: '0',
+        borrow_amount
+      }
+    })
+  }
+
+  /** The hypothetical amount that will be seized from a liquidation. */
+  async getSeizeAmount (
+    /** The market that is being liquidated. */
+    borrowed: Address,
+    /** The slToken collateral to be seized. */
+    collateral: Address,
+    /** The liquidation amount. */
+    repay_amount: Uint256
+  ): Promise<Uint256> {
+    return this.query({ seize_amount: { borrowed, collateral, repay_amount } })
+  }
+
+  async config(): Promise<LendOverseerConfig> {
+    return this.query({ config: {} })
+  }
+}
+
+export class LendOracle extends Client {}
+
+export class MockOracle extends Client {}
+
+export class LendInterestModel extends Client { }
