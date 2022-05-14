@@ -22,7 +22,7 @@ const now = () => Math.floor(+ new Date() / 1000)
 
 export abstract class Rewards extends Client {
 
-  abstract getStakedToken (): Promise<LPToken|Snip20>
+  abstract getStakedToken (): Promise<LPToken|null>
 
   static "v2" = class Rewards_v2 extends Rewards {
 
@@ -77,8 +77,13 @@ export abstract class Rewards extends Client {
     }
 
     async getStakedToken () {
-      const { lp_token: { address, code_hash } } = await this.getConfig()
-      return this.agent.getClient(LPToken, { address, codeHash: code_hash })
+      const { lp_token } = await this.getConfig()
+      if (lp_token) {
+        const opts = { address: lp_token.address, codeHash: lp_token.code_hash }
+        return this.agent.getClient(LPToken, opts)
+      } else {
+        return null
+      }
     }
 
     setStakedToken (address: string, code_hash: string) {
@@ -94,7 +99,8 @@ export abstract class Rewards extends Client {
     async getPoolInfo (
       at = Math.floor(+ new Date() / 1000)
     ) {
-      const result = await this.query({ rewards: { pool_info: { at } } })
+      const msg = { rewards: { pool_info: { at } } }
+      const result: { rewards: { pool_info: Rewards_v3_Total } } = await this.query(msg)
       return result.rewards.pool_info
     }
 
@@ -113,8 +119,9 @@ export abstract class Rewards extends Client {
       address = this.agent.address,
       at      = now()
     ) {
-      const result: { rewards: { user_info } } = await this.query({ rewards: { user_info: { address, key, at } } })
-      return result.rewards.user_info as Rewards_v3_Account
+      const msg = { rewards: { user_info: { address, key, at } } }
+      const result: { rewards: { user_info: Rewards_v3_Account } } = await this.query(msg)
+      return result.rewards.user_info
     }
 
     lock (amount: string) {

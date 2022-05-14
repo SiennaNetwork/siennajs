@@ -75,7 +75,7 @@ export abstract class AMMFactory extends Client {
     return this.execute(msg)
   }
 
-  /** Creates multiple exchanges in the same transaction. */
+  /** Create multiple exchanges with one transaction. */
   async createExchanges (input: CreateExchangesRequest): Promise<CreateExchangesResults> {
     const {
       templates = await this.getTemplates(),
@@ -103,39 +103,6 @@ export abstract class AMMFactory extends Client {
       // @ts-ignore
       this.agent = agent
     })
-    return newPairs
-  }
-
-  /** Creates multiple exchanges in the same transaction. */
-  async createExchanges (input: {
-    templates: AMMFactoryTemplates
-    pairs: { name?: string, TOKEN_0: Snip20, TOKEN_1: Snip20 }[]
-  }): Promise<{ name?: string, TOKEN_0: Snip20, TOKEN_1: Snip20 }[]> {
-
-    const {
-      templates = await this.getContracts(),
-      pairs,
-    } = input
-
-    if (pairs.length === 0) {
-      console.warn('Creating 0 exchanges.')
-      return []
-    }
-
-    const newPairs = []
-
-    await this.agent.bundle().wrap(async bundle=>{
-      const bundledThis = this.client(bundle)
-      console.log(this, bundledThis)
-      for (const { name, TOKEN_0, TOKEN_1 } of pairs) {
-        const exchange = await bundledThis.createExchange(
-          TOKEN_0.asCustomToken,
-          TOKEN_1.asCustomToken
-        )
-        newPairs.push({name, TOKEN_0, TOKEN_1})
-      }
-    })
-
     return newPairs
   }
 
@@ -316,7 +283,7 @@ export class AMMExchange extends Client {
 
   async withdrawLiquidity(amount: Uint128, recipient: Address) {
     const info = await this.getPairInfo()
-    const snip20 = this.agent
+    return this.agent
       .getClient(Snip20, { address: info.liquidity_token.address })
       .withFees({ exec: new Fee('110000', 'uscrt') })
       .send(this.address, amount, { remove_liquidity: { recipient } })
