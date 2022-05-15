@@ -54,8 +54,8 @@ export class Launchpad extends Client {
   }
 
   /** Get the configuration information about the Launchpad contract */
-  async getInfo (): Promise<LaunchpadInfo> {
-    const result: { launchpad_info: LaunchpadInfo } = await this.query("launchpad_info")
+  async getInfo (): Promise<LaunchpadTokenConfig[]> {
+    const result: { launchpad_info: LaunchpadTokenConfig[] } = await this.query("launchpad_info")
     return result.launchpad_info
   }
 
@@ -122,13 +122,12 @@ export class LaunchpadAdmin extends Client {
 
 }
 
-export interface LaunchpadInfo {
-  token_type:      TokenType
-  segment:         Uint128
-  bounding_period: Duration
-  active:          boolean
-  token_decimals:  number
-  locked_balance:  Uint128
+export interface LaunchpadTokenInfo {
+  token_type:      TokenType,
+  segment:         Uint128,
+  bounding_period: number,
+  token_decimals:  number,
+  locked_balance:  Uint128,
 }
 
 export interface LaunchpadUserInfo {
