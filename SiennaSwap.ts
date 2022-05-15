@@ -116,10 +116,6 @@ export abstract class AMMFactory extends Client {
     return await AMMExchange.get(this.agent, address, token_0, token_1)
   }
 
-  async listPairs (limit = 30): Promise<GetAllPairsResponse> {
-    return this.query({ pairs: { limit } })
-  }
-
   /** Get the full list of raw exchange info from the factory. */
   async listExchanges (limit = 30): Promise<FactoryExchangeInfo[]> {
     const result = []
@@ -213,17 +209,6 @@ export interface PairInfo {
   pair:             TokenPair
   total_liquidity:  Uint128
   contract_version: number
-}
-
-export interface GetAllPairsResponse {
-  pairs: Array<Pair>
-}
-
-export interface Pair {
-  asset_infos:     Array<NativeToken | CustomToken>
-  contract_addr:   string
-  liquidity_token: string
-  token_code_hash: string
 }
 
 export class AMMExchange extends Client {
