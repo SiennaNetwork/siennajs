@@ -33,7 +33,7 @@ export abstract class Rewards extends Client {
     }
 
     async getUserInfo (key = "", address = this.agent.address, at = now()) {
-      at = at || (await this.agent.block).header.height
+      at = at || await this.agent.height
       const result: { user_info: Rewards_v2_Account } =
         await this.query({user_info: { address, key, at } })
       return result.user_info
