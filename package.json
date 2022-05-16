@@ -16,8 +16,8 @@
   },
   "dependencies": {
     "@hackbg/konzola": "^1",
-    "@fadroma/client": "^1",
-    "@fadroma/tokens": "^0",
+    "@fadroma/client": "workspace:../deps/fadroma/packages/client",
+    "@fadroma/tokens": "workspace:../deps/fadroma/packages/tokens",
     "@waiting/base64": "^4.2.9",
     "secretjs":        "^0.17.5"
   },
