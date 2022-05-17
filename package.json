@@ -20,10 +20,12 @@
     "@fadroma/tokens":      "workspace:../deps/fadroma/packages/tokens",
 
     "@hackbg/konzola": "^1",
-    "@waiting/base64": "^4.2.9"
+    "@waiting/base64": "^4.2.9",
+    "secure-random":   "^1.1.2"
   },
   "devDependencies": {
-    "typescript": "^4.2.4"
+    "@types/secure-random": "^1.1.0",
+    "typescript":           "^4.2.4"
   },
   "exclude": [
     "node_modules"

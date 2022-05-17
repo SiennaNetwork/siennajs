@@ -21,7 +21,7 @@ import {
   getTokenType,
 } from '@fadroma/tokens'
 import { b64encode } from "@waiting/base64"
-import { EnigmaUtils } from "secretjs"
+import { create_entropy } from './Core'
 
 export type ContractStatusLevel = "Operational" | "Paused" | "Migrating"
 
@@ -69,7 +69,7 @@ export abstract class AMMFactory extends Client {
     const msg = {
       create_exchange: {
         pair:    { token_0, token_1 },
-        entropy: b64encode(EnigmaUtils.GenerateNewSeed().toString())
+        entropy: create_entropy()
       }
     }
     return this.execute(msg)
