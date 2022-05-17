@@ -1,5 +1,5 @@
 import { b64encode, b64decode, b64fromBuffer } from "@waiting/base64"
-import { randomBuffer } from 'secure-random'
+import * as SecureRandom from 'secure-random'
 
 export type Uint128 = string;
 export type Uint256 = string;
@@ -57,7 +57,7 @@ export function create_base64_msg(msg: object): string {
 }
 
 export function create_entropy (bytes = 32): string {
-    return randomBuffer(bytes).toString('base64')
+    return SecureRandom.randomBuffer(bytes).toString('base64')
 }
 
 export class ContractInfo {
