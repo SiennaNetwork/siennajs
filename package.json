@@ -15,11 +15,12 @@
     "url": "https://github.com/SiennaNetwork/sienna/issues"
   },
   "dependencies": {
+    "@fadroma/client":      "workspace:../deps/fadroma/packages/client",
+    "@fadroma/client-scrt": "workspace:../deps/fadroma/packages/client-scrt",
+    "@fadroma/tokens":      "workspace:../deps/fadroma/packages/tokens",
+
     "@hackbg/konzola": "^1",
-    "@fadroma/client": "workspace:../deps/fadroma/packages/client",
-    "@fadroma/tokens": "workspace:../deps/fadroma/packages/tokens",
-    "@waiting/base64": "^4.2.9",
-    "secretjs":        "^0.17.5"
+    "@waiting/base64": "^4.2.9"
   },
   "devDependencies": {
     "typescript": "^4.2.4"
