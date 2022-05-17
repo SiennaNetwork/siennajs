@@ -8,6 +8,7 @@ import {
   ContractLink
 } from '@fadroma/client'
 import {
+  Snip20,
   CustomToken,
   NativeToken,
   TokenPair,
@@ -19,7 +20,6 @@ import {
   addNativeBalancePair,
   getTokenType,
 } from '@fadroma/tokens'
-import { Snip20 } from '@hackbg/fadroma'
 import { b64encode } from "@waiting/base64"
 import { EnigmaUtils } from "secretjs"
 
