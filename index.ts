@@ -1,7 +1,6 @@
 import { b64encode, b64decode, b64fromBuffer } from "@waiting/base64";
 
 export * from '@fadroma/tokens'
-export * from './lib/core'
 export * from './Auth'
 export * from './SiennaTGE'
 export * from './SiennaSwap'
