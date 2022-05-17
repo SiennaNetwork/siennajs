@@ -36,10 +36,7 @@ export interface Pagination {
     start: number;
 }
 
-type ExecuteResult = unknown
-type InstantiateResult = unknown
-
-export function decode_data<T>(result: ExecuteResult | InstantiateResult): T {
+export function decode_data<T>(result: { data: Buffer }): T {
     const b64string = b64fromBuffer(result.data)
 
     return JSON.parse(b64decode(b64string))
