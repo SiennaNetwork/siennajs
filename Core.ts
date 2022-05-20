@@ -1,5 +1,5 @@
 import { b64encode, b64decode, b64fromBuffer } from "@waiting/base64"
-import * as SecureRandom from 'secure-random'
+import SecureRandom from 'secure-random'
 
 export type Uint128 = string;
 export type Uint256 = string;
