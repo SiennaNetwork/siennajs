@@ -176,7 +176,7 @@ export class LendMarket extends Client {
 
   async deposit <R> (amount: Uint256, underlying_asset?: Address): Promise<R> {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
-    return this.agent.getClient(Snip20, { address })
+    return this.agent.getClient(Snip20, address)
       .withFees({ exec: this.txFees.deposit })
       .send(this.address, amount, 'deposit')
   }
@@ -188,7 +188,7 @@ export class LendMarket extends Client {
     underlying_asset?: Address
   ): Promise<R> {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
-    return this.agent.getClient(Snip20, { address })
+    return this.agent.getClient(Snip20, address)
       .withFees({ exec: this.txFees.repay })
       .send(this.address, amount, { repay: { borrower } })
   }
@@ -205,7 +205,7 @@ export class LendMarket extends Client {
     underlying_asset?: Address
   ) {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
-    return this.agent.getClient(Snip20, { address })
+    return this.agent.getClient(Snip20, address)
       .withFees({ exec: this.txFees.liquidate })
       .send(this.address, amount, { liquidate: { borrower, collateral } })
   }
@@ -233,11 +233,11 @@ export class LendMarket extends Client {
   }
 
   async getTokenInfo (): Promise<TokenInfo> {
-    return this.agent.getClient(Snip20, { address: this.address }).getTokenInfo()
+    return this.agent.getClient(Snip20, this.address).getTokenInfo()
   }
 
   async getBalance (address: Address, key: ViewingKey): Promise<Uint128> {
-    return this.agent.getClient(Snip20, { address: this.address }).getBalance(address, key)
+    return this.agent.getClient(Snip20, this.address).getBalance(address, key)
   }
 
   async getUnderlyingBalance (auth: LendAuth, block?: number): Promise<Uint128> {

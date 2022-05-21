@@ -269,7 +269,7 @@ export class AMMExchange extends Client {
   async withdrawLiquidity(amount: Uint128, recipient: Address) {
     const info = await this.getPairInfo()
     return this.agent
-      .getClient(Snip20, { address: info.liquidity_token.address })
+      .getClient(Snip20, info.liquidity_token.address)
       .withFees({ exec: new Fee('110000', 'uscrt') })
       .send(this.address, amount, { remove_liquidity: { recipient } })
   }
@@ -290,8 +290,8 @@ export class AMMExchange extends Client {
       const opt = { fee: new Fee('55000', 'uscrt'), send: addNativeBalance(amount) }
       return this.execute(msg, opt)
     }
-    const token_addr = (amount.token as CustomToken).custom_token.contract_addr;
-    return this.agent.getClient(Snip20, { address: token_addr })
+    const tokenAddr = (amount.token as CustomToken).custom_token.contract_addr;
+    return this.agent.getClient(Snip20, tokenAddr)
       .withFees({ exec: fee })
       .send(this.address, amount.amount, { swap: { to: recipient, expected_return } })
   }
@@ -342,8 +342,8 @@ export class LPToken extends Snip20 {
     const { name } = await this.getTokenInfo()
     const fragments = name.split(' ')
     const [t0addr, t1addr] = fragments[fragments.length-1].split('-')
-    const t0 = this.agent.getClient(Snip20, { address: t0addr })
-    const t1 = this.agent.getClient(Snip20, { address: t1addr })
+    const t0 = this.agent.getClient(Snip20, t0addr)
+    const t1 = this.agent.getClient(Snip20, t1addr)
     const [t0info, t1info] = await Promise.all([t0.getTokenInfo(), t1.getTokenInfo()])
     return `${t0info.symbol}-${t1info.symbol}`
   }

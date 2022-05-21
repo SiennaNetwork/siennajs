@@ -29,26 +29,26 @@ export class Launchpad extends Client {
     unlockSnip20: new Fee('350000', 'uscrt'),
   }
 
-  async lock <R> (amount: Uint128, token_address?: Address): Promise<R> {
-    token_address = await this.verifyTokenAddress(token_address)
-    if (!token_address) {
+  async lock <R> (amount: Uint128, tokenAddress?: Address): Promise<R> {
+    tokenAddress = await this.verifyTokenAddress(tokenAddress)
+    if (!tokenAddress) {
       const msg = { lock: { amount } }
       const opt = { fee: this.txFees.lockNative, send: [new Coin(amount, 'uscrt')] }
       return await this.execute(msg, opt)
     }
-    return this.agent.getClient(Snip20, { address: token_address })
+    return this.agent.getClient(Snip20, tokenAddress)
       .withFees({ exec: this.txFees.lockSnip20 })
       .send(this.address, amount, { lock: {} })
   }
 
-  async unlock <R> (entries: number, token_address?: Address): Promise<R> {
-    token_address = await this.verifyTokenAddress(token_address)
+  async unlock <R> (entries: number, tokenAddress?: Address): Promise<R> {
+    tokenAddress = await this.verifyTokenAddress(tokenAddress)
     const msg = { unlock: { entries } }
-    if (!token_address) {
+    if (!tokenAddress) {
       const opt = { fee: this.txFees.unlockNative }
       return await this.execute(msg, opt)
     }
-    return this.agent.getClient(Snip20, { address: token_address })
+    return this.agent.getClient(Snip20, tokenAddress)
       .withFees({ exec: this.txFees.unlockSnip20 })
       .send(this.address, '0', msg)
   }
@@ -186,9 +186,8 @@ export class IDO extends Client {
       const opt = { fee: new Fee('280000', 'uscrt'), send: [ new Coin(amount, 'uscrt') ] }
       return this.execute(msg, opt)
     }
-    const token_addr = (info.input_token as CustomToken).custom_token.contract_addr
     return this.agent
-      .getClient(Snip20, { address: token_addr })
+      .getClient(Snip20, (info.input_token as CustomToken).custom_token.contract_addr)
       .withFees({ exec: new Fee('350000', 'uscrt') })
       .send(this.address, amount, { swap: { recipient } })
   }
@@ -196,7 +195,7 @@ export class IDO extends Client {
   async activate (sale_amount: Uint128, end_time: Moment, start_time?: Moment) {
     const info = await this.getSaleInfo()
     return this.agent
-      .getClient(Snip20, { address: info.sold_token.address })
+      .getClient(Snip20, info.sold_token.address)
       .withFees({ exec: new Fee('300000', 'uscrt') })
       .send(this.address, sale_amount, { activate: { end_time, start_time } })
   }
