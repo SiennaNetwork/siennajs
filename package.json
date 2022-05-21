@@ -25,13 +25,15 @@
   },
   "devDependencies": {
     "@types/secure-random": "^1.1.0",
-    "typescript":           "^4.2.4"
+    "typescript":           "^4.2.4",
+    "@hackbg/izdatel":      "workspace:*"
   },
   "exclude": [
     "node_modules"
   ],
   "scripts": {
-    "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build":   "tsc",
+    "check":   "tsc --noEmit",
+    "release": "izdatel"
   }
 }
