@@ -1,6 +1,7 @@
 import { Client, Address, Moment, Uint128, Fee, Decimal } from "@fadroma/client";
 
 import { Auth } from './Auth'
+import { ContractInfo } from './Core'
 
 export type PollId = number;
 

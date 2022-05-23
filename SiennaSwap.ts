@@ -87,6 +87,8 @@ export abstract class AMMFactory extends Client {
     }
     const newPairs: CreateExchangesResults = []
     await this.agent.bundle().wrap(async (bundle: typeof this.agent.Bundle)=>{
+      // @ts-ignore
+      const client = this.withAgent(bundle)
       const agent = this.agent
       // @ts-ignore
       this.agent = bundle
@@ -98,6 +100,7 @@ export abstract class AMMFactory extends Client {
         if (token_0 instanceof Snip20) token_0 = token_0.asCustomToken
         if (token_1 instanceof Snip20) token_1 = token_1.asCustomToken
         const exchange = await this.createExchange(token_0, token_1)
+        // @ts-ignore
         newPairs.push(pair)
       }
       // @ts-ignore
@@ -138,6 +141,7 @@ export abstract class AMMFactory extends Client {
     return Promise.all(
       exchanges.map((info) => {
         const { pair: { token_0, token_1 } } = info
+        // @ts-ignore
         const address = info.address || info.contract.address
         return AMMExchange.get(this.agent, address, token_0, token_1)
       })

@@ -54,8 +54,8 @@ export class Launchpad extends Client {
   }
 
   /** Get the configuration information about the Launchpad contract */
-  async getInfo (): Promise<LaunchpadTokenConfig[]> {
-    const result: { launchpad_info: LaunchpadTokenConfig[] } = await this.query("launchpad_info")
+  async getInfo (): Promise<LaunchpadTokenInfo[]> {
+    const result: { launchpad_info: LaunchpadTokenInfo[] } = await this.query("launchpad_info")
     return result.launchpad_info
   }
 
