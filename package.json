@@ -6,6 +6,7 @@
   "license":     "MIT",
   "private":     false,
   "main":        "index.ts",
+  "type":        "module",
   "homepage": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs#readme",
   "repository": {
     "type": "git",

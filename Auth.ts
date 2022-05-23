@@ -1,9 +1,9 @@
-import { Client, Address } from "@fadroma/client";
-import { Permit, Signer, ViewingKey } from '@fadroma/client-scrt';
+import { Client, Address } from "@fadroma/client"
+import { Permit, Signer, ViewingKey } from '@fadroma/client-scrt'
 
 export type AuthStrategy =
   | { type: 'permit', signer: Signer }
-  | { type: 'vk', viewing_key: { address: Address, key: ViewingKey } };
+  | { type: 'vk', viewing_key: { address: Address, key: ViewingKey } }
 
 export type AuthMethod <T> =
   | { permit: Permit<T> }
@@ -12,7 +12,7 @@ export type AuthMethod <T> =
 export class MockAuthClient extends Client {
 
   async update (second_contract: any) {
-    return this.execute({ update: { second_contract } });
+    return this.execute({ update: { second_contract } })
   }
 
 }
@@ -20,7 +20,7 @@ export class MockAuthClient extends Client {
 export class AuthProvider extends Client {
 
   async createGroup (name: any, members: any) {
-    return this.execute({ create_group: { name, members } });
+    return this.execute({ create_group: { name, members } })
   }
 
   async getGroup (name: string) {
@@ -57,15 +57,10 @@ export class Auth {
         permit_name: `SiennaJS permit for ${address}`,
         allowed_tokens: [address],
         permissions: [permission],
-      });
-
-      return {
-        permit,
-      };
+      })
+      return { permit }
     } else {
-      return {
-        viewing_key: this.strategy.viewing_key,
-      };
+      return { viewing_key: this.strategy.viewing_key }
     }
   }
 }
