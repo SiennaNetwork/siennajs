@@ -250,37 +250,34 @@ export interface Rewards_v2_Pool {
 }
 
 export interface Rewards_v2_Account {
-    /** When liquidity was last updated. */
-    pool_last_update: number;
-    /** The total liquidity ever contained in this pool. */
-    pool_lifetime: Uint128;
-    /** How much liquidity is there in the entire pool right now. */
-    pool_locked: Uint128;
-    /** The time period for which the user has provided liquidity. */
-    user_age: number;
-    /** How much rewards can the user claim right now. */
-    user_claimable: Uint128;
-    /** How much rewards has the user ever claimed in total. */
-    user_claimed: Uint128;
-    /** How many blocks does the user needs to wait before being able
-      * to claim again. */
-    user_cooldown: number;
-    /** How much rewards has the user actually earned
-      * in total as of right now. */
-    user_earned: Uint128;
-    /** When the user's share was last updated. */
-    user_last_update?: number | null;
-    /** The accumulator for every block since the last update. */
-    user_lifetime: Uint128;
-    /** The LP token amount that has been locked by this user. */
-    user_locked: Uint128;
-    /** The user's current share of the pool as a percentage
-     * with 6 decimals of precision. */
-    user_share: Uint128;
+  /** When liquidity was last updated. */
+  pool_last_update: number;
+  /** The total liquidity ever contained in this pool. */
+  pool_lifetime: Uint128;
+  /** How much liquidity is there in the entire pool right now. */
+  pool_locked: Uint128;
+  /** The time period for which the user has provided liquidity. */
+  user_age: number;
+  /** How much rewards can the user claim right now. */
+  user_claimable: Uint128;
+  /** How much rewards has the user ever claimed in total. */
+  user_claimed: Uint128;
+  /** How many blocks does the user needs to wait before being able to claim again. */
+  user_cooldown: number;
+  /** How much rewards has the user actually earned in total as of right now. */
+  user_earned: Uint128;
+  /** When the user's share was last updated. */
+  user_last_update?: number | null;
+  /** The accumulator for every block since the last update. */
+  user_lifetime: Uint128;
+  /** The LP token amount that has been locked by this user. */
+  user_locked: Uint128;
+  /** The user's current share of the pool as a percentage
+   * with 6 decimals of precision. */
+  user_share: Uint128;
 }
-/**
- * Reward pool configuration
- */
+
+/** Reward pool configuration */
 export interface Rewards_v3_Config {
   lp_token?:     ContractLink;
   reward_token?: ContractLink;
