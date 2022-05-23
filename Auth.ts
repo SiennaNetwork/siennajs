@@ -1,27 +1,68 @@
-import { Client } from "@fadroma/client";
+import { Address, ViewingKey } from './core';
+import { Permit, Signer } from './permit';
 
-export class MockAuthClient extends Client {
-    async update(second_contract: any) {
-        return this.execute({ update: { second_contract } });
+export type AuthMethod<T> =
+    | {
+          permit: Permit<T>;
+      }
+    | {
+          viewing_key: {
+              address: Address;
+              key: ViewingKey;
+          };
+      };
+
+export class Auth {
+    private constructor(private readonly strategy: AuthStrategy) {}
+
+    static viewing_key(address: Address, key: ViewingKey): Auth {
+        return new this({
+            type: 'vk',
+            viewing_key: {
+                address,
+                key,
+            },
+        });
+    }
+
+    static permit(signer: Signer): Auth {
+        return new this({
+            type: 'permit',
+            signer,
+        });
+    }
+
+    async create_method<T>(
+        address: Address,
+        permission: T
+    ): Promise<AuthMethod<T>> {
+        if (this.strategy.type === 'permit') {
+            const permit = await this.strategy.signer.sign({
+                permit_name: `SiennaJS permit for ${address}`,
+                allowed_tokens: [address],
+                permissions: [permission],
+            });
+
+            return {
+                permit,
+            };
+        } else {
+            return {
+                viewing_key: this.strategy.viewing_key,
+            };
+        }
     }
 }
 
-export class AuthProvider extends Client {
-
-    async create_group(name: any, members: any) {
-        return this.execute({ create_group: { name, members } });
-    }
-
-    async get_group(name: string) {
-        return this.query({ group: { name } })
-    }
-
-    async get_oracle() {
-        return this.query({ oracle: {} })
-    }
-
-    async get_admin() {
-        return this.query({ admin: { admin: {} } })
-    }
-
-}
+type AuthStrategy =
+    | {
+          type: 'permit';
+          signer: Signer;
+      }
+    | {
+          type: 'vk';
+          viewing_key: {
+              address: Address;
+              key: ViewingKey;
+          };
+      };
