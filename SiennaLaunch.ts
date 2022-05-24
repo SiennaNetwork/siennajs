@@ -37,7 +37,7 @@ export class Launchpad extends Client {
       return await this.execute(msg, opt)
     }
     return this.agent.getClient(Snip20, tokenAddress)
-      .withFees({ exec: this.execFees.lockSnip20 })
+      .withFee(this.execFees.lockSnip20)
       .send(this.address, amount, { lock: {} })
   }
 
@@ -49,7 +49,7 @@ export class Launchpad extends Client {
       return await this.execute(msg, opt)
     }
     return this.agent.getClient(Snip20, tokenAddress)
-      .withFees({ exec: this.execFees.unlockSnip20 })
+      .withFee(this.execFees.unlockSnip20)
       .send(this.address, '0', msg)
   }
 
@@ -188,7 +188,7 @@ export class IDO extends Client {
     }
     return this.agent
       .getClient(Snip20, (info.input_token as CustomToken).custom_token.contract_addr)
-      .withFees({ exec: new Fee('350000', 'uscrt') })
+      .withFee(new Fee('350000', 'uscrt'))
       .send(this.address, amount, { swap: { recipient } })
   }
 
@@ -196,7 +196,7 @@ export class IDO extends Client {
     const info = await this.getSaleInfo()
     return this.agent
       .getClient(Snip20, info.sold_token.address)
-      .withFees({ exec: new Fee('300000', 'uscrt') })
+      .withFee(new Fee('300000', 'uscrt'))
       .send(this.address, sale_amount, { activate: { end_time, start_time } })
   }
 
