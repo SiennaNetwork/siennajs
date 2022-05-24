@@ -1,20 +1,15 @@
 {
-  "compilerOptions": { 
-    "target": "es6", 
-    "module": "commonjs",
-    "strict": true, 
-    "declaration": true,
-    "outDir": "./dist",
-    "types" : ["node"],
-    "esModuleInterop": true
-  },
-  "include": [
-    "."
-  ],
-  "exclude": [
-    "tests",
-    "dist",
-    "node_modules",
-    "lib"
-  ]
+  "include": ["."],
+  "exclude": [ "tests", "dist", "types", "node_modules" ],
+  "compilerOptions": {
+    "outDir":          "./dist",
+    "declaration":     true,
+    "declarationMap":  true,
+    "declarationDir":  "types",
+    "types":           ["node"],
+    "esModuleInterop": true,
+    "target":          "es6", 
+    "module":          "commonjs",
+    "strict":          true
+  }
 }

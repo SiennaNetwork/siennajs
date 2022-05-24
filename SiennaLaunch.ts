@@ -33,11 +33,11 @@ export class Launchpad extends Client {
     tokenAddress = await this.verifyTokenAddress(tokenAddress)
     if (!tokenAddress) {
       const msg = { lock: { amount } }
-      const opt = { fee: this.fees.lock_native, send: [new Coin(amount, 'uscrt')] }
+      const opt = { fee: this.getFee('lock_native'), send: [new Coin(amount, 'uscrt')] }
       return await this.execute(msg, opt)
     }
     return await this.agent.getClient(Snip20, tokenAddress)
-      .withFee(this.fees.lock_snip20)
+      .withFee(this.getFee('lock_snip20'))
       .send(this.address, amount, { lock: {} })
   }
 
@@ -45,11 +45,11 @@ export class Launchpad extends Client {
     tokenAddress = await this.verifyTokenAddress(tokenAddress)
     const msg = { unlock: { entries } }
     if (!tokenAddress) {
-      const opt = { fee: this.fees.unlock_native }
+      const opt = { fee: this.getFee('unlock_native') }
       return await this.execute(msg, opt)
     }
     return await this.agent.getClient(Snip20, tokenAddress)
-      .withFee(this.fees.unlock_snip20)
+      .withFee(this.getFee('unlock_snip20'))
       .send(this.address, '0', msg)
   }
 

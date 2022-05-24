@@ -167,7 +167,7 @@ export class LendMarket extends Client {
   async deposit <R> (amount: Uint256, underlying_asset?: Address): Promise<R> {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
-      .withFee(this.fees.deposit)
+      .withFee(this.getFee('deposit'))
       .send(this.address, amount, 'deposit')
   }
 
@@ -179,7 +179,7 @@ export class LendMarket extends Client {
   ): Promise<R> {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
-      .withFee(this.fees.repay)
+      .withFee(this.getFee('repay'))
       .send(this.address, amount, { repay: { borrower } })
   }
 
@@ -196,7 +196,7 @@ export class LendMarket extends Client {
   ) {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
-      .withFee(this.fees.liquidate)
+      .withFee(this.getFee('liquidate'))
       .send(this.address, amount, { liquidate: { borrower, collateral } })
   }
 

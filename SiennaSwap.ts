@@ -97,8 +97,11 @@ export abstract class AMMFactory extends Client {
         let token_0 = pair.pair?.token_0 || pair.raw?.token_0
         // @ts-ignore
         let token_1 = pair.pair?.token_1 || pair.raw?.token_1
+        // @ts-ignore
         if (token_0 instanceof Snip20) token_0 = token_0.asCustomToken
+        // @ts-ignore
         if (token_1 instanceof Snip20) token_1 = token_1.asCustomToken
+        // @ts-ignore
         const exchange = await this.createExchange(token_0, token_1)
         // @ts-ignore
         newPairs.push(pair)
@@ -281,7 +284,7 @@ export class AMMExchange extends Client {
     const info = await this.getPairInfo()
     return this.agent
       .getClient(Snip20, info.liquidity_token.address)
-      .withFee(this.fees.remove_liquidity)
+      .withFee(this.getFee('remove_liquidity'))
       .send(this.address, amount, { remove_liquidity: { recipient } })
   }
 
@@ -295,12 +298,12 @@ export class AMMExchange extends Client {
     }
     if (getTokenType(amount.token) == TypeOfToken.Native) {
       const msg = { swap: { offer: amount, to: recipient, expected_return } }
-      const opt = { fee: this.fees.swap_native, send: addNativeBalance(amount) }
+      const opt = { fee: this.getFee('swap_native'), send: addNativeBalance(amount) }
       return this.execute(msg, opt)
     }
     const tokenAddr = (amount.token as CustomToken).custom_token.contract_addr;
     return this.agent.getClient(Snip20, tokenAddr)
-      .withFee(this.fees.swap_snip20)
+      .withFee(this.getFee('swap_snip20'))
       .send(this.address, amount.amount, { swap: { to: recipient, expected_return } })
   }
 
