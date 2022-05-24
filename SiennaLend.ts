@@ -126,58 +126,48 @@ export class LendAuth {
 
 export class LendMarket extends Client {
 
-  execFees = {
-    accrueInterest:       new Fee( '40000', 'uscrt'),
-    borrow:               new Fee( '80000', 'uscrt'),
-    deposit:              new Fee( '60000', 'uscrt'),
-    liquidate:            new Fee('130000', 'uscrt'),
-    redeemFromSL:         new Fee( '60000', 'uscrt'),
-    redeemFromUnderlying: new Fee( '60000', 'uscrt'),
-    repay:                new Fee( '90000', 'usrct'),
-    transfer:             new Fee( '80000', 'uscrt'),
+  fees = {
+    accrue_interest:   new Fee( '40000', 'uscrt'),
+    borrow:            new Fee( '80000', 'uscrt'),
+    deposit:           new Fee( '60000', 'uscrt'),
+    liquidate:         new Fee('130000', 'uscrt'),
+    redeem_token:      new Fee( '60000', 'uscrt'),
+    redeem_underlying: new Fee( '60000', 'uscrt'),
+    repay:             new Fee( '90000', 'usrct'),
+    transfer:          new Fee( '80000', 'uscrt'),
   }
 
   /** Convert and burn the specified amount of slToken to the underlying asset
     * based on the current exchange rate and transfer them to the user. */
   async redeemFromSL <R> (burn_amount: Uint256): Promise<R> {
-    const msg = { redeem_token: { burn_amount } }
-    const opt = { fee: this.execFees.redeemFromSL }
-    return this.execute(msg, opt)
+    return await this.execute({ redeem_token: { burn_amount } })
   }
 
   /** Burn slToken amount of tokens equivalent to the specified amount
     * based on the current exchange rate and transfer the specified amount
     * of the underyling asset to the user. */
   async redeemFromUnderlying <R> (receive_amount: Uint256): Promise<R> {
-    const msg = { redeem_underlying: { receive_amount } }
-    const opt = { fee: this.execFees.redeemFromUnderlying }
-    return this.execute(msg, opt)
+    return this.execute({ redeem_underlying: { receive_amount } })
   }
 
   async borrow <R> (amount: Uint256): Promise<R> {
-    const msg = { borrow: { amount } }
-    const opt = { fee: this.execFees.borrow }
-    return this.execute(msg, opt)
+    return await this.execute({ borrow: { amount } })
   }
 
   async transfer <R> (amount: Uint256, recipient: Address): Promise<R> {
-    const msg = { transfer: { amount, recipient } }
-    const opt = { fee: this.execFees.transfer }
-    return this.execute(msg, opt)
+    return await this.execute({ transfer: { amount, recipient } })
   }
 
   /** This function is automatically called before every transaction to update to
     * the latest state of the market but can also be called manually through here. */
   async accrueInterest <R> (): Promise<R> {
-    const msg = { accrueInterest: { } }
-    const opt = { fee: this.execFees.accrueInterest }
-    return this.execute(msg, opt)
+    return this.execute({ accrue_interest: {} })
   }
 
   async deposit <R> (amount: Uint256, underlying_asset?: Address): Promise<R> {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
-      .withFee(this.execFees.deposit)
+      .withFee(this.fees.deposit)
       .send(this.address, amount, 'deposit')
   }
 
@@ -189,7 +179,7 @@ export class LendMarket extends Client {
   ): Promise<R> {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
-      .withFee(this.execFees.repay)
+      .withFee(this.fees.repay)
       .send(this.address, amount, { repay: { borrower } })
   }
 
@@ -206,7 +196,7 @@ export class LendMarket extends Client {
   ) {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
-      .withFee(this.execFees.liquidate)
+      .withFee(this.fees.liquidate)
       .send(this.address, amount, { liquidate: { borrower, collateral } })
   }
 
@@ -295,21 +285,17 @@ export class LendMarket extends Client {
 
 export class LendOverseer extends Client {
 
-  execFees = {
+  fees = {
     enter: new Fee('40000', 'uscrt'),
     exit:  new Fee('50000', 'uscrt')
   }
 
   async enter (markets: Address[]) {
-    const msg = { enter: { markets } }
-    const opt = { fee: this.execFees.enter }
-    return this.execute(msg, opt)
+    return await this.execute({ enter: { markets } })
   }
 
   async exit (market_address: Address) {
-    const msg = { exit: { market_address } }
-    const opt = { fee: this.execFees.exit }
-    return this.execute(msg, opt)
+    return await this.execute({ exit: { market_address } })
   }
 
   /** Max limit per page is `30`. */

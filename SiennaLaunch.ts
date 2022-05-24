@@ -22,22 +22,22 @@ import {
 
 export class Launchpad extends Client {
 
-  execFees = {
-    lockNative:   new Fee('280000', 'uscrt'),
-    lockSnip20:   new Fee('350000', 'uscrt'),
-    unlockNative: new Fee('280000', 'uscrt'),
-    unlockSnip20: new Fee('350000', 'uscrt'),
+  fees = {
+    lock_snip20:   new Fee('350000', 'uscrt'),
+    lock_native:   new Fee('280000', 'uscrt'),
+    unlock_native: new Fee('280000', 'uscrt'),
+    unlock_snip20: new Fee('350000', 'uscrt'),
   }
 
   async lock <R> (amount: Uint128, tokenAddress?: Address): Promise<R> {
     tokenAddress = await this.verifyTokenAddress(tokenAddress)
     if (!tokenAddress) {
       const msg = { lock: { amount } }
-      const opt = { fee: this.execFees.lockNative, send: [new Coin(amount, 'uscrt')] }
+      const opt = { fee: this.fees.lock_native, send: [new Coin(amount, 'uscrt')] }
       return await this.execute(msg, opt)
     }
-    return this.agent.getClient(Snip20, tokenAddress)
-      .withFee(this.execFees.lockSnip20)
+    return await this.agent.getClient(Snip20, tokenAddress)
+      .withFee(this.fees.lock_snip20)
       .send(this.address, amount, { lock: {} })
   }
 
@@ -45,11 +45,11 @@ export class Launchpad extends Client {
     tokenAddress = await this.verifyTokenAddress(tokenAddress)
     const msg = { unlock: { entries } }
     if (!tokenAddress) {
-      const opt = { fee: this.execFees.unlockNative }
+      const opt = { fee: this.fees.unlock_native }
       return await this.execute(msg, opt)
     }
-    return this.agent.getClient(Snip20, tokenAddress)
-      .withFee(this.execFees.unlockSnip20)
+    return await this.agent.getClient(Snip20, tokenAddress)
+      .withFee(this.fees.unlock_snip20)
       .send(this.address, '0', msg)
   }
 
@@ -101,23 +101,19 @@ export class Launchpad extends Client {
 
 export class LaunchpadAdmin extends Client {
 
-  execFees = {
-    addToken:    new Fee('3000000', 'uscrt'),
-    removeToken: new Fee('3000000', 'uscrt')
+  fees = {
+    admin_add_token:    new Fee('3000000', 'uscrt'),
+    admin_remove_token: new Fee('3000000', 'uscrt')
   }
 
   async addToken <R> (config: TokenSettings): Promise<R> {
-    const msg = { admin_add_token: { config } }
-    const opt = { fee: this.execFees.addToken }
-    return await this.execute(msg, opt)
+    return await this.execute({ admin_add_token: { config } })
   }
 
   /** This action will remove the token from the contract
     * and will refund all locked balances on that token back to users */
   async removeToken <R> (index: number): Promise<R> {
-    const msg = { admin_remove_token: { index } }
-    const opt = { fee: this.execFees.removeToken }
-    return await this.execute(msg, opt)
+    return await this.execute({ admin_remove_token: { index } })
   }
 
 }
@@ -240,33 +236,27 @@ export class IDO extends Client {
 
 export class IDOAdmin extends Client {
 
-  execFees = {
-    refund: new Fee('300000', 'uscrt'),
-    claim:  new Fee('300000', 'uscrt'),
-    add:    new Fee('300000', 'uscrt')
+  fees = {
+    admin_refund:        new Fee('300000', 'uscrt'),
+    admin_claim:         new Fee('300000', 'uscrt'),
+    admin_add_addresses: new Fee('300000', 'uscrt')
   }
 
   /** After the sale ends, admin can use this method to
     * refund all tokens that weren't sold in the IDO sale */
   async refund <R> (recipient?: Address): Promise<R> {
-    const msg = { admin_refund: { address: recipient } }
-    const opt = { fee: this.execFees.refund }
-    return this.execute(msg, opt)
+    return await this.execute({ admin_refund: { address: recipient } })
   }
 
   /** After the sale ends, admin will use this method to
     * claim all the profits accumulated during the sale */
   async claim <R> (recipient?: Address): Promise<R> {
-    const msg = { admin_claim: { address: recipient } }
-    const opt = { fee: this.execFees.claim }
-    return this.execute(msg, opt)
+    return await this.execute({ admin_claim: { address: recipient } })
   }
 
   /** Add addresses on whitelist for IDO contract */
   async addAddresses <R> (addresses: Address[]): Promise<R> {
-    const msg = { admin_add_addresses: { addresses } }
-    const opt = { fee: this.execFees.add }
-    return this.execute(msg, opt)
+    return await this.execute({ admin_add_addresses: { addresses } })
   }
 
 }

@@ -217,13 +217,7 @@ export interface PairInfo {
 
 export class AMMExchange extends Client {
 
-  execFees = {
-    provideLiquidity:  new Fee('100000', 'uscrt'),
-    withdrawLiquidity: new Fee('110000', 'uscrt'),
-    swapNative:        new Fee( '55000', 'uscrt'),
-    swapSnip20:        new Fee('100000', 'uscrt'),
-  }
-
+  /** Get the exchange and its related contracts by querying the factory. */
   static get = async function getExchange (
     agent:   Agent,
     address: string,
@@ -261,33 +255,34 @@ export class AMMExchange extends Client {
     }
   }
 
+  fees = {
+    add_liquidity:    new Fee('100000', 'uscrt'),
+    remove_liquidity: new Fee('110000', 'uscrt'),
+    swap_native:      new Fee( '55000', 'uscrt'),
+    swap_snip20:      new Fee('100000', 'uscrt'),
+  }
+
   async addLiquidity (
     pair:     TokenPair,
     amount_0: Uint128,
     amount_1: Uint128
   ) {
-    const msg = { add_liquidity: { deposit: { pair, amount_0, amount_1 } } }
-    const result = await this.execute(msg)
-    return result
+    return await this.execute({ add_liquidity: { deposit: { pair, amount_0, amount_1 } } })
   }
 
   async provideLiquidity (amount: TokenPairAmount, tolerance?: Decimal) {
-    const msg = { add_liquidity: { deposit: amount, slippage_tolerance: tolerance } }
-    const opt = { fee: this.execFees.provideLiquidity, send: addNativeBalancePair(amount) }
-    return this.execute(msg, opt)
+    return this.execute(
+      { add_liquidity: { deposit: amount, slippage_tolerance: tolerance } },
+      { send: addNativeBalancePair(amount) }
+    )
   }
 
   async withdrawLiquidity (amount: Uint128, recipient: Address) {
     const info = await this.getPairInfo()
     return this.agent
       .getClient(Snip20, info.liquidity_token.address)
-      .withFee(this.execFees.withdrawLiquidity)
+      .withFee(this.fees.remove_liquidity)
       .send(this.address, amount, { remove_liquidity: { recipient } })
-  }
-
-  async getPairInfo () {
-    const { pair_info } = await this.query("pair_info")
-    return pair_info
   }
 
   async swap (
@@ -300,13 +295,18 @@ export class AMMExchange extends Client {
     }
     if (getTokenType(amount.token) == TypeOfToken.Native) {
       const msg = { swap: { offer: amount, to: recipient, expected_return } }
-      const opt = { fee: this.execFees.swapNative, send: addNativeBalance(amount) }
+      const opt = { fee: this.fees.swap_native, send: addNativeBalance(amount) }
       return this.execute(msg, opt)
     }
     const tokenAddr = (amount.token as CustomToken).custom_token.contract_addr;
     return this.agent.getClient(Snip20, tokenAddr)
-      .withFee(this.execFees.swapSnip20)
+      .withFee(this.fees.swap_snip20)
       .send(this.address, amount.amount, { swap: { to: recipient, expected_return } })
+  }
+
+  async getPairInfo () {
+    const { pair_info } = await this.query("pair_info")
+    return pair_info
   }
 
   async simulateSwap (amount: TokenTypeAmount): Promise<SwapSimulationResponse> {

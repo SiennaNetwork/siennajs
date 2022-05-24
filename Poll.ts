@@ -119,35 +119,27 @@ export interface PollUser {
 
 export class Polls extends Client {
 
-  execFees = {
-    createPoll: new Fee('80000', 'uscrt'),
-    vote:       new Fee('75000', 'uscrt'),
-    unvote:     new Fee('75000', 'uscrt'),
-    changeVote: new Fee('75000', 'uscrt')
+  fees = {
+    create_poll: new Fee('80000', 'uscrt'),
+    vote:        new Fee('75000', 'uscrt'),
+    unvote:      new Fee('75000', 'uscrt'),
+    change_vote: new Fee('75000', 'uscrt')
   }
 
   async createPoll (meta: PollMetadata) {
-    const msg = { create_poll: { meta } }
-    const opt = { fee: this.execFees.createPoll }
-    return this.execute(msg, opt)
+    return this.execute({ create_poll: { meta } })
   }
 
   async vote (poll_id: PollId, choice: PollVote) {
-    const msg = { vote: { choice, poll_id } }
-    const opt = { fee: this.execFees.vote }
-    return this.execute(msg, opt)
+    return this.execute({ vote: { choice, poll_id } })
   }
 
   async unvote (poll_id: PollId) {
-    const msg = { unvote: { poll_id } }
-    const opt = { fee: this.execFees.unvote }
-    return this.execute(msg, opt)
+    return this.execute({ unvote: { poll_id } })
   }
 
   async changeVote (poll_id: PollId, choice: PollVote) {
-    const msg = { change_vote: { poll_id, choice } }
-    const opt = { fee: this.execFees.changeVote }
-    return this.execute(msg, opt)
+    return this.execute({ change_vote: { poll_id, choice } })
   }
 
   async getPoll (poll_id: PollId, now: Moment): Promise<PollInfo> {
