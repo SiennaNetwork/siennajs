@@ -22,7 +22,7 @@ import {
 
 export class Launchpad extends Client {
 
-  txFees = {
+  execFees = {
     lockNative:   new Fee('280000', 'uscrt'),
     lockSnip20:   new Fee('350000', 'uscrt'),
     unlockNative: new Fee('280000', 'uscrt'),
@@ -33,11 +33,11 @@ export class Launchpad extends Client {
     tokenAddress = await this.verifyTokenAddress(tokenAddress)
     if (!tokenAddress) {
       const msg = { lock: { amount } }
-      const opt = { fee: this.txFees.lockNative, send: [new Coin(amount, 'uscrt')] }
+      const opt = { fee: this.execFees.lockNative, send: [new Coin(amount, 'uscrt')] }
       return await this.execute(msg, opt)
     }
     return this.agent.getClient(Snip20, tokenAddress)
-      .withFees({ exec: this.txFees.lockSnip20 })
+      .withFees({ exec: this.execFees.lockSnip20 })
       .send(this.address, amount, { lock: {} })
   }
 
@@ -45,11 +45,11 @@ export class Launchpad extends Client {
     tokenAddress = await this.verifyTokenAddress(tokenAddress)
     const msg = { unlock: { entries } }
     if (!tokenAddress) {
-      const opt = { fee: this.txFees.unlockNative }
+      const opt = { fee: this.execFees.unlockNative }
       return await this.execute(msg, opt)
     }
     return this.agent.getClient(Snip20, tokenAddress)
-      .withFees({ exec: this.txFees.unlockSnip20 })
+      .withFees({ exec: this.execFees.unlockSnip20 })
       .send(this.address, '0', msg)
   }
 
@@ -101,14 +101,14 @@ export class Launchpad extends Client {
 
 export class LaunchpadAdmin extends Client {
 
-  txFees = {
+  execFees = {
     addToken:    new Fee('3000000', 'uscrt'),
     removeToken: new Fee('3000000', 'uscrt')
   }
 
   async addToken <R> (config: TokenSettings): Promise<R> {
     const msg = { admin_add_token: { config } }
-    const opt = { fee: this.txFees.addToken }
+    const opt = { fee: this.execFees.addToken }
     return await this.execute(msg, opt)
   }
 
@@ -116,7 +116,7 @@ export class LaunchpadAdmin extends Client {
     * and will refund all locked balances on that token back to users */
   async removeToken <R> (index: number): Promise<R> {
     const msg = { admin_remove_token: { index } }
-    const opt = { fee: this.txFees.removeToken }
+    const opt = { fee: this.execFees.removeToken }
     return await this.execute(msg, opt)
   }
 
@@ -201,7 +201,10 @@ export class IDO extends Client {
   }
 
   /** Check the amount user has pre locked and the amount user has swapped */
-  async getBalance (key: ViewingKey, address: Address = this.agent.address) {
+  async getBalance (key: ViewingKey, address: Address|undefined = this.agent.address) {
+    if (!address) {
+      throw new Error('IDO#getBalance: specify address')
+    }
     const { balance }: { balance: IDOBalance } =
       await this.query({ balance: { address, key } })
     return balance
@@ -222,7 +225,10 @@ export class IDO extends Client {
   }
 
   /** Check if the address can participate in an IDO */
-  async getEligibility (address: Address = this.agent.address) {
+  async getEligibility (address: Address|undefined = this.agent.address) {
+    if (!address) {
+      throw new Error('IDO#getEligibility: specify address')
+    }
     const { eligibility }: { eligibility: IDOEligibility } =
       await this.query({ eligibility_info: { address } });
     return eligibility
@@ -234,7 +240,7 @@ export class IDO extends Client {
 
 export class IDOAdmin extends Client {
 
-  txFees = {
+  execFees = {
     refund: new Fee('300000', 'uscrt'),
     claim:  new Fee('300000', 'uscrt'),
     add:    new Fee('300000', 'uscrt')
@@ -244,7 +250,7 @@ export class IDOAdmin extends Client {
     * refund all tokens that weren't sold in the IDO sale */
   async refund <R> (recipient?: Address): Promise<R> {
     const msg = { admin_refund: { address: recipient } }
-    const opt = { fee: this.txFees.refund }
+    const opt = { fee: this.execFees.refund }
     return this.execute(msg, opt)
   }
 
@@ -252,14 +258,14 @@ export class IDOAdmin extends Client {
     * claim all the profits accumulated during the sale */
   async claim <R> (recipient?: Address): Promise<R> {
     const msg = { admin_claim: { address: recipient } }
-    const opt = { fee: this.txFees.claim }
+    const opt = { fee: this.execFees.claim }
     return this.execute(msg, opt)
   }
 
   /** Add addresses on whitelist for IDO contract */
   async addAddresses <R> (addresses: Address[]): Promise<R> {
     const msg = { admin_add_addresses: { addresses } }
-    const opt = { fee: this.txFees.add }
+    const opt = { fee: this.execFees.add }
     return this.execute(msg, opt)
   }
 

@@ -20,7 +20,7 @@
     "@fadroma/client-scrt": "workspace:*",
     "@fadroma/tokens":      "workspace:*",
 
-    "@hackbg/konzola": "^1",
+    "@hackbg/konzola": "workspace:*",
     "@waiting/base64": "^4.2.9",
     "secure-random":   "^1.1.2"
   },

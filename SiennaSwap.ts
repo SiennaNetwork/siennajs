@@ -86,7 +86,7 @@ export abstract class AMMFactory extends Client {
       return []
     }
     const newPairs: CreateExchangesResults = []
-    await this.agent.bundle().wrap(async (bundle: typeof this.agent.Bundle)=>{
+    await this.agent.bundle().wrap(async bundle=>{
       // @ts-ignore
       const client = this.withAgent(bundle)
       const agent = this.agent

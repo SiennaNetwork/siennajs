@@ -126,7 +126,7 @@ export class LendAuth {
 
 export class LendMarket extends Client {
 
-  txFees = {
+  execFees = {
     accrueInterest:       new Fee( '40000', 'uscrt'),
     borrow:               new Fee( '80000', 'uscrt'),
     deposit:              new Fee( '60000', 'uscrt'),
@@ -141,7 +141,7 @@ export class LendMarket extends Client {
     * based on the current exchange rate and transfer them to the user. */
   async redeemFromSL <R> (burn_amount: Uint256): Promise<R> {
     const msg = { redeem_token: { burn_amount } }
-    const opt = { fee: this.txFees.redeemFromSL }
+    const opt = { fee: this.execFees.redeemFromSL }
     return this.execute(msg, opt)
   }
 
@@ -150,19 +150,19 @@ export class LendMarket extends Client {
     * of the underyling asset to the user. */
   async redeemFromUnderlying <R> (receive_amount: Uint256): Promise<R> {
     const msg = { redeem_underlying: { receive_amount } }
-    const opt = { fee: this.txFees.redeemFromUnderlying }
+    const opt = { fee: this.execFees.redeemFromUnderlying }
     return this.execute(msg, opt)
   }
 
   async borrow <R> (amount: Uint256): Promise<R> {
     const msg = { borrow: { amount } }
-    const opt = { fee: this.txFees.borrow }
+    const opt = { fee: this.execFees.borrow }
     return this.execute(msg, opt)
   }
 
   async transfer <R> (amount: Uint256, recipient: Address): Promise<R> {
     const msg = { transfer: { amount, recipient } }
-    const opt = { fee: this.txFees.transfer }
+    const opt = { fee: this.execFees.transfer }
     return this.execute(msg, opt)
   }
 
@@ -170,14 +170,14 @@ export class LendMarket extends Client {
     * the latest state of the market but can also be called manually through here. */
   async accrueInterest <R> (): Promise<R> {
     const msg = { accrueInterest: { } }
-    const opt = { fee: this.txFees.accrueInterest }
+    const opt = { fee: this.execFees.accrueInterest }
     return this.execute(msg, opt)
   }
 
   async deposit <R> (amount: Uint256, underlying_asset?: Address): Promise<R> {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
-      .withFees({ exec: this.txFees.deposit })
+      .withFees({ exec: this.execFees.deposit })
       .send(this.address, amount, 'deposit')
   }
 
@@ -189,7 +189,7 @@ export class LendMarket extends Client {
   ): Promise<R> {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
-      .withFees({ exec: this.txFees.repay })
+      .withFees({ exec: this.execFees.repay })
       .send(this.address, amount, { repay: { borrower } })
   }
 
@@ -206,7 +206,7 @@ export class LendMarket extends Client {
   ) {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
-      .withFees({ exec: this.txFees.liquidate })
+      .withFees({ exec: this.execFees.liquidate })
       .send(this.address, amount, { liquidate: { borrower, collateral } })
   }
 
@@ -295,20 +295,20 @@ export class LendMarket extends Client {
 
 export class LendOverseer extends Client {
 
-  txFees = {
+  execFees = {
     enter: new Fee('40000', 'uscrt'),
     exit:  new Fee('50000', 'uscrt')
   }
 
   async enter (markets: Address[]) {
     const msg = { enter: { markets } }
-    const opt = { fee: this.txFees.enter }
+    const opt = { fee: this.execFees.enter }
     return this.execute(msg, opt)
   }
 
   async exit (market_address: Address) {
     const msg = { exit: { market_address } }
-    const opt = { fee: this.txFees.exit }
+    const opt = { fee: this.execFees.exit }
     return this.execute(msg, opt)
   }
 

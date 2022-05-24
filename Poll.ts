@@ -119,7 +119,7 @@ export interface PollUser {
 
 export class Polls extends Client {
 
-  txFees = {
+  execFees = {
     createPoll: new Fee('80000', 'uscrt'),
     vote:       new Fee('75000', 'uscrt'),
     unvote:     new Fee('75000', 'uscrt'),
@@ -128,25 +128,25 @@ export class Polls extends Client {
 
   async createPoll (meta: PollMetadata) {
     const msg = { create_poll: { meta } }
-    const opt = { fee: this.txFees.createPoll }
+    const opt = { fee: this.execFees.createPoll }
     return this.execute(msg, opt)
   }
 
   async vote (poll_id: PollId, choice: PollVote) {
     const msg = { vote: { choice, poll_id } }
-    const opt = { fee: this.txFees.vote }
+    const opt = { fee: this.execFees.vote }
     return this.execute(msg, opt)
   }
 
   async unvote (poll_id: PollId) {
     const msg = { unvote: { poll_id } }
-    const opt = { fee: this.txFees.unvote }
+    const opt = { fee: this.execFees.unvote }
     return this.execute(msg, opt)
   }
 
   async changeVote (poll_id: PollId, choice: PollVote) {
     const msg = { change_vote: { poll_id, choice } }
-    const opt = { fee: this.txFees.changeVote }
+    const opt = { fee: this.execFees.changeVote }
     return this.execute(msg, opt)
   }
 
