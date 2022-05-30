@@ -19,6 +19,7 @@ import {
   addNativeBalance,
   addNativeBalancePair,
   getTokenType,
+  getTypeOfTokenId
 } from '@fadroma/tokens'
 import { b64encode } from "@waiting/base64"
 import { create_entropy } from './Core'
@@ -366,7 +367,7 @@ export class LPToken extends Snip20 {
 
 }
 
-export class Router extends Client { /* TODO */ }
+export class SwapRouter extends Client { /* TODO */ }
 
 /** The result of the routing algorithm is an array of `SwapRouteHop` objects.
   *
@@ -401,7 +402,12 @@ export class SwapRoute {
   }
 
   /** Create a SwapRoutePair instance */
-  static pair (from_token, into_token, pair_address, pair_code_hash): SwapRoutePair {
+  static pair (
+    from_token:     TokenType,
+    into_token:     TokenType,
+    pair_address:   Address,
+    pair_code_hash: string
+  ): SwapRoutePair {
     return new SwapRoutePair(from_token, into_token, pair_address, pair_code_hash)
   }
 
@@ -428,8 +434,8 @@ export class SwapRoute {
     }
 
     // Make sure we're not routing from and into the same token
-    const from_token_id = get_type_of_token_id(from_token)
-    const into_token_id = get_type_of_token_id(into_token)
+    const from_token_id = getTypeOfTokenId(from_token)
+    const into_token_id = getTypeOfTokenId(into_token)
     if (from_token_id === into_token_id) {
       return SwapRoute.error("Provided tokens are the same token")
     }
@@ -442,7 +448,7 @@ export class SwapRoute {
     // Return the shortest solved route.
     const routes = visit(from_token_id, into_token_id)
     const byLength = (a, b) => a.length - b.length
-    const result = routes.sort(byLength) [0] || null
+    const result = routes.sort(byLength)[0] || null
     if (result) {
       return SwapRoute.valid(...result)
     } else {
@@ -517,11 +523,11 @@ export class SwapRoutePair implements ITokenPair {
   ) { }
 
   get from_token_id (): string {
-    return get_type_of_token_id(this.from_token)
+    return getTypeOfTokenId(this.from_token)
   }
 
   get into_token_id (): string {
-    return get_type_of_token_id(this.into_token)
+    return getTypeOfTokenId(this.into_token)
   }
 
   eq (other: SwapRoutePair): boolean {
