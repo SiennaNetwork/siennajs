@@ -367,3 +367,177 @@ export class LPToken extends Snip20 {
 }
 
 export class Router extends Client { /* TODO */ }
+
+/** The result of the routing algorithm is an array of `SwapRouteHop` objects.
+  *
+  * Those represent a swap that the router should perform,
+  * and are passed to the router contract's `Receive` method.
+  *
+  * The important constraint is that the native token, SCRT,
+  * can only be in the beginning or end of the route, because
+  * it is not a SNIP20 token and does not support the `Send`
+  * callbacks that the router depends on for its operation. */
+export interface SwapRouteHop {
+  from_token:     TokenType
+  pair_address:   Address
+  pair_code_hash: string
+}
+
+export class SwapRoute {
+  constructor (
+    readonly error: string|null    = null,
+    readonly hops:  SwapRouteHop[] = [],
+  ) { }
+
+  /** Create an empty route with an error message,
+    * meaning that invalid data has been passed to the assemble function. */
+  static error (error: string): SwapRoute {
+    return new SwapRoute(error, [])
+  }
+
+  /** Create a valid route with a list of hops to be executed. */
+  static valid (...hops: SwapRouteHop[]): SwapRoute {
+    return new SwapRoute(null, hops)
+  }
+
+  /** Create a SwapRoutePair instance */
+  static pair (from_token, into_token, pair_address, pair_code_hash): SwapRoutePair {
+    return new SwapRoutePair(from_token, into_token, pair_address, pair_code_hash)
+  }
+
+  /** Create a SwapRouteHop instance. */
+  static hop (
+    from_token: TokenType,
+    pair:       SwapRoutePair
+  ): SwapRouteHop {
+    const { pair_address, pair_code_hash } = pair
+    return { from_token, pair_address, pair_code_hash }
+  }
+
+  /** Get an assembled SwapRoute by calling `into_hops`
+    * on the result of `SwapRoute.visit`. */
+  static assemble (
+    known_pairs: SwapRoutePair[],
+    from_token:  TokenType,
+    into_token:  TokenType,
+  ): SwapRoute {
+
+    // Make sure there are pairs to pick from
+    if ((known_pairs.length === 0 || !from_token || !into_token)) {
+      return SwapRoute.error("No token pairs provided")
+    }
+
+    // Make sure we're not routing from and into the same token
+    const from_token_id = get_type_of_token_id(from_token)
+    const into_token_id = get_type_of_token_id(into_token)
+    if (from_token_id === into_token_id) {
+      return SwapRoute.error("Provided tokens are the same token")
+    }
+
+    // Add reversed pairs
+    const pairs = known_pairs.reduce((pairs: SwapRoutePair[], pair: SwapRoutePair)=>{
+      return [...pairs, pair, pair.reverse()]
+    }, [])
+
+    // Return the shortest solved route.
+    const routes = visit(from_token_id, into_token_id)
+    const byLength = (a, b) => a.length - b.length
+    const result = routes.sort(byLength) [0] || null
+    if (result) {
+      return SwapRoute.valid(...result)
+    } else {
+      return SwapRoute.error("No possible solution for given pair")
+    }
+
+    // Recursively visit all possible routes that have a matching `from_token`.
+    function visit (
+      token_id:        string,
+      target_token_id: string,
+      visited:         string[]       = [],
+      past_hops:       SwapRouteHop[] = [],
+      first:           boolean        = true
+    ): SwapRouteHop[] {
+
+      const routes = []
+
+      for (const pair of pairs) {
+
+        // Native token cannot be in the middle of the route
+        // because it's not a SNIP20 token and does not support
+        // the Send callbacks required for the router to operate
+        if (!first && pair.from_token_id === "native") continue
+
+        // Parents can be any of the pairs that have a matching from_token
+        if (pair.from_token_id !== token_id) continue
+
+        // Skip pairs that we've already visited
+        if (visited.includes(pair.from_token_id)) continue
+        if (visited.includes(pair.into_token_id)) continue
+
+        // Collect token ids that have already been used
+        // and therefore cannot be used again
+        visited.push(token_id)
+
+        // If we've reached our destination token,
+        // collect the route and continue.
+        if (pair.into_token_id === target_token_id) {
+          routes.push([...past_hops, pair.into_hop()])
+          continue
+        }
+
+        // Descend into the tree.
+        visit(
+          pair.into_token_id,
+          target_token_id,
+          visited,
+          [...past_hops, pair.into_hop()],
+          false
+        ).forEach(route=>routes.push(route))
+
+      }
+
+      return routes
+
+    }
+
+  }
+
+  async execute () { /* TODO */ }
+
+}
+
+/** Represents a single step of the exchange */
+export class SwapRoutePair implements ITokenPair {
+
+  constructor(
+    readonly from_token:     TokenType,
+    readonly into_token:     TokenType,
+    readonly pair_address:   Address,
+    readonly pair_code_hash: string
+  ) { }
+
+  get from_token_id (): string {
+    return get_type_of_token_id(this.from_token)
+  }
+
+  get into_token_id (): string {
+    return get_type_of_token_id(this.into_token)
+  }
+
+  eq (other: SwapRoutePair): boolean {
+    return this.from_token_id === other.from_token_id
+        && this.into_token_id === other.into_token_id
+  }
+
+  into_hop (): Hop {
+    const { from_token, pair_address, pair_code_hash } = this
+    return { from_token, pair_address, pair_code_hash }
+  }
+
+  /** Return a new SwapRoutePair with the order of the two tokens swapped. */
+  reverse (): SwapRoutePair {
+    const { from_token, into_token, pair_address, pair_code_hash } = this
+    return new SwapRoutePair(into_token, from_token, pair_address, pair_code_hash);
+  }
+
+}
