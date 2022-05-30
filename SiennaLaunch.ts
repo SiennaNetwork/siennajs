@@ -15,9 +15,9 @@ import {
 import {
   CustomToken,
   Snip20,
-  TokenType,
-  TypeOfToken,
-  getTokenType,
+  Token,
+  TokenKind,
+  getTokenKind,
 } from '@fadroma/tokens'
 
 export class Launchpad extends Client {
@@ -77,7 +77,7 @@ export class Launchpad extends Client {
 
   admin = new LaunchpadAdmin(this.agent, this)
 
-  tokens: TokenType[] = []
+  tokens: Token[] = []
 
   async verifyTokenAddress (address?: Address): Promise<Address | undefined> {
     if (this.tokens === undefined) {
@@ -85,11 +85,11 @@ export class Launchpad extends Client {
       this.tokens = info.map(token => token.token_type)
     }
     for (const token of this.tokens) {
-      if (getTokenType(token) == TypeOfToken.Native && !address) {
+      if (getTokenKind(token) == TokenKind.Native && !address) {
         return undefined
       }
       if (
-        getTokenType(token) == TypeOfToken.Custom &&
+        getTokenKind(token) == TokenKind.Custom &&
         (token as CustomToken).custom_token.contract_addr === address
       ) {
         return address
@@ -119,7 +119,7 @@ export class LaunchpadAdmin extends Client {
 }
 
 export interface LaunchpadTokenInfo {
-  token_type:      TokenType,
+  token_type:      Token,
   segment:         Uint128,
   bounding_period: number,
   token_decimals:  number,
@@ -127,7 +127,7 @@ export interface LaunchpadTokenInfo {
 }
 
 export interface LaunchpadUserInfo {
-  token_type: TokenType
+  token_type: Token
   balance:    Uint128
   entries:    Moment[]
   last_draw:  unknown
@@ -140,13 +140,13 @@ export interface LaunchpadDraw {
 export type MaybeTokenAddress = Address | null
 
 export interface TokenSettings {
-  token_type: TokenType,
+  token_type: Token,
   segment: Uint128,
   bounding_period: number,
 }
 
 export interface QueryTokenConfig {
-  token_type: TokenType,
+  token_type: Token,
   segment: Uint128,
   bounding_period: number,
   token_decimals: number,
@@ -154,7 +154,7 @@ export interface QueryTokenConfig {
 }
 
 export interface QueryAccountToken {
-  token_type: TokenType,
+  token_type: Token,
   balance: Uint128,
   entries: number[],
 }
@@ -177,7 +177,7 @@ export class IDO extends Client {
     * receiver callback interface to initiate swap. */
   async swap <R> (amount: Uint128, recipient?: Address): Promise<R> {
     const info = await this.getSaleInfo()
-    if (getTokenType(info.input_token) == TypeOfToken.Native) {
+    if (getTokenKind(info.input_token) == TokenKind.Native) {
       const msg = { swap: { amount, recipient } }
       const opt = { fee: new Fee('280000', 'uscrt'), send: [ new Coin(amount, 'uscrt') ] }
       return this.execute(msg, opt)
@@ -270,7 +270,7 @@ export enum IDOSaleType {
 export class TokenSaleConfig {
   constructor(
     /** The token that will be used to buy the SNIP20. */
-    readonly input_token: TokenType,
+    readonly input_token: Token,
     /** The total amount that each participant is allowed to buy. */
     readonly max_allocation: Uint128,
     /** The minimum amount that each participant is allowed to buy. */
@@ -289,7 +289,7 @@ export class TokenSaleConfig {
 
 export interface IDOSaleInfo {
   /** The token that is used to buy the sold SNIP20. */
-  input_token:    TokenType
+  input_token:    Token
   /** The token that is being sold. */
   sold_token:     ContractLink
   /** The minimum amount that each participant is allowed to buy. */

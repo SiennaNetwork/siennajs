@@ -10,16 +10,13 @@ import {
 import {
   Snip20,
   CustomToken,
-  NativeToken,
+  TokenKind,
+  Token,
   TokenPair,
+  TokenAmount,
   TokenPairAmount,
-  TokenType,
-  TokenTypeAmount,
-  TypeOfToken,
-  addNativeBalance,
-  addNativeBalancePair,
-  getTokenType,
-  getTypeOfTokenId
+  getTokenKind,
+  getTokenId
 } from '@fadroma/tokens'
 import { b64encode } from "@waiting/base64"
 import { create_entropy } from './Core'
@@ -64,8 +61,8 @@ export abstract class AMMFactory extends Client {
 
   /** Create a liquidity pool, i.e. an instance of the AMMExchange contract */
   createExchange (
-    token_0: TokenType,
-    token_1: TokenType
+    token_0: Token,
+    token_1: Token
   ) {
     const msg = {
       create_exchange: {
@@ -99,9 +96,9 @@ export abstract class AMMFactory extends Client {
         // @ts-ignore
         let token_1 = pair.pair?.token_1 || pair.raw?.token_1
         // @ts-ignore
-        if (token_0 instanceof Snip20) token_0 = token_0.asCustomToken
+        if (token_0 instanceof Snip20) token_0 = token_0.asDescriptor
         // @ts-ignore
-        if (token_1 instanceof Snip20) token_1 = token_1.asCustomToken
+        if (token_1 instanceof Snip20) token_1 = token_1.asDescriptor
         // @ts-ignore
         const exchange = await this.createExchange(token_0, token_1)
         // @ts-ignore
@@ -115,8 +112,8 @@ export abstract class AMMFactory extends Client {
 
   /** Get info about an exchange. */
   async getExchange (
-    token_0: TokenType,
-    token_1: TokenType
+    token_0: Token,
+    token_1: Token
   ): Promise<ExchangeInfo> {
     const msg = { get_exchange_address: { pair: { token_0, token_1 } } }
     const {get_exchange_address:{address}} = await this.query(msg)
@@ -187,16 +184,16 @@ export interface CreateExchangesRequest {
   pairs: Array<{
     name?: string,
     pair: {
-      token_0: Snip20|TokenType,
-      token_1: Snip20|TokenType
+      token_0: Snip20|Token,
+      token_1: Snip20|Token
     }
   }>
 }
 
 export interface CreateExchangesResult {
   name?:   string,
-  token_0: Snip20|TokenType,
-  token_1: Snip20|TokenType
+  token_0: Snip20|Token,
+  token_1: Snip20|Token
 }
 
 export type CreateExchangesResults = Array<CreateExchangesResult>
@@ -204,8 +201,8 @@ export type CreateExchangesResults = Array<CreateExchangesResult>
 export interface FactoryExchangeInfo {
   address: string,
   pair: {
-    token_0: TokenType,
-    token_1: TokenType
+    token_0: Token,
+    token_1: Token
   }
 }
 
@@ -225,8 +222,8 @@ export class AMMExchange extends Client {
   static get = async function getExchange (
     agent:   Agent,
     address: string,
-    token_0: Snip20|TokenType,
-    token_1: Snip20|TokenType,
+    token_0: Snip20|Token,
+    token_1: Snip20|Token,
   ): Promise<ExchangeInfo> {
     const exchangeCodeId   = await agent.getCodeId(address)
     const exchangeCodeHash = await agent.getHash(address)
@@ -235,8 +232,8 @@ export class AMMExchange extends Client {
       codeHash: exchangeCodeHash,
       address,
     })
-    const { TOKEN: TOKEN_0, NAME: TOKEN_0_NAME } = await Snip20.fromTokenSpec(agent, token_0)
-    const { TOKEN: TOKEN_1, NAME: TOKEN_1_NAME } = await Snip20.fromTokenSpec(agent, token_1)
+    const { TOKEN: TOKEN_0, NAME: TOKEN_0_NAME } = await Snip20.fromDescriptor(agent, token_0)
+    const { TOKEN: TOKEN_1, NAME: TOKEN_1_NAME } = await Snip20.fromDescriptor(agent, token_1)
     const name = `${TOKEN_0_NAME}-${TOKEN_1_NAME}`
     const { liquidity_token: { address: lpTokenAddress, codeHash: lpTokenCodeHash } } = await EXCHANGE.getPairInfo()
     const lpTokenCodeId = await agent.getCodeId(lpTokenAddress)
@@ -290,14 +287,14 @@ export class AMMExchange extends Client {
   }
 
   async swap (
-    amount:           TokenTypeAmount,
+    amount:           TokenAmount,
     expected_return?: Decimal,
     recipient:        Address|undefined = this.agent.address,
   ) {
     if (!recipient) {
       console.log('AMMExchange#swap: specify recipient')
     }
-    if (getTokenType(amount.token) == TypeOfToken.Native) {
+    if (getTokenKind(amount.token) == TokenKind.Native) {
       const msg = { swap: { offer: amount, to: recipient, expected_return } }
       const opt = { fee: this.getFee('swap_native'), send: addNativeBalance(amount) }
       return this.execute(msg, opt)
@@ -313,14 +310,36 @@ export class AMMExchange extends Client {
     return pair_info
   }
 
-  async simulateSwap (amount: TokenTypeAmount): Promise<SwapSimulationResponse> {
+  async simulateSwap (amount: TokenAmount): Promise<SwapSimulationResponse> {
     return this.query({ swap_simulation: { offer: amount } })
   }
 
-  async simulateSwapReverse (ask_asset: TokenTypeAmount): Promise<ReverseSwapSimulationResponse> {
+  async simulateSwapReverse (ask_asset: TokenAmount): Promise<ReverseSwapSimulationResponse> {
     return this.query({ reverse_simulation: { ask_asset } })
   }
 
+}
+
+export function addNativeBalance (amount: TokenAmount): ICoin[] | undefined {
+  let result: ICoin[] | undefined = []
+  if (getTokenKind(amount.token) == TokenKind.Native) {
+    result.push(new Coin(amount.amount, 'uscrt'))
+  } else {
+    result = undefined
+  }
+  return result
+}
+
+export function addNativeBalancePair (amount: TokenPairAmount): ICoin[] | undefined {
+  let result: ICoin[] | undefined = []
+  if (getTokenKind(amount.pair.token_0) == TokenKind.Native) {
+    result.push(new Coin(amount.amount_0, 'uscrt'))
+  } else if (getTokenKind(amount.pair.token_1) == TokenKind.Native) {
+    result.push(new Coin(amount.amount_1, 'uscrt'))
+  } else {
+    result = undefined
+  }
+  return result
 }
 
 export interface SwapSimulationResponse {
@@ -367,9 +386,36 @@ export class LPToken extends Snip20 {
 
 }
 
-export class SwapRouter extends Client { /* TODO */ }
+export class SwapRouter extends Client {
 
-/** The result of the routing algorithm is an array of `SwapRouteHop` objects.
+  supportedTokens: Token[]|null = null
+
+  /** Register one or more supported tokens to router contract. */
+  async registerTokens (tokens: Token[]) {
+    const result = await this.execute({ register_tokens: { tokens } })
+    this.supportedTokens = await this.getSupportedTokens() 
+    return result
+  }
+
+  async populate () {
+    await super.populate()
+    this.supportedTokens = await this.getSupportedTokens() 
+  }
+
+  async getSupportedTokens (): Promise<Token[]> {
+    const tokens = await this.query({ supported_tokens: {} }) as Address[]
+    return await Promise.all(tokens.map(async address=>{
+      const token = this.agent.getClient(AMMSnip20, address)
+      await token.populate()
+      return token.asDescriptor
+    }))
+  }
+
+  /* TODO */
+  async exchange () {}
+}
+
+/** The result of the routing algorithm is an array of `SwapRouterHop` objects.
   *
   * Those represent a swap that the router should perform,
   * and are passed to the router contract's `Receive` method.
@@ -378,8 +424,8 @@ export class SwapRouter extends Client { /* TODO */ }
   * can only be in the beginning or end of the route, because
   * it is not a SNIP20 token and does not support the `Send`
   * callbacks that the router depends on for its operation. */
-export interface SwapRouteHop {
-  from_token:     TokenType
+export interface SwapRouterHop {
+  from_token:     Token
   pair_address:   Address
   pair_code_hash: string
 }
@@ -387,7 +433,7 @@ export interface SwapRouteHop {
 export class SwapRoute {
   constructor (
     readonly error: string|null    = null,
-    readonly hops:  SwapRouteHop[] = [],
+    readonly hops:  SwapRouterHop[] = [],
   ) { }
 
   /** Create an empty route with an error message,
@@ -397,35 +443,40 @@ export class SwapRoute {
   }
 
   /** Create a valid route with a list of hops to be executed. */
-  static valid (...hops: SwapRouteHop[]): SwapRoute {
+  static valid (...hops: SwapRouterHop[]): SwapRoute {
     return new SwapRoute(null, hops)
   }
 
-  /** Create a SwapRoutePair instance */
+  /** Create a SwapRouterPair instance */
   static pair (
-    from_token:     TokenType,
-    into_token:     TokenType,
+    from_token:     Token,
+    into_token:     Token,
     pair_address:   Address,
     pair_code_hash: string
-  ): SwapRoutePair {
-    return new SwapRoutePair(from_token, into_token, pair_address, pair_code_hash)
+  ): SwapRouterPair {
+    return new SwapRouterPair(
+      from_token,
+      into_token,
+      pair_address,
+      pair_code_hash
+    )
   }
 
-  /** Create a SwapRouteHop instance. */
+  /** Create a SwapRouterHop instance. */
   static hop (
-    from_token: TokenType,
-    pair:       SwapRoutePair
-  ): SwapRouteHop {
+    from_token: Token,
+    pair:       SwapRouterPair
+  ): SwapRouterHop {
     const { pair_address, pair_code_hash } = pair
     return { from_token, pair_address, pair_code_hash }
   }
 
-  /** Get an assembled SwapRoute by calling `into_hops`
+  /** Get an assembled SwapRoute by calling `asHops`
     * on the result of `SwapRoute.visit`. */
   static assemble (
-    known_pairs: SwapRoutePair[],
-    from_token:  TokenType,
-    into_token:  TokenType,
+    known_pairs: SwapRouterPair[],
+    from_token:  Token,
+    into_token:  Token,
   ): SwapRoute {
 
     // Make sure there are pairs to pick from
@@ -434,14 +485,14 @@ export class SwapRoute {
     }
 
     // Make sure we're not routing from and into the same token
-    const from_token_id = getTypeOfTokenId(from_token)
-    const into_token_id = getTypeOfTokenId(into_token)
+    const from_token_id = getTokenId(from_token)
+    const into_token_id = getTokenId(into_token)
     if (from_token_id === into_token_id) {
       return SwapRoute.error("Provided tokens are the same token")
     }
 
     // Add reversed pairs
-    const pairs = known_pairs.reduce((pairs: SwapRoutePair[], pair: SwapRoutePair)=>{
+    const pairs = known_pairs.reduce((pairs: SwapRouterPair[], pair: SwapRouterPair)=>{
       return [...pairs, pair, pair.reverse()]
     }, [])
 
@@ -460,9 +511,9 @@ export class SwapRoute {
       token_id:        string,
       target_token_id: string,
       visited:         string[]       = [],
-      past_hops:       SwapRouteHop[] = [],
+      past_hops:       SwapRouterHop[] = [],
       first:           boolean        = true
-    ): SwapRouteHop[] {
+    ): SwapRouterHop[] {
 
       const routes = []
 
@@ -487,7 +538,7 @@ export class SwapRoute {
         // If we've reached our destination token,
         // collect the route and continue.
         if (pair.into_token_id === target_token_id) {
-          routes.push([...past_hops, pair.into_hop()])
+          routes.push([...past_hops, pair.asHop()])
           continue
         }
 
@@ -496,7 +547,7 @@ export class SwapRoute {
           pair.into_token_id,
           target_token_id,
           visited,
-          [...past_hops, pair.into_hop()],
+          [...past_hops, pair.asHop()],
           false
         ).forEach(route=>routes.push(route))
 
@@ -513,37 +564,37 @@ export class SwapRoute {
 }
 
 /** Represents a single step of the exchange */
-export class SwapRoutePair implements ITokenPair {
+export class SwapRouterPair {
 
   constructor(
-    readonly from_token:     TokenType,
-    readonly into_token:     TokenType,
+    readonly from_token:     Token,
+    readonly into_token:     Token,
     readonly pair_address:   Address,
     readonly pair_code_hash: string
   ) { }
 
   get from_token_id (): string {
-    return getTypeOfTokenId(this.from_token)
+    return getTokenId(this.from_token)
   }
 
   get into_token_id (): string {
-    return getTypeOfTokenId(this.into_token)
+    return getTokenId(this.into_token)
   }
 
-  eq (other: SwapRoutePair): boolean {
+  eq (other: SwapRouterPair): boolean {
     return this.from_token_id === other.from_token_id
         && this.into_token_id === other.into_token_id
   }
 
-  into_hop (): Hop {
+  asHop (): SwapRouterHop {
     const { from_token, pair_address, pair_code_hash } = this
     return { from_token, pair_address, pair_code_hash }
   }
 
-  /** Return a new SwapRoutePair with the order of the two tokens swapped. */
-  reverse (): SwapRoutePair {
+  /** Return a new SwapRouterPair with the order of the two tokens swapped. */
+  reverse (): SwapRouterPair {
     const { from_token, into_token, pair_address, pair_code_hash } = this
-    return new SwapRoutePair(into_token, from_token, pair_address, pair_code_hash);
+    return new SwapRouterPair(into_token, from_token, pair_address, pair_code_hash);
   }
 
 }
