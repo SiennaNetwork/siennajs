@@ -110,13 +110,15 @@ export abstract class AMMFactory extends Client {
     return newPairs
   }
 
-  /** Get info about an exchange. */
+  /** Get an AMMExchange instance corresponding to
+    * the exchange contract between two tokens. */
   async getExchange (
     token_0: Token,
     token_1: Token
   ): Promise<ExchangeInfo> {
     const msg = { get_exchange_address: { pair: { token_0, token_1 } } }
-    const {get_exchange_address:{address}} = await this.query(msg)
+    const result = await this.query(msg)
+    const {get_exchange_address:{address}} = <{get_exchange_address:{address: Address}}>result
     return await AMMExchange.get(this.agent, address, token_0, token_1)
   }
 
