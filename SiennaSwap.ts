@@ -225,15 +225,10 @@ export class AMMExchange extends Client {
     token_0: Snip20|Token,
     token_1: Snip20|Token,
   ): Promise<ExchangeInfo> {
-    const exchangeCodeId   = await agent.getCodeId(address)
-    const exchangeCodeHash = await agent.getHash(address)
-    const EXCHANGE = agent.getClient(AMMExchange, {
-      codeId:   exchangeCodeId,
-      codeHash: exchangeCodeHash,
-      address,
-    })
-    const { TOKEN: TOKEN_0, NAME: TOKEN_0_NAME } = await Snip20.fromDescriptor(agent, token_0)
-    const { TOKEN: TOKEN_1, NAME: TOKEN_1_NAME } = await Snip20.fromDescriptor(agent, token_1)
+    const EXCHANGE = agent.getClient(AMMExchange, address)
+    await EXCHANGE.populate()
+    const { token: TOKEN_0, name: TOKEN_0_NAME } = await Snip20.fromDescriptor(agent, token_0)
+    const { token: TOKEN_1, name: TOKEN_1_NAME } = await Snip20.fromDescriptor(agent, token_1)
     const name = `${TOKEN_0_NAME}-${TOKEN_1_NAME}`
     const { liquidity_token: { address: lpTokenAddress, codeHash: lpTokenCodeHash } } = await EXCHANGE.getPairInfo()
     const lpTokenCodeId = await agent.getCodeId(lpTokenAddress)
@@ -391,7 +386,8 @@ export class SwapRouter extends Client {
   supportedTokens: Token[]|null = null
 
   /** Register one or more supported tokens to router contract. */
-  async registerTokens (tokens: Token[]) {
+  async register (...tokens: (Snip20|Token)[]) {
+    tokens = tokens.map(token=>(token instanceof Snip20) ? token.asDescriptor : token)
     const result = await this.execute({ register_tokens: { tokens } })
     this.supportedTokens = await this.getSupportedTokens() 
     return result
