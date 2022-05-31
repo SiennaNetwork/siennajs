@@ -1,15 +1,20 @@
 import {
+  Address,
   Agent,
   Client,
-  Address,
-  Uint128,
+  ClientCtor,
+  ClientOptions,
+  Coin,
+  ContractLink,
   Decimal,
   Fee,
-  ContractLink
+  ICoin,
+  Uint128,
 } from '@fadroma/client'
 import {
   Snip20,
   CustomToken,
+  NativeToken,
   TokenKind,
   Token,
   TokenPair,
@@ -119,7 +124,7 @@ export abstract class AMMFactory extends Client {
     const msg = { get_exchange_address: { pair: { token_0, token_1 } } }
     const result = await this.query(msg)
     const {get_exchange_address:{address}} = <{get_exchange_address:{address: Address}}>result
-    return await AMMExchange.get(this.agent, address, token_0, token_1)
+    return await AMMExchange.fromAddressAndTokens(this.agent, address, token_0, token_1)
   }
 
   /** Get the full list of raw exchange info from the factory. */
@@ -146,13 +151,13 @@ export abstract class AMMFactory extends Client {
         const { pair: { token_0, token_1 } } = info
         // @ts-ignore
         const address = info.address || info.contract.address
-        return AMMExchange.get(this.agent, address, token_0, token_1)
+        return AMMExchange.fromAddressAndTokens(this.agent, address, token_0, token_1)
       })
     )
   }
 
-  async getPairInfo(): Promise<PairInfo> {
-    const { pair_info }: { pair_info: PairInfo } = await this.query('pair_info')
+  async getPairInfo (): Promise<AMMPairInfo> {
+    const { pair_info }: { pair_info: AMMPairInfo } = await this.query('pair_info')
     return pair_info
   }
 
@@ -208,7 +213,7 @@ export interface FactoryExchangeInfo {
   }
 }
 
-export interface PairInfo {
+export interface AMMPairInfo {
   amount_0:         Uint128
   amount_1:         Uint128
   factory:          ContractLink
@@ -218,21 +223,40 @@ export interface PairInfo {
   contract_version: number
 }
 
+export interface AMMExchangeOptions extends ClientOptions {
+  token_0?: Token
+  token_1?: Token
+}
+
+export type AMMExchangeCtor = ClientCtor<AMMExchange, AMMExchangeOptions>
+
 export class AMMExchange extends Client {
 
-  /** Get the exchange and its related contracts by querying the factory. */
-  static get = async function getExchange (
+  static fromAddress = async function getExchangeByAddress (
     agent:   Agent,
-    address: string,
+    address: Address
+  ): Promise<AMMExchange> {
+    const Self: AMMExchangeCtor = AMMExchange
+    const self: AMMExchange = agent.getClient(Self, address) as unknown as AMMExchange
+    await self.populate()
+    return self
+  }
+
+  /** Get the exchange and its related contracts by querying the factory. */
+  static fromAddressAndTokens = async function getExchangeInfo (
+    agent:   Agent,
+    address: Address,
     token_0: Snip20|Token,
     token_1: Snip20|Token,
   ): Promise<ExchangeInfo> {
-    const EXCHANGE = agent.getClient(AMMExchange, address)
-    await EXCHANGE.populate()
+    const Self: AMMExchangeCtor = AMMExchange
+    const self: AMMExchange = agent.getClient(Self, address) as unknown as AMMExchange
+    await self.populate()
     const { token: TOKEN_0, name: TOKEN_0_NAME } = await Snip20.fromDescriptor(agent, token_0)
     const { token: TOKEN_1, name: TOKEN_1_NAME } = await Snip20.fromDescriptor(agent, token_1)
     const name = `${TOKEN_0_NAME}-${TOKEN_1_NAME}`
-    const { liquidity_token: { address: lpTokenAddress, codeHash: lpTokenCodeHash } } = await EXCHANGE.getPairInfo()
+    const { liquidity_token } = await self.getPairInfo()
+    const { address: lpTokenAddress, code_hash: lpTokenCodeHash } = liquidity_token
     const lpTokenCodeId = await agent.getCodeId(lpTokenAddress)
     return {
       raw: { // no methods, just data
@@ -242,7 +266,7 @@ export class AMMExchange extends Client {
         token_1,
       },
       name,     // The human-friendly name of the exchange
-      EXCHANGE, // The exchange contract
+      EXCHANGE: self, // The exchange contract
       LP_TOKEN: agent.getClient(LPToken, { // The LP token contract
         codeId:   lpTokenCodeId,
         codeHash: lpTokenCodeHash,
@@ -258,6 +282,23 @@ export class AMMExchange extends Client {
     remove_liquidity: new Fee('110000', 'uscrt'),
     swap_native:      new Fee( '55000', 'uscrt'),
     swap_snip20:      new Fee('100000', 'uscrt'),
+  }
+
+  constructor (agent: Agent, options: AMMExchangeOptions) {
+    super(agent, options)
+    if (options.token_0) this.token_0 = options.token_0
+    if (options.token_1) this.token_1 = options.token_1
+  }
+
+  token_0: Token|null = null
+  token_1: Token|null = null
+
+  async populate () {
+    await super.populate()
+    const {pair} = await this.getPairInfo()
+    this.token_0 = pair.token_0
+    this.token_1 = pair.token_1
+    return this
   }
 
   async addLiquidity (
@@ -302,7 +343,7 @@ export class AMMExchange extends Client {
       .send(this.address, amount.amount, { swap: { to: recipient, expected_return } })
   }
 
-  async getPairInfo () {
+  async getPairInfo (): Promise<AMMPairInfo> {
     const { pair_info } = await this.query("pair_info")
     return pair_info
   }
@@ -313,6 +354,24 @@ export class AMMExchange extends Client {
 
   async simulateSwapReverse (ask_asset: TokenAmount): Promise<ReverseSwapSimulationResponse> {
     return this.query({ reverse_simulation: { ask_asset } })
+  }
+
+  get asRouterPair (): SwapRouterPair {
+    if (this.token_0 === null) {
+      throw new Error('AMMExchange: cannot convert to SwapRouterPair if token_0 is null')
+    }
+    if (this.token_1 === null) {
+      throw new Error('AMMExchange: cannot convert to SwapRouterPair if token_1 is null')
+    }
+    if (!this.codeHash) {
+      throw new Error('AMMExchange: cannot convert to SwapRouterPair if codeHash is null')
+    }
+    return new SwapRouterPair(
+      this.token_0,
+      this.token_1,
+      this.address,
+      this.codeHash
+    )
   }
 
 }
@@ -411,6 +470,14 @@ export class SwapRouter extends Client {
 
   /* TODO */
   async exchange () {}
+
+  assemble (
+    known_pairs: SwapRouterPair[],
+    from_token:  Token,
+    into_token:  Token,
+  ): SwapRoute {
+    return SwapRoute.assemble(known_pairs, from_token, into_token)
+  }
 }
 
 /** The result of the routing algorithm is an array of `SwapRouterHop` objects.
@@ -429,10 +496,6 @@ export interface SwapRouterHop {
 }
 
 export class SwapRoute {
-  constructor (
-    readonly error: string|null    = null,
-    readonly hops:  SwapRouterHop[] = [],
-  ) { }
 
   /** Create an empty route with an error message,
     * meaning that invalid data has been passed to the assemble function. */
@@ -556,6 +619,11 @@ export class SwapRoute {
     }
 
   }
+
+  constructor (
+    readonly error: string|null    = null,
+    readonly hops:  SwapRouterHop[] = [],
+  ) {}
 
   async execute () { /* TODO */ }
 
