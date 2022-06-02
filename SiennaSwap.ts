@@ -7,6 +7,7 @@ import {
   Coin,
   ContractLink,
   Decimal,
+  Executor,
   Fee,
   ICoin,
   Uint128,
@@ -40,79 +41,71 @@ export abstract class AMMFactory extends Client {
     readonly version = "v2" as AMMVersion
   }
 
-  setStatus (
+  /** Pause or terminate the factory. */
+  async setStatus (
     level:        ContractStatusLevel,
     new_address?: Address,
     reason:       string = ""
   ) {
-    return this.execute({
-      set_status: { level, new_address, reason }
-    })
-  }
-
-  /** Return the collection of contract templates
-    * (`{ id, code_hash }` structs) that the factory
-    * uses to instantiate contracts. */
-  async getTemplates (): Promise<AMMFactoryTemplates> {
-    const { config } = await this.query({ get_config: {} })
-    return {
-      snip20_contract:    config.snip20_contract,
-      pair_contract:      config.pair_contract,
-      lp_token_contract:  config.lp_token_contract,
-      ido_contract:       config.ido_contract,
-      launchpad_contract: config.launchpad_contract,
-    }
+    const set_status = { level, new_address, reason }
+    return await this.execute({ set_status })
   }
 
   /** Create a liquidity pool, i.e. an instance of the AMMExchange contract */
-  createExchange (
+  async createExchange (
     token_0: Token,
     token_1: Token
   ) {
-    const msg = {
-      create_exchange: {
-        pair:    { token_0, token_1 },
-        entropy: create_entropy()
-      }
-    }
-    return this.execute(msg)
+    const pair    = { token_0, token_1 }
+    const entropy = create_entropy()
+    return await this.execute({ create_exchange: { pair, entropy } })
   }
 
   /** Create multiple exchanges with one transaction. */
-  async createExchanges (input: CreateExchangesRequest): Promise<CreateExchangesResults> {
-    const {
-      templates = await this.getTemplates(),
-      pairs,
-    } = input
+  async createExchanges ({ pairs }: AMMFactoryCreateExchangesRequest): Promise<AMMFactoryCreateExchangesResults> {
+
+    // TODO: check for existing pairs and remove them from input
+
+    // warn if passed zero pairs
     if (pairs.length === 0) {
       console.warn('Creating 0 exchanges.')
       return []
     }
-    const newPairs: CreateExchangesResults = []
+
+    // conform pairs
+    const tokenPairs: [Token, Token][] = pairs.map(({ pair: { token_0, token_1 } })=>{
+      if (token_0 instanceof Snip20) token_0 = token_0.asDescriptor
+      if (token_1 instanceof Snip20) token_1 = token_1.asDescriptor
+      return [token_0, token_1]
+    })
+
+    const newPairs: AMMFactoryCreateExchangesResults = []
+
     await this.agent.bundle().wrap(async bundle=>{
-      // @ts-ignore
-      const client = this.withAgent(bundle)
+      //const client = this.withAgent(bundle)
       const agent = this.agent
+
+      // <dumb>
+      // why is bundle not being used?
+      // same as Factory#createExchanges which is just terrible
       // @ts-ignore
       this.agent = bundle
-      for (const pair of pairs) {
-        // @ts-ignore
-        let token_0 = pair.pair?.token_0 || pair.raw?.token_0
-        // @ts-ignore
-        let token_1 = pair.pair?.token_1 || pair.raw?.token_1
-        // @ts-ignore
-        if (token_0 instanceof Snip20) token_0 = token_0.asDescriptor
-        // @ts-ignore
-        if (token_1 instanceof Snip20) token_1 = token_1.asDescriptor
-        // @ts-ignore
+      // </dumb>
+
+      for (const [token_0, token_1] of tokenPairs) {
         const exchange = await this.createExchange(token_0, token_1)
-        // @ts-ignore
-        newPairs.push(pair)
+        newPairs.push({ token_0, token_1 })
       }
+
+      // <dumb>
       // @ts-ignore
       this.agent = agent
+      // </dumb>
+
     })
+
     return newPairs
+
   }
 
   /** Get an AMMExchange instance corresponding to
@@ -127,8 +120,16 @@ export abstract class AMMFactory extends Client {
     return await AMMExchange.fromAddressAndTokens(this.agent, address, token_0, token_1)
   }
 
+  /** Get multiple AMMExchange instances corresponding to
+    * the passed token pairs. */
+  async getExchanges (
+    pairs: [Token, Token][]
+  ): Promise<ExchangeInfo[]> {
+    return await Promise.all(pairs.map(([token_0, token_1])=>this.getExchange(token_0, token_1)))
+  }
+
   /** Get the full list of raw exchange info from the factory. */
-  async listExchanges (limit = 30): Promise<FactoryExchangeInfo[]> {
+  async listExchanges (limit = 30): Promise<AMMFactoryExchangeInfo[]> {
     const result = []
     let start = 0
     while (true) {
@@ -156,9 +157,18 @@ export abstract class AMMFactory extends Client {
     )
   }
 
-  async getPairInfo (): Promise<AMMPairInfo> {
-    const { pair_info }: { pair_info: AMMPairInfo } = await this.query('pair_info')
-    return pair_info
+  /** Return the collection of contract templates
+    * (`{ id, code_hash }` structs) that the factory
+    * uses to instantiate contracts. */
+  async getTemplates (): Promise<AMMFactoryTemplates> {
+    const { config } = await this.query({ get_config: {} })
+    return {
+      snip20_contract:    config.snip20_contract,
+      pair_contract:      config.pair_contract,
+      lp_token_contract:  config.lp_token_contract,
+      ido_contract:       config.ido_contract,
+      launchpad_contract: config.launchpad_contract,
+    }
   }
 
 }
@@ -186,26 +196,27 @@ export interface AMMFactoryTemplates {
 
 export type AMMVersion = "v1"|"v2"
 
-export interface CreateExchangesRequest {
-  templates: AMMFactoryTemplates
-  pairs: Array<{
-    name?: string,
-    pair: {
-      token_0: Snip20|Token,
-      token_1: Snip20|Token
-    }
-  }>
+export interface AMMFactoryCreateExchangeRequest {
+  name?: string,
+  pair: {
+    token_0: Snip20|Token,
+    token_1: Snip20|Token
+  }
 }
 
-export interface CreateExchangesResult {
+export interface AMMFactoryCreateExchangesRequest {
+  pairs: Array<AMMFactoryCreateExchangeRequest>
+}
+
+export interface AMMFactoryCreateExchangesResult {
   name?:   string,
   token_0: Snip20|Token,
   token_1: Snip20|Token
 }
 
-export type CreateExchangesResults = Array<CreateExchangesResult>
+export type AMMFactoryCreateExchangesResults = Array<AMMFactoryCreateExchangesResult>
 
-export interface FactoryExchangeInfo {
+export interface AMMFactoryExchangeInfo {
   address: string,
   pair: {
     token_0: Token,
@@ -233,10 +244,10 @@ export type AMMExchangeCtor = ClientCtor<AMMExchange, AMMExchangeOptions>
 export class AMMExchange extends Client {
 
   static fromAddress = async function getExchangeByAddress (
-    agent:   Agent,
+    agent:   Executor,
     address: Address
   ): Promise<AMMExchange> {
-    const Self: AMMExchangeCtor = AMMExchange
+    const Self: AMMExchangeCtor = AMMExchange as AMMExchangeCtor
     const self: AMMExchange = agent.getClient(Self, address) as unknown as AMMExchange
     await self.populate()
     return self
@@ -244,14 +255,13 @@ export class AMMExchange extends Client {
 
   /** Get the exchange and its related contracts by querying the factory. */
   static fromAddressAndTokens = async function getExchangeInfo (
-    agent:   Agent,
+    agent:   Executor,
     address: Address,
     token_0: Snip20|Token,
     token_1: Snip20|Token,
   ): Promise<ExchangeInfo> {
-    const Self: AMMExchangeCtor = AMMExchange
-    const self: AMMExchange = agent.getClient(Self, address) as unknown as AMMExchange
-    await self.populate()
+    const self = await AMMExchange.fromAddress(agent, address)
+    // <dumb>
     const { token: TOKEN_0, name: TOKEN_0_NAME } = await Snip20.fromDescriptor(agent, token_0)
     const { token: TOKEN_1, name: TOKEN_1_NAME } = await Snip20.fromDescriptor(agent, token_1)
     const name = `${TOKEN_0_NAME}-${TOKEN_1_NAME}`
@@ -275,6 +285,7 @@ export class AMMExchange extends Client {
       TOKEN_0,  // One token of the pair
       TOKEN_1,  // The other token of the pair
     }
+    // </dumb>
   }
 
   fees = {
@@ -284,7 +295,7 @@ export class AMMExchange extends Client {
     swap_snip20:      new Fee('100000', 'uscrt'),
   }
 
-  constructor (agent: Agent, options: AMMExchangeOptions) {
+  constructor (agent: Executor, options: AMMExchangeOptions) {
     super(agent, options)
     if (options.token_0) this.token_0 = options.token_0
     if (options.token_1) this.token_1 = options.token_1
@@ -468,15 +479,22 @@ export class SwapRouter extends Client {
     }))
   }
 
-  /* TODO */
-  async exchange () {}
-
   assemble (
     known_pairs: SwapRouterPair[],
     from_token:  Token,
     into_token:  Token,
   ): SwapRoute {
     return SwapRoute.assemble(known_pairs, from_token, into_token)
+  }
+
+  /* TODO */
+  async swap (
+    factory:    AMMFactory,
+    from_token: Token,
+    into_token: Token,
+    amount:     Uint128
+  ) {
+
   }
 }
 
@@ -495,7 +513,48 @@ export interface SwapRouterHop {
   pair_code_hash: string
 }
 
+/** Represents a single step of the exchange */
+export class SwapRouterPair {
+
+  constructor(
+    readonly from_token:     Token,
+    readonly into_token:     Token,
+    readonly pair_address:   Address,
+    readonly pair_code_hash: string
+  ) { }
+
+  get from_token_id (): string {
+    return getTokenId(this.from_token)
+  }
+
+  get into_token_id (): string {
+    return getTokenId(this.into_token)
+  }
+
+  eq (other: SwapRouterPair): boolean {
+    return this.from_token_id === other.from_token_id
+        && this.into_token_id === other.into_token_id
+  }
+
+  asHop (): SwapRouterHop {
+    const { from_token, pair_address, pair_code_hash } = this
+    return { from_token, pair_address, pair_code_hash }
+  }
+
+  /** Return a new SwapRouterPair with the order of the two tokens swapped. */
+  reverse (): SwapRouterPair {
+    const { from_token, into_token, pair_address, pair_code_hash } = this
+    return new SwapRouterPair(into_token, from_token, pair_address, pair_code_hash);
+  }
+
+}
+
 export class SwapRoute {
+
+  constructor (
+    readonly error: string|null    = null,
+    readonly hops:  SwapRouterHop[] = [],
+  ) {}
 
   /** Create an empty route with an error message,
     * meaning that invalid data has been passed to the assemble function. */
@@ -618,49 +677,6 @@ export class SwapRoute {
 
     }
 
-  }
-
-  constructor (
-    readonly error: string|null    = null,
-    readonly hops:  SwapRouterHop[] = [],
-  ) {}
-
-  async execute () { /* TODO */ }
-
-}
-
-/** Represents a single step of the exchange */
-export class SwapRouterPair {
-
-  constructor(
-    readonly from_token:     Token,
-    readonly into_token:     Token,
-    readonly pair_address:   Address,
-    readonly pair_code_hash: string
-  ) { }
-
-  get from_token_id (): string {
-    return getTokenId(this.from_token)
-  }
-
-  get into_token_id (): string {
-    return getTokenId(this.into_token)
-  }
-
-  eq (other: SwapRouterPair): boolean {
-    return this.from_token_id === other.from_token_id
-        && this.into_token_id === other.into_token_id
-  }
-
-  asHop (): SwapRouterHop {
-    const { from_token, pair_address, pair_code_hash } = this
-    return { from_token, pair_address, pair_code_hash }
-  }
-
-  /** Return a new SwapRouterPair with the order of the two tokens swapped. */
-  reverse (): SwapRouterPair {
-    const { from_token, into_token, pair_address, pair_code_hash } = this
-    return new SwapRouterPair(into_token, from_token, pair_address, pair_code_hash);
   }
 
 }
