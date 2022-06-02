@@ -38,7 +38,7 @@ export class Launchpad extends Client {
     }
     return await this.agent.getClient(Snip20, tokenAddress)
       .withFee(this.getFee('lock_snip20'))
-      .send(this.address, amount, { lock: {} })
+      .send(amount, this.address, { lock: {} })
   }
 
   async unlock <R> (entries: number, tokenAddress?: Address): Promise<R> {
@@ -50,7 +50,7 @@ export class Launchpad extends Client {
     }
     return await this.agent.getClient(Snip20, tokenAddress)
       .withFee(this.getFee('unlock_snip20'))
-      .send(this.address, '0', msg)
+      .send('0', this.address, msg)
   }
 
   /** Get the configuration information about the Launchpad contract */
@@ -185,7 +185,7 @@ export class IDO extends Client {
     return this.agent
       .getClient(Snip20, (info.input_token as CustomToken).custom_token.contract_addr)
       .withFee(new Fee('350000', 'uscrt'))
-      .send(this.address, amount, { swap: { recipient } })
+      .send(amount, this.address, { swap: { recipient } })
   }
 
   async activate (sale_amount: Uint128, end_time: Moment, start_time?: Moment) {
@@ -193,7 +193,7 @@ export class IDO extends Client {
     return this.agent
       .getClient(Snip20, info.sold_token.address)
       .withFee(new Fee('300000', 'uscrt'))
-      .send(this.address, sale_amount, { activate: { end_time, start_time } })
+      .send(sale_amount, this.address, { activate: { end_time, start_time } })
   }
 
   /** Check the amount user has pre locked and the amount user has swapped */

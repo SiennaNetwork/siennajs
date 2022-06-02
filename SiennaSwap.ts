@@ -109,9 +109,9 @@ export interface AMMSimulationReverse {
 export interface AMMExchangeInfo {
   /** Shorthand to refer to the whole group. */
   name?:    string
-  /** One token. */
+  /** One token of the pair. */
   TOKEN_0:  Snip20|string,
-  /** Another token. */
+  /** The other token of the pair. */
   TOKEN_1:  Snip20|string,
   /** The automated market maker/liquidity pool for the token pair. */
   EXCHANGE: AMMExchange,
@@ -286,28 +286,24 @@ export class AMMExchange extends Client {
     const self = await AMMExchange.fromAddress(agent, address)
 
     // <dumb>
-    const { token: TOKEN_0, name: TOKEN_0_NAME } = await Snip20.fromDescriptor(agent, token_0)
-    const { token: TOKEN_1, name: TOKEN_1_NAME } = await Snip20.fromDescriptor(agent, token_1)
-    const name = `${TOKEN_0_NAME}-${TOKEN_1_NAME}`
+    const snip20_0 = await Snip20.fromDescriptor(agent, token_0 as CustomToken).populate()
+    const snip20_1 = await Snip20.fromDescriptor(agent, token_1 as CustomToken).populate()
+    const name = `${snip20_1.symbol}-${snip20_1.symbol}`
     const { liquidity_token } = await self.getPairInfo()
     const { address: lpTokenAddress, code_hash: lpTokenCodeHash } = liquidity_token
-    const lpTokenCodeId = await agent.getCodeId(lpTokenAddress)
+    const lpTokenOpts = { codeHash: lpTokenCodeHash, address: lpTokenAddress }
     return {
-      raw: { // no methods, just data
+      name,
+      EXCHANGE: self,
+      LP_TOKEN: await agent.getClient(LPToken, lpTokenOpts).populate(),
+      TOKEN_0:  snip20_0,
+      TOKEN_1:  snip20_1,
+      raw: {
         exchange: { address },
         lp_token: { address: lpTokenAddress, code_hash: lpTokenCodeHash },
         token_0,
         token_1,
       },
-      name,     // The human-friendly name of the exchange
-      EXCHANGE: self, // The exchange contract
-      LP_TOKEN: agent.getClient(LPToken, { // The LP token contract
-        codeId:   lpTokenCodeId,
-        codeHash: lpTokenCodeHash,
-        address:  lpTokenAddress,
-      }),
-      TOKEN_0,  // One token of the pair
-      TOKEN_1,  // The other token of the pair
     }
     // </dumb>
   }
@@ -336,6 +332,22 @@ export class AMMExchange extends Client {
     return this
   }
 
+  async addLiquidityWithAllowance (
+    amount_0:            Uint128,
+    snip20_0:             Snip20,
+    amount_1:            Uint128,
+    snip20_1:             Snip20,
+    slippage_tolerance?: Decimal
+  ) {
+    const pair    = new TokenPair(snip20_0.asDescriptor, snip20_1.asDescriptor)
+    const deposit = new TokenPairAmount(pair, amount_0, amount_1)
+    return await this.agent.bundle().wrap(async bundle=>{
+      await snip20_0.withAgent(bundle).increaseAllowance(amount_0, this.address)
+      await snip20_1.withAgent(bundle).increaseAllowance(amount_1, this.address)
+      await this.withAgent(bundle).addLiquidity(deposit, slippage_tolerance)
+    })
+  }
+
   async addLiquidity (
     deposit:             TokenPairAmount,
     slippage_tolerance?: Decimal
@@ -350,7 +362,7 @@ export class AMMExchange extends Client {
     return this.agent
       .getClient(Snip20, info.liquidity_token.address)
       .withFee(this.getFee('remove_liquidity'))
-      .send(this.address, amount, { remove_liquidity: { recipient } })
+      .send(amount, this.address, { remove_liquidity: { recipient } })
   }
 
   async swap (
@@ -370,7 +382,7 @@ export class AMMExchange extends Client {
       const tokenAddr = (amount.token as CustomToken).custom_token.contract_addr
       return this.agent.getClient(Snip20, tokenAddr)
         .withFee(this.getFee('swap_snip20'))
-        .send(this.address, amount.amount, msg)
+        .send(amount.amount, this.address, msg)
     }
   }
 

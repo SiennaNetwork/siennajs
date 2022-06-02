@@ -139,52 +139,52 @@ export class LendMarket extends Client {
 
   /** Convert and burn the specified amount of slToken to the underlying asset
     * based on the current exchange rate and transfer them to the user. */
-  async redeemFromSL <R> (burn_amount: Uint256): Promise<R> {
+  async redeemFromSL (burn_amount: Uint256) {
     return await this.execute({ redeem_token: { burn_amount } })
   }
 
   /** Burn slToken amount of tokens equivalent to the specified amount
     * based on the current exchange rate and transfer the specified amount
     * of the underyling asset to the user. */
-  async redeemFromUnderlying <R> (receive_amount: Uint256): Promise<R> {
+  async redeemFromUnderlying (receive_amount: Uint256) {
     return this.execute({ redeem_underlying: { receive_amount } })
   }
 
-  async borrow <R> (amount: Uint256): Promise<R> {
+  async borrow (amount: Uint256) {
     return await this.execute({ borrow: { amount } })
   }
 
-  async transfer <R> (amount: Uint256, recipient: Address): Promise<R> {
+  async transfer (amount: Uint256, recipient: Address) {
     return await this.execute({ transfer: { amount, recipient } })
   }
 
   /** This function is automatically called before every transaction to update to
     * the latest state of the market but can also be called manually through here. */
-  async accrueInterest <R> (): Promise<R> {
+  async accrueInterest () {
     return this.execute({ accrue_interest: {} })
   }
 
-  async deposit <R> (amount: Uint256, underlying_asset?: Address): Promise<R> {
+  async deposit (amount: Uint256, underlying_asset?: Address) {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
       .withFee(this.getFee('deposit'))
-      .send(this.address, amount, 'deposit')
+      .send(amount, this.address, 'deposit')
   }
 
-  async repay <R> (
+  async repay (
     amount: Uint256,
     /** Optionally specify a borrower ID to repay someone else's debt. */
     borrower?: string,
     underlying_asset?: Address
-  ): Promise<R> {
+  ) {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
       .withFee(this.getFee('repay'))
-      .send(this.address, amount, { repay: { borrower } })
+      .send(amount, this.address, { repay: { borrower } })
   }
 
   /** Try to liquidate an existing borrower in this market. */
-  async liquidate <R> (
+  async liquidate (
     /** @param amount - the amount to liquidate by. */
     amount: Uint256,
     /** @param borrower - the ID corresponding to the borrower to liquidate. */
@@ -197,7 +197,7 @@ export class LendMarket extends Client {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent.getClient(Snip20, address)
       .withFee(this.getFee('liquidate'))
-      .send(this.address, amount, { liquidate: { borrower, collateral } })
+      .send(amount, this.address, { liquidate: { borrower, collateral } })
   }
 
   /** Dry run a liquidation returning a result indicating the amount of `collateral`
