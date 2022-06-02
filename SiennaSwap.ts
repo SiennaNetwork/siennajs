@@ -97,7 +97,7 @@ export interface AMMSimulation {
   commission_amount: Uint128
 }
 
-export interface AMMSimulationFormward extends AMMSimulation {
+export interface AMMSimulationForward extends AMMSimulation {
   return_amount:     Uint128
 }
 
@@ -220,7 +220,7 @@ export abstract class AMMFactory extends Client {
   async getExchange (
     token_0: Token,
     token_1: Token
-  ): Promise<ExchangeInfo> {
+  ): Promise<AMMExchangeInfo> {
     const msg = { get_exchange_address: { pair: { token_0, token_1 } } }
     const result = await this.query(msg)
     const {get_exchange_address:{address}} = <{get_exchange_address:{address: Address}}>result
@@ -231,7 +231,7 @@ export abstract class AMMFactory extends Client {
     * the passed token pairs. */
   async getExchanges (
     pairs: [Token, Token][]
-  ): Promise<ExchangeInfo[]> {
+  ): Promise<AMMExchangeInfo[]> {
     return await Promise.all(pairs.map(([token_0, token_1])=>this.getExchange(token_0, token_1)))
   }
 
@@ -252,7 +252,7 @@ export abstract class AMMFactory extends Client {
     return result
   }
 
-  async listExchangesFull (): Promise<ExchangeInfo[]> {
+  async listExchangesFull (): Promise<AMMExchangeInfo[]> {
     const exchanges = await this.listExchanges()
     return Promise.all(
       exchanges.map((info) => {
@@ -305,8 +305,9 @@ export class AMMExchange extends Client {
     address: Address,
     token_0: Snip20|Token,
     token_1: Snip20|Token,
-  ): Promise<ExchangeInfo> {
+  ): Promise<AMMExchangeInfo> {
     const self = await AMMExchange.fromAddress(agent, address)
+
     // <dumb>
     const { token: TOKEN_0, name: TOKEN_0_NAME } = await Snip20.fromDescriptor(agent, token_0)
     const { token: TOKEN_1, name: TOKEN_1_NAME } = await Snip20.fromDescriptor(agent, token_1)
@@ -401,11 +402,11 @@ export class AMMExchange extends Client {
     return pair_info
   }
 
-  async simulateSwap (amount: TokenAmount): Promise<SwapSimulationResponse> {
+  async simulateSwap (amount: TokenAmount): Promise<AMMSimulationForward> {
     return this.query({ swap_simulation: { offer: amount } })
   }
 
-  async simulateSwapReverse (ask_asset: TokenAmount): Promise<ReverseSwapSimulationResponse> {
+  async simulateSwapReverse (ask_asset: TokenAmount): Promise<AMMSimulationReverse> {
     return this.query({ reverse_simulation: { ask_asset } })
   }
 
