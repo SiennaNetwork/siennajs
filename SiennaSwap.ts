@@ -189,26 +189,10 @@ export abstract class AMMFactory extends Client {
     const newPairs: AMMCreateExchangesResults = []
 
     await this.agent.bundle().wrap(async bundle=>{
-      //const client = this.withAgent(bundle)
-      const agent = this.agent
-
-      // <dumb>
-      // why is bundle not being used?
-      // same as Factory#createExchanges which is just terrible
-      // @ts-ignore
-      this.agent = bundle
-      // </dumb>
-
       for (const [token_0, token_1] of tokenPairs) {
-        const exchange = await this.createExchange(token_0, token_1)
+        const exchange = await this.withAgent(bundle).createExchange(token_0, token_1)
         newPairs.push({ token_0, token_1 })
       }
-
-      // <dumb>
-      // @ts-ignore
-      this.agent = agent
-      // </dumb>
-
     })
 
     return newPairs
@@ -278,13 +262,6 @@ export abstract class AMMFactory extends Client {
     }
   }
 
-}
-
-export class ContractTemplate implements IContractTemplate {
-  constructor(
-    readonly id:        number,
-    readonly code_hash: string,
-  ) {}
 }
 
 export class AMMExchange extends Client {
@@ -477,16 +454,14 @@ export class AMMRouter extends Client {
     known_pairs: AMMRouterPair[],
     from_token:  Token,
     into_token:  Token,
-  ): SwapRoute {
-    return SwapRoute.assemble(known_pairs, from_token, into_token)
+  ): AMMRoute {
+    return AMMRoute.assemble(known_pairs, from_token, into_token)
   }
 
   /* TODO */
   async swap (
-    factory:    AMMFactory,
-    from_token: Token,
-    into_token: Token,
-    amount:     Uint128
+    route:  AMMRoute,
+    amount: Uint128
   ) {
 
   }
@@ -528,7 +503,7 @@ export class AMMRouterPair {
 
 }
 
-export class SwapRoute {
+export class AMMRoute {
 
   constructor (
     readonly error: string|null    = null,
@@ -537,13 +512,13 @@ export class SwapRoute {
 
   /** Create an empty route with an error message,
     * meaning that invalid data has been passed to the assemble function. */
-  static error (error: string): SwapRoute {
-    return new SwapRoute(error, [])
+  static error (error: string): AMMRoute {
+    return new AMMRoute(error, [])
   }
 
   /** Create a valid route with a list of hops to be executed. */
-  static valid (...hops: AMMRouterHop[]): SwapRoute {
-    return new SwapRoute(null, hops)
+  static valid (...hops: AMMRouterHop[]): AMMRoute {
+    return new AMMRoute(null, hops)
   }
 
   /** Create a AMMRouterPair instance */
@@ -570,22 +545,22 @@ export class SwapRoute {
     return { from_token, pair_address, pair_code_hash }
   }
 
-  /** Get an assembled SwapRoute by calling `asHops`
-    * on the result of `SwapRoute.visit`. */
+  /** Get an assembled AMMRoute by calling `asHops`
+    * on the result of `AMMRoute.visit`. */
   static assemble (
     known_pairs: AMMRouterPair[],
     from_token:  Token,
     into_token:  Token,
-  ): SwapRoute {
+  ): AMMRoute {
     // Make sure there are pairs to pick from
     if ((known_pairs.length === 0 || !from_token || !into_token)) {
-      return SwapRoute.error("No token pairs provided")
+      return AMMRoute.error("No token pairs provided")
     }
     // Make sure we're not routing from and into the same token
     const from_token_id = getTokenId(from_token)
     const into_token_id = getTokenId(into_token)
     if (from_token_id === into_token_id) {
-      return SwapRoute.error("Provided tokens are the same token")
+      return AMMRoute.error("Provided tokens are the same token")
     }
     // Add reversed pairs
     const pairs = known_pairs.reduce((pairs: AMMRouterPair[], pair: AMMRouterPair)=>{
@@ -596,9 +571,9 @@ export class SwapRoute {
     const byLength = (a, b) => a.length - b.length
     const result = routes.sort(byLength)[0] || null
     if (result) {
-      return SwapRoute.valid(...result)
+      return AMMRoute.valid(...result)
     } else {
-      return SwapRoute.error("No possible solution for given pair")
+      return AMMRoute.error("No possible solution for given pair")
     }
 
     // Recursively visit all possible routes that have a matching `from_token`.
