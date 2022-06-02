@@ -466,13 +466,75 @@ export class AMMRouter extends Client {
     known_pairs: AMMRouterPair[],
     from_token:  Token,
     into_token:  Token,
-  ): AMMRoute {
-    return AMMRoute.assemble(known_pairs, from_token, into_token)
+  ): AMMRouterHop[] {
+    // Make sure there are pairs to pick from
+    if ((known_pairs.length === 0 || !from_token || !into_token)) {
+      throw new Error("AMMRouter#assemble: no token pairs provided")
+    }
+    // Make sure we're not routing from and into the same token
+    const from_token_id = getTokenId(from_token)
+    const into_token_id = getTokenId(into_token)
+    if (from_token_id === into_token_id) {
+      throw new Error("AMMRouter#assemble: can't swap token with itself")
+    }
+    // Add reversed pairs
+    const pairs = known_pairs.reduce((pairs: AMMRouterPair[], pair: AMMRouterPair)=>{
+      return [...pairs, pair, pair.reverse()]
+    }, [])
+    // Return the shortest solved route.
+    const routes = visit(from_token_id, into_token_id)
+    const byLength = (a: Array<unknown>, b: Array<unknown>) => a.length - b.length
+    const result = routes.sort(byLength)[0] || null
+    if (result) {
+      return result
+    } else {
+      throw new Error("AMMRouter#assemble: could not find route for given pair")
+    }
+
+    // Recursively visit all possible routes that have a matching `from_token`.
+    function visit (
+      token_id:        string,
+      target_token_id: string,
+      visited:         string[]       = [],
+      past_hops:       AMMRouterHop[] = [],
+      first:           boolean        = true
+    ): AMMRouterHop[][] {
+      const routes = []
+      for (const pair of pairs) {
+        // Native token cannot be in the middle of the route
+        // because it's not a SNIP20 token and does not support
+        // the Send callbacks required for the router to operate
+        if (!first && pair.from_token_id === "native") continue
+        // Parents can be any of the pairs that have a matching from_token
+        if (pair.from_token_id !== token_id) continue
+        // Skip pairs that we've already visited
+        if (visited.includes(pair.from_token_id)) continue
+        if (visited.includes(pair.into_token_id)) continue
+        // Collect token ids that have already been used
+        // and therefore cannot be used again
+        visited.push(token_id)
+        // If we've reached our destination token,
+        // collect the route and continue.
+        if (pair.into_token_id === target_token_id) {
+          routes.push([...past_hops, pair.asHop()])
+          continue
+        }
+        // Descend into the tree.
+        visit(
+          pair.into_token_id,
+          target_token_id,
+          visited,
+          [...past_hops, pair.asHop()],
+          false
+        ).forEach(route=>routes.push(route))
+      }
+      return routes
+    }
   }
 
   /* TODO */
   async swap (
-    route:  AMMRoute,
+    route:  AMMRouterHop[],
     amount: Uint128
   ) {
 
@@ -511,122 +573,6 @@ export class AMMRouterPair {
   reverse (): AMMRouterPair {
     const { from_token, into_token, pair_address, pair_code_hash } = this
     return new AMMRouterPair(into_token, from_token, pair_address, pair_code_hash);
-  }
-
-}
-
-export class AMMRoute {
-
-  constructor (
-    readonly error: string|null    = null,
-    readonly hops:  AMMRouterHop[] = [],
-  ) {}
-
-  /** Create an empty route with an error message,
-    * meaning that invalid data has been passed to the assemble function. */
-  static error (error: string): AMMRoute {
-    return new AMMRoute(error, [])
-  }
-
-  /** Create a valid route with a list of hops to be executed. */
-  static valid (...hops: AMMRouterHop[]): AMMRoute {
-    return new AMMRoute(null, hops)
-  }
-
-  /** Create a AMMRouterPair instance */
-  static pair (
-    from_token:     Token,
-    into_token:     Token,
-    pair_address:   Address,
-    pair_code_hash: string
-  ): AMMRouterPair {
-    return new AMMRouterPair(
-      from_token,
-      into_token,
-      pair_address,
-      pair_code_hash
-    )
-  }
-
-  /** Create a AMMRouterHop instance. */
-  static hop (
-    from_token: Token,
-    pair:       AMMRouterPair
-  ): AMMRouterHop {
-    const { pair_address, pair_code_hash } = pair
-    return { from_token, pair_address, pair_code_hash }
-  }
-
-  /** Get an assembled AMMRoute by calling `asHops`
-    * on the result of `AMMRoute.visit`. */
-  static assemble (
-    known_pairs: AMMRouterPair[],
-    from_token:  Token,
-    into_token:  Token,
-  ): AMMRoute {
-    // Make sure there are pairs to pick from
-    if ((known_pairs.length === 0 || !from_token || !into_token)) {
-      return AMMRoute.error("No token pairs provided")
-    }
-    // Make sure we're not routing from and into the same token
-    const from_token_id = getTokenId(from_token)
-    const into_token_id = getTokenId(into_token)
-    if (from_token_id === into_token_id) {
-      return AMMRoute.error("Provided tokens are the same token")
-    }
-    // Add reversed pairs
-    const pairs = known_pairs.reduce((pairs: AMMRouterPair[], pair: AMMRouterPair)=>{
-      return [...pairs, pair, pair.reverse()]
-    }, [])
-    // Return the shortest solved route.
-    const routes = visit(from_token_id, into_token_id)
-    const byLength = (a, b) => a.length - b.length
-    const result = routes.sort(byLength)[0] || null
-    if (result) {
-      return AMMRoute.valid(...result)
-    } else {
-      return AMMRoute.error("No possible solution for given pair")
-    }
-
-    // Recursively visit all possible routes that have a matching `from_token`.
-    function visit (
-      token_id:        string,
-      target_token_id: string,
-      visited:         string[]       = [],
-      past_hops:       AMMRouterHop[] = [],
-      first:           boolean        = true
-    ): AMMRouterHop[] {
-      const routes = []
-      for (const pair of pairs) {
-        // Native token cannot be in the middle of the route
-        // because it's not a SNIP20 token and does not support
-        // the Send callbacks required for the router to operate
-        if (!first && pair.from_token_id === "native") continue
-        // Parents can be any of the pairs that have a matching from_token
-        if (pair.from_token_id !== token_id) continue
-        // Skip pairs that we've already visited
-        if (visited.includes(pair.from_token_id)) continue
-        if (visited.includes(pair.into_token_id)) continue
-        // Collect token ids that have already been used
-        // and therefore cannot be used again
-        visited.push(token_id)
-        // If we've reached our destination token,
-        // collect the route and continue.
-        if (pair.into_token_id === target_token_id) {
-          routes.push([...past_hops, pair.asHop()])
-          continue
-        }
-        // Descend into the tree.
-        visit(
-          pair.into_token_id,
-          target_token_id,
-          visited,
-          [...past_hops, pair.asHop()],
-          false
-        ).forEach(route=>routes.push(route))
-      }
-      return routes
-    }
   }
 
 }
