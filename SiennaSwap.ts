@@ -38,12 +38,16 @@ export interface IContractTemplate {
   code_hash: CodeHash,
 }
 
-export interface AMMFactoryTemplates {
+export interface AMMFactoryInventory {
   pair_contract:       IContractTemplate
   lp_token_contract:   IContractTemplate
+
+  // unused, required by v1:
   snip20_contract?:    IContractTemplate
   ido_contract?:       IContractTemplate
   launchpad_contract?: IContractTemplate
+
+  // ???
   router_contract?:    IContractTemplate
 }
 
@@ -251,7 +255,7 @@ export abstract class AMMFactory extends Client {
   /** Return the collection of contract templates
     * (`{ id, code_hash }` structs) that the factory
     * uses to instantiate contracts. */
-  async getTemplates (): Promise<AMMFactoryTemplates> {
+  async getTemplates (): Promise<AMMFactoryInventory> {
     const { config } = await this.query({ get_config: {} })
     return {
       snip20_contract:    config.snip20_contract,
@@ -288,7 +292,7 @@ export class AMMExchange extends Client {
     // <dumb>
     const snip20_0 = await Snip20.fromDescriptor(agent, token_0 as CustomToken).populate()
     const snip20_1 = await Snip20.fromDescriptor(agent, token_1 as CustomToken).populate()
-    const name = `${snip20_1.symbol}-${snip20_1.symbol}`
+    const name     = `${snip20_0.symbol}-${snip20_1.symbol}`
     const { liquidity_token } = await self.getPairInfo()
     const { address: lpTokenAddress, code_hash: lpTokenCodeHash } = liquidity_token
     const lpTokenOpts = { codeHash: lpTokenCodeHash, address: lpTokenAddress }
