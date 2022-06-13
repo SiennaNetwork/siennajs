@@ -122,7 +122,9 @@ export interface AMMExchangeInfo {
   /** The liquidity provision token, which is minted to stakers of the 2 tokens. */
   LP_TOKEN: LPToken,
   /** The bare-bones data needed to retrieve the above. */
-  raw:      any
+  raw:      any,
+  /** Response from PairInfo query */
+  pairInfo?: AMMPairInfo
 }
 
 /** The result of the routing algorithm is an array of `AMMRouterHop` objects.
@@ -293,7 +295,8 @@ export class AMMExchange extends Client {
     const snip20_0 = await Snip20.fromDescriptor(agent, token_0 as CustomToken).populate()
     const snip20_1 = await Snip20.fromDescriptor(agent, token_1 as CustomToken).populate()
     const name     = `${snip20_0.symbol}-${snip20_1.symbol}`
-    const { liquidity_token } = await self.getPairInfo()
+    const pairInfo = await self.getPairInfo()
+    const { liquidity_token } = pairInfo
     const { address: lpTokenAddress, code_hash: lpTokenCodeHash } = liquidity_token
     const lpTokenOpts = { codeHash: lpTokenCodeHash, address: lpTokenAddress }
     return {
@@ -308,6 +311,7 @@ export class AMMExchange extends Client {
         token_0,
         token_1,
       },
+      pairInfo
     }
     // </dumb>
   }
