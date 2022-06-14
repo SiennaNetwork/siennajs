@@ -231,7 +231,8 @@ export abstract class AMMFactory extends Client {
     let start = 0
     while (true) {
       const msg = { list_exchanges: { pagination: { start, limit } } }
-      const {list_exchanges: {exchanges: list}} = await this.query(msg)
+      const response = await this.query(msg)
+      const {list_exchanges: {exchanges: list}} = response
       if (list.length > 0) {
         result.push(...list)
         start += limit
