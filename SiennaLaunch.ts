@@ -2,7 +2,6 @@ import {
   Address,
   Client,
   Coin,
-  Duration,
   Fee,
   ContractLink,
   Moment,
@@ -160,6 +159,8 @@ export interface QueryAccountToken {
 }
 
 export class IDO extends Client {
+
+  vk = new ViewingKeyClient(this.agent, this)
 
   /** This method will perform the native token pre_lock.
    *

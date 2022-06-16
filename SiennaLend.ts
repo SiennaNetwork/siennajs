@@ -1,5 +1,5 @@
 import { Client, Fee, Address, Decimal256, Uint128, Uint256, ContractLink } from '@fadroma/client'
-import { Permit, Signer, ViewingKey } from '@fadroma/client-scrt'
+import { Permit, Signer, ViewingKey, ViewingKeyClient } from '@fadroma/client-scrt'
 import { Snip20, TokenInfo } from '@fadroma/tokens'
 import { Pagination, PaginatedResponse } from './Pagination'
 
@@ -136,6 +136,8 @@ export class LendMarket extends Client {
     repay:             new Fee( '90000', 'usrct'),
     transfer:          new Fee( '80000', 'uscrt'),
   }
+
+  vk = new ViewingKeyClient(this.agent, this)
 
   /** Convert and burn the specified amount of slToken to the underlying asset
     * based on the current exchange rate and transfer them to the user. */
