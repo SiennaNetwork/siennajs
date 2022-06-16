@@ -1,23 +1,19 @@
 import {
   Address,
-  Agent,
   Client,
   ClientCtor,
-  ClientOptions,
+  ClientOpts,
   CodeHash,
-  Coin,
   ContractLink,
   Decimal,
   Executor,
   ExecOpts,
   Fee,
-  ICoin,
   Uint128,
 } from '@fadroma/client'
 import {
   Snip20,
   CustomToken,
-  NativeToken,
   TokenKind,
   Token,
   TokenPair,
@@ -26,7 +22,6 @@ import {
   getTokenKind,
   getTokenId
 } from '@fadroma/tokens'
-import { b64encode } from "@waiting/base64"
 import { create_entropy } from './Core'
 
 export type AMMVersion = "v1"|"v2"
@@ -89,9 +84,9 @@ export interface AMMPairInfo {
   contract_version: number
 }
 
-export type AMMExchangeCtor = ClientCtor<AMMExchange, AMMExchangeOptions>
+export type AMMExchangeCtor = ClientCtor<AMMExchange, AMMExchangeOpts>
 
-export interface AMMExchangeOptions extends ClientOptions {
+export interface AMMExchangeOpts extends ClientOpts {
   token_0?: Token
   token_1?: Token
 }
@@ -196,7 +191,7 @@ export abstract class AMMFactory extends Client {
 
     await this.agent.bundle().wrap(async bundle=>{
       for (const [token_0, token_1] of tokenPairs) {
-        const exchange = await this.withAgent(bundle).createExchange(token_0, token_1)
+        const exchange = await this.as(bundle).createExchange(token_0, token_1)
         newPairs.push({ token_0, token_1 })
       }
     })
@@ -231,7 +226,7 @@ export abstract class AMMFactory extends Client {
     let start = 0
     while (true) {
       const msg = { list_exchanges: { pagination: { start, limit } } }
-      const response = await this.query(msg)
+      const response: {list_exchanges:{exchanges:AMMFactoryExchangeInfo[]}} = await this.query(msg)
       const {list_exchanges: {exchanges: list}} = response
       if (list.length > 0) {
         result.push(...list)
@@ -324,7 +319,7 @@ export class AMMExchange extends Client {
     swap_snip20:      new Fee('100000', 'uscrt'),
   }
 
-  constructor (agent: Executor, options: AMMExchangeOptions) {
+  constructor (agent: Executor, options: AMMExchangeOpts) {
     super(agent, options)
     if (options.token_0) this.token_0 = options.token_0
     if (options.token_1) this.token_1 = options.token_1
@@ -351,9 +346,9 @@ export class AMMExchange extends Client {
     const pair    = new TokenPair(snip20_0.asDescriptor, snip20_1.asDescriptor)
     const deposit = new TokenPairAmount(pair, amount_0, amount_1)
     return await this.agent.bundle().wrap(async bundle=>{
-      await snip20_0.withAgent(bundle).increaseAllowance(amount_0, this.address)
-      await snip20_1.withAgent(bundle).increaseAllowance(amount_1, this.address)
-      await this.withAgent(bundle).addLiquidity(deposit, slippage_tolerance)
+      await snip20_0.as(bundle).increaseAllowance(amount_0, this.address)
+      await snip20_1.as(bundle).increaseAllowance(amount_1, this.address)
+      await this.as(bundle).addLiquidity(deposit, slippage_tolerance)
     })
   }
 

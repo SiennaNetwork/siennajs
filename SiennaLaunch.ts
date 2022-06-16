@@ -29,7 +29,7 @@ export class Launchpad extends Client {
     unlock_snip20: new Fee('350000', 'uscrt'),
   }
 
-  async lock <R> (amount: Uint128, tokenAddress?: Address): Promise<R> {
+  async lock (amount: Uint128, tokenAddress?: Address) {
     tokenAddress = await this.verifyTokenAddress(tokenAddress)
     if (!tokenAddress) {
       const msg = { lock: { amount } }
@@ -41,7 +41,7 @@ export class Launchpad extends Client {
       .send(amount, this.address, { lock: {} })
   }
 
-  async unlock <R> (entries: number, tokenAddress?: Address): Promise<R> {
+  async unlock (entries: number, tokenAddress?: Address) {
     tokenAddress = await this.verifyTokenAddress(tokenAddress)
     const msg = { unlock: { entries } }
     if (!tokenAddress) {
@@ -106,13 +106,13 @@ export class LaunchpadAdmin extends Client {
     admin_remove_token: new Fee('3000000', 'uscrt')
   }
 
-  async addToken <R> (config: TokenSettings): Promise<R> {
+  async addToken (config: TokenSettings) {
     return await this.execute({ admin_add_token: { config } })
   }
 
   /** This action will remove the token from the contract
     * and will refund all locked balances on that token back to users */
-  async removeToken <R> (index: number): Promise<R> {
+  async removeToken (index: number) {
     return await this.execute({ admin_remove_token: { index } })
   }
 
@@ -165,7 +165,7 @@ export class IDO extends Client {
    *
    *  IMPORTANT: if custom buy token is set, you have to use the SNIP20
    *  receiver callback interface to initiate pre_lock. */
-  preLock <R> (amount: Uint128): Promise<R> {
+  preLock (amount: Uint128) {
     const msg = { amount }
     const opt = { send: [{ amount: `${amount}`, denom: "uscrt" }] }
     return this.execute(msg, opt)
@@ -175,7 +175,7 @@ export class IDO extends Client {
     *
     * IMPORTANT: if custom buy token is set, you have to use the SNIP20
     * receiver callback interface to initiate swap. */
-  async swap <R> (amount: Uint128, recipient?: Address): Promise<R> {
+  async swap (amount: Uint128, recipient?: Address) {
     const info = await this.getSaleInfo()
     if (getTokenKind(info.input_token) == TokenKind.Native) {
       const msg = { swap: { amount, recipient } }
@@ -244,18 +244,18 @@ export class IDOAdmin extends Client {
 
   /** After the sale ends, admin can use this method to
     * refund all tokens that weren't sold in the IDO sale */
-  async refund <R> (recipient?: Address): Promise<R> {
+  async refund (recipient?: Address) {
     return await this.execute({ admin_refund: { address: recipient } })
   }
 
   /** After the sale ends, admin will use this method to
     * claim all the profits accumulated during the sale */
-  async claim <R> (recipient?: Address): Promise<R> {
+  async claim (recipient?: Address) {
     return await this.execute({ admin_claim: { address: recipient } })
   }
 
   /** Add addresses on whitelist for IDO contract */
-  async addAddresses <R> (addresses: Address[]): Promise<R> {
+  async addAddresses (addresses: Address[]) {
     return await this.execute({ admin_add_addresses: { addresses } })
   }
 
