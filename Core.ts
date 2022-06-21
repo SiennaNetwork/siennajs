@@ -24,11 +24,6 @@ export interface Fee {
   readonly gas:    Uint128
 }
 
-export interface Pagination {
-  limit: number;
-  start: number;
-}
-
 export function decode_data<T>(result: { data: Buffer }): T {
   const b64string = b64fromBuffer(result.data)
   return JSON.parse(b64decode(b64string))
