@@ -3,6 +3,8 @@ import { ViewingKey, ViewingKeyClient } from '@fadroma/client-scrt';
 import { Snip20 } from '@fadroma/tokens';
 import secureRandom from 'secure-random';
 import { AuthMethod } from './Auth';
+import sha256 from 'crypto-js/sha256';
+import MerkleTree from 'merkletreejs';
 
 export class Launchpad extends Client {
     /**
@@ -130,8 +132,16 @@ export class Launchpad extends Client {
         // Return an integer that falls within the range
         return min + rval;
     }
-    private createMerkleTree(addresses: Address[]) {
-        
+    private createMerkleTree(addresses: Address[]): MerkleTreeInfo {
+        const leaves = addresses.map((addr) => sha256(addr));
+        const tree = new MerkleTree(leaves, sha256);
+
+        const root = tree.getRoot().toString('hex');
+
+        return {
+            leaves_count: tree.getLeafCount(),
+            root,
+        };
     }
 }
 
