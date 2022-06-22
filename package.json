@@ -21,6 +21,7 @@
     "@fadroma/tokens": "workspace:*",
     "@hackbg/konzola": "workspace:*",
     "@waiting/base64": "^4.2.9",
+    "crypto-js": "^4.1.1",
     "merkletreejs": "^0.2.32"
   },
   "devDependencies": {
