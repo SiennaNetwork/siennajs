@@ -1,6 +1,7 @@
 import { Address, Client, ContractLink, Uint128 } from '@fadroma/client';
 import { ViewingKey, ViewingKeyClient } from '@fadroma/client-scrt';
 import { Snip20 } from '@fadroma/tokens';
+import secureRandom from 'secure-random';
 import { AuthMethod } from './Auth';
 
 export class Launchpad extends Client {
@@ -19,7 +20,7 @@ export class Launchpad extends Client {
      * @param addresses List of users
      *
      */
-    async add_creators(addresses: Address[]) {
+    async addCreators(addresses: Address[]) {
         return this.execute({ add_project_owners: { addresses } });
     }
 
@@ -31,7 +32,7 @@ export class Launchpad extends Client {
      * @param time Current timestamp
      * @returns Entries
      */
-    async get_entries(
+    async getEntries(
         auth: AuthMethod<LaunchpadPermissions>,
         addresses: Address[],
         time: number
@@ -44,7 +45,7 @@ export class Launchpad extends Client {
      *
      * @returns SaleConstraints
      */
-    async sale_constraints(): Promise<SaleConstraints> {
+    async saleConstraints(): Promise<SaleConstraints> {
         return this, this.query({ sale_constraints: {} });
     }
     /**
@@ -54,11 +55,80 @@ export class Launchpad extends Client {
      * @param limit Items per page
      * @returns IdoCollection
      */
-    async get_idos(
+    async getIdos(
         start: number = 0,
         limit: number = 5
     ): Promise<IdoCollection> {
         return this.query({ idos: { pagination: { start, limit } } });
+    }
+
+    async drawWinners(
+        addresses: Address[],
+        auth: AuthMethod<LaunchpadPermissions>,
+        seatsOpen: number
+    ): Promise<Address[]> {
+        const entries = await this.getEntries(auth, addresses, Date.now());
+        const mappedAccounts = addresses.map((addr, i) => ({
+            address: addr,
+            entries: entries[i],
+        }));
+
+        const winners = [];
+        for (let i = 0; i < seatsOpen; i++) {
+            const winner = this.weightedRandom(mappedAccounts);
+            winners.push(winner);
+            mappedAccounts.splice(mappedAccounts.indexOf(winner!), 1);
+        }
+
+        return winners.map((winner) => winner!.address);
+    }
+
+    private weightedRandom(accounts: { address: Address; entries: number }[]) {
+        const weights: Array<number> = [];
+        for (let i = 0; i < accounts.length; i++) {
+            weights[i] = accounts[i].entries + (weights[i - 1] || 0);
+        }
+
+        const random = this.getRandomIntInclusive(
+            0,
+            weights[weights.length - 1]
+        );
+
+        for (let i = 0; i < weights.length; i++) {
+            if (random < weights[i]) {
+                return accounts[i];
+            }
+        }
+    }
+    private getRandomIntInclusive(min: number, max: number): number {
+        var rval = 0;
+        var range = max - min;
+
+        var bits_needed = Math.ceil(Math.log2(range));
+        if (bits_needed > 32) {
+            throw new Error('Cannot use more than 32 bits');
+        }
+        var bytes_needed = Math.ceil(bits_needed / 8);
+        var mask = Math.pow(2, bits_needed) - 1;
+        // Create byte array and fill with N random numbers
+        var byteArray = new Uint8Array(bytes_needed);
+        window.crypto.getRandomValues(byteArray);
+
+        var p = (bytes_needed - 1) * 8;
+        for (var i = 0; i < bytes_needed; i++) {
+            rval += byteArray[i] * Math.pow(2, p);
+            p -= 8;
+        }
+
+        // Use & to apply the mask and reduce the number of recursive lookups
+        rval = rval & mask;
+
+        if (rval >= range) {
+            // Integer out of acceptable range
+            return this.getRandomIntInclusive(min, max);
+        }
+        // Return an integer that falls within the range
+        return min + rval;
     }
 }
 
@@ -82,7 +152,7 @@ export class IDO extends Client {
      * @param recipient Address to send the tokens to
      *
      */
-    async claim_tokens(recipient?: Address) {
+    async claimTokens(recipient?: Address) {
         return this.execute({ claim_tokens: { recipient } });
     }
     /**
@@ -93,7 +163,7 @@ export class IDO extends Client {
      * @param address Whom to send the adress to
      * @returns
      */
-    async refund_tokens(return_type: ReturnTokenType, address?: Address) {
+    async refundTokens(return_type: ReturnTokenType, address?: Address) {
         return this.execute({ refund_tokens: { address, return_type } });
     }
 
@@ -102,7 +172,7 @@ export class IDO extends Client {
      *
      * @returns Project
      */
-    async sale_info(): Promise<Project> {
+    async saleInfo(): Promise<Project> {
         return this.query({ sale_info: {} });
     }
     /**
@@ -110,7 +180,7 @@ export class IDO extends Client {
      *
      * @returns The current sale status
      */
-    async sale_status(): Promise<SaleStatus> {
+    async saleStatus(): Promise<SaleStatus> {
         return this.query({ sale_status: {} });
     }
     /**
@@ -215,9 +285,9 @@ interface MerkleAuth {
 interface LaunchOptions {
     // How long the sale lasts
     sale_duration: number;
-    // When this sale started
+    // When this sale should start
     sale_start?: number;
-    // For how long can users prelock their tokens after sale starts
+    // How long does prelock state last
     pre_lock_duration?: number;
 }
 
