@@ -130,6 +130,9 @@ export class Launchpad extends Client {
         // Return an integer that falls within the range
         return min + rval;
     }
+    private createMerkleTree(addresses: Address[]) {
+        
+    }
 }
 
 export class IDO extends Client {

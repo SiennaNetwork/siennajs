@@ -1,41 +1,40 @@
 {
-  "name":        "siennajs",
-  "version":     "1.0.0-rc.1",
+  "name": "siennajs",
+  "version": "1.0.0-rc.1",
   "description": "Interact with Sienna Network smart contracts through JS.",
-  "author":      "Sienna Network",
-  "license":     "MIT",
-  "private":     false,
-  "main":        "index.ts",
-  "type":        "module",
+  "author": "Sienna Network",
+  "license": "MIT",
+  "private": false,
+  "main": "index.ts",
+  "type": "module",
   "homepage": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs#readme",
   "repository": {
     "type": "git",
-    "url":  "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs"
+    "url": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs"
   },
   "bugs": {
     "url": "https://github.com/SiennaNetwork/sienna/issues"
   },
   "dependencies": {
-    "@fadroma/client":      "workspace:*",
+    "@fadroma/client": "workspace:*",
     "@fadroma/client-scrt": "workspace:*",
-    "@fadroma/tokens":      "workspace:*",
-
+    "@fadroma/tokens": "workspace:*",
     "@hackbg/konzola": "workspace:*",
     "@waiting/base64": "^4.2.9",
-    "secure-random":   "^1.1.2"
+    "merkletreejs": "^0.2.32"
   },
   "devDependencies": {
-    "@types/node":          "^17.0.35",
+    "@hackbg/izdatel": "workspace:*",
+    "@types/node": "^17.0.35",
     "@types/secure-random": "^1.1.0",
-    "typescript":           "^4.2.4",
-    "@hackbg/izdatel":      "workspace:*"
+    "typescript": "^4.2.4"
   },
   "exclude": [
     "node_modules"
   ],
   "scripts": {
-    "build":   "tsc",
-    "check":   "tsc --noEmit",
+    "build": "tsc",
+    "check": "tsc --noEmit",
     "release": "izdatel"
   }
 }
