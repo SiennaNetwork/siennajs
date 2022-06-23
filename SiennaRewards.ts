@@ -7,7 +7,7 @@ import {
   Uint128,
   Uint256,
 } from '@fadroma/client'
-import { Snip20 } from '@fadroma/tokens'
+import { ViewingKeyClient } from '@fadroma/client-scrt'
 import { Console } from '@hackbg/konzola'
 
 import { LPToken } from './SiennaSwap'
@@ -21,6 +21,8 @@ const console = Console('Sienna Rewards')
 const now = () => Math.floor(+ new Date() / 1000)
 
 export abstract class Rewards extends Client {
+
+  vk = new ViewingKeyClient(this.agent, this)
 
   abstract getStakedToken (): Promise<LPToken|null>
 

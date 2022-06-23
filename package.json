@@ -16,9 +16,10 @@
     "url": "https://github.com/SiennaNetwork/sienna/issues"
   },
   "dependencies": {
-    "@fadroma/client": "workspace:*",
-    "@fadroma/client-scrt": "workspace:*",
-    "@fadroma/tokens": "workspace:*",
+    "@fadroma/client":      "workspace:^3",
+    "@fadroma/client-scrt": "workspace:^4",
+    "@fadroma/tokens":      "workspace:^2",
+
     "@hackbg/konzola": "workspace:*",
     "@waiting/base64": "^4.2.9",
     "crypto-js": "^4.1.1",

@@ -1,23 +1,19 @@
 import {
   Address,
-  Agent,
   Client,
   ClientCtor,
-  ClientOptions,
+  ClientOpts,
   CodeHash,
-  Coin,
   ContractLink,
   Decimal,
   Executor,
   ExecOpts,
   Fee,
-  ICoin,
   Uint128,
 } from '@fadroma/client'
 import {
   Snip20,
   CustomToken,
-  NativeToken,
   TokenKind,
   Token,
   TokenPair,
@@ -26,7 +22,6 @@ import {
   getTokenKind,
   getTokenId
 } from '@fadroma/tokens'
-import { b64encode } from "@waiting/base64"
 import { create_entropy } from './Core'
 
 export type AMMVersion = "v1"|"v2"
@@ -38,12 +33,16 @@ export interface IContractTemplate {
   code_hash: CodeHash,
 }
 
-export interface AMMFactoryTemplates {
+export interface AMMFactoryInventory {
   pair_contract:       IContractTemplate
   lp_token_contract:   IContractTemplate
+
+  // unused, required by v1:
   snip20_contract?:    IContractTemplate
   ido_contract?:       IContractTemplate
   launchpad_contract?: IContractTemplate
+
+  // ???
   router_contract?:    IContractTemplate
 }
 
@@ -85,9 +84,9 @@ export interface AMMPairInfo {
   contract_version: number
 }
 
-export type AMMExchangeCtor = ClientCtor<AMMExchange, AMMExchangeOptions>
+export type AMMExchangeCtor = ClientCtor<AMMExchange, AMMExchangeOpts>
 
-export interface AMMExchangeOptions extends ClientOptions {
+export interface AMMExchangeOpts extends ClientOpts {
   token_0?: Token
   token_1?: Token
 }
@@ -118,7 +117,9 @@ export interface AMMExchangeInfo {
   /** The liquidity provision token, which is minted to stakers of the 2 tokens. */
   LP_TOKEN: LPToken,
   /** The bare-bones data needed to retrieve the above. */
-  raw:      any
+  raw:      any,
+  /** Response from PairInfo query */
+  pairInfo?: AMMPairInfo
 }
 
 /** The result of the routing algorithm is an array of `AMMRouterHop` objects.
@@ -190,7 +191,7 @@ export abstract class AMMFactory extends Client {
 
     await this.agent.bundle().wrap(async bundle=>{
       for (const [token_0, token_1] of tokenPairs) {
-        const exchange = await this.withAgent(bundle).createExchange(token_0, token_1)
+        const exchange = await this.as(bundle).createExchange(token_0, token_1)
         newPairs.push({ token_0, token_1 })
       }
     })
@@ -225,7 +226,8 @@ export abstract class AMMFactory extends Client {
     let start = 0
     while (true) {
       const msg = { list_exchanges: { pagination: { start, limit } } }
-      const {list_exchanges: {exchanges: list}} = await this.query(msg)
+      const response: {list_exchanges:{exchanges:AMMFactoryExchangeInfo[]}} = await this.query(msg)
+      const {list_exchanges: {exchanges: list}} = response
       if (list.length > 0) {
         result.push(...list)
         start += limit
@@ -251,7 +253,7 @@ export abstract class AMMFactory extends Client {
   /** Return the collection of contract templates
     * (`{ id, code_hash }` structs) that the factory
     * uses to instantiate contracts. */
-  async getTemplates (): Promise<AMMFactoryTemplates> {
+  async getTemplates (): Promise<AMMFactoryInventory> {
     const { config } = await this.query({ get_config: {} })
     return {
       snip20_contract:    config.snip20_contract,
@@ -288,8 +290,9 @@ export class AMMExchange extends Client {
     // <dumb>
     const snip20_0 = await Snip20.fromDescriptor(agent, token_0 as CustomToken).populate()
     const snip20_1 = await Snip20.fromDescriptor(agent, token_1 as CustomToken).populate()
-    const name = `${snip20_1.symbol}-${snip20_1.symbol}`
-    const { liquidity_token } = await self.getPairInfo()
+    const name     = `${snip20_0.symbol}-${snip20_1.symbol}`
+    const pairInfo = await self.getPairInfo()
+    const { liquidity_token } = pairInfo
     const { address: lpTokenAddress, code_hash: lpTokenCodeHash } = liquidity_token
     const lpTokenOpts = { codeHash: lpTokenCodeHash, address: lpTokenAddress }
     return {
@@ -304,6 +307,7 @@ export class AMMExchange extends Client {
         token_0,
         token_1,
       },
+      pairInfo
     }
     // </dumb>
   }
@@ -315,7 +319,7 @@ export class AMMExchange extends Client {
     swap_snip20:      new Fee('100000', 'uscrt'),
   }
 
-  constructor (agent: Executor, options: AMMExchangeOptions) {
+  constructor (agent: Executor, options: AMMExchangeOpts) {
     super(agent, options)
     if (options.token_0) this.token_0 = options.token_0
     if (options.token_1) this.token_1 = options.token_1
@@ -342,9 +346,9 @@ export class AMMExchange extends Client {
     const pair    = new TokenPair(snip20_0.asDescriptor, snip20_1.asDescriptor)
     const deposit = new TokenPairAmount(pair, amount_0, amount_1)
     return await this.agent.bundle().wrap(async bundle=>{
-      await snip20_0.withAgent(bundle).increaseAllowance(amount_0, this.address)
-      await snip20_1.withAgent(bundle).increaseAllowance(amount_1, this.address)
-      await this.withAgent(bundle).addLiquidity(deposit, slippage_tolerance)
+      await snip20_0.as(bundle).increaseAllowance(amount_0, this.address)
+      await snip20_1.as(bundle).increaseAllowance(amount_1, this.address)
+      await this.as(bundle).addLiquidity(deposit, slippage_tolerance)
     })
   }
 
