@@ -1,6 +1,6 @@
 {
   "name": "siennajs",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "description": "Interact with Sienna Network smart contracts through JS.",
   "author": "Sienna Network",
   "license": "MIT",
