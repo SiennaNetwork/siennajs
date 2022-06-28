@@ -9,6 +9,7 @@ import {
 } from '@fadroma/client';
 import { ViewingKeyClient } from '@fadroma/client-scrt';
 import { Console } from '@hackbg/konzola';
+import { Auth, AuthMethod } from './Auth';
 
 import { LPToken } from './SiennaSwap';
 
@@ -199,11 +200,38 @@ export abstract class Rewards extends Client {
             return result.rewards.config;
         }
 
-        async getUserInfo(key = '', address = this.agent.address, at = now()) {
-            const msg = { rewards: { user_info: { address, key, at } } };
+        async getAccount(
+            auth: AuthMethod<RewardsPermissions>,
+            at: number = now()
+        ) {
+            const msg = { rewards: { user_info: { auth, at } } };
             const result: { rewards: { user_info: Rewards_v4_Account } } =
                 await this.query(msg);
             return result.rewards.user_info;
+        }
+
+        async getUserInfo(key = '', address = this.agent.address, at = now()) {
+            // Cant change signature to throw error when address is not provided
+            const auth: AuthMethod<RewardsPermissions> = {
+                viewing_key: { address: address ?? '', key },
+            };
+            const msg = { rewards: { user_info: { at, auth } } };
+            const result: { rewards: { user_info: Rewards_v3_Account } } =
+                await this.query(msg);
+            return result.rewards.user_info;
+        }
+
+        async getAllBalances(
+            auth: AuthMethod<RewardsPermissions>,
+            at: number = now()
+        ) {
+            const result: {
+                rewards: { all_balances: Rewards_v4_AllBalances };
+            } = await this.query({
+                rewards: { all_balances: { at, auth } },
+            });
+
+            return result.rewards.all_balances;
         }
     };
 }
@@ -411,4 +439,46 @@ export interface Rewards_v4_Account {
     earned: Uint128;
     /** How many units of time (seconds) remain until the user can claim? */
     bonding: Duration;
+}
+
+export interface Rewards_v4_HistoryEntry {
+    // the type of bonding
+    bonding_type: 'bonding' | 'unbonding';
+    // When it started
+    timestamp: number;
+    // How many tokens
+    amount: Uint128;
+}
+
+export interface Rewards_v4_AllBalances {
+    /**
+     * 
+     How much is currently bonded for the user
+     *  */
+    bonded: Uint128;
+    /**
+     How much is the process of being unbonded, total
+     *  */
+    unbonding: Uint128;
+    /**
+    How much has been unbonded and is ready for withdrawing
+     *  */
+    unbonded: Uint128;
+    /**
+    The total amount of tokens (including bonded and unbonding) that the user has
+     *  */
+    total_staked: Uint128;
+    /**
+    All of the entries for bonding and unbonding
+     *  */
+    entries: Rewards_v4_HistoryEntry[];
+    /**
+    How much the user has staked which is valid for rewards
+     *  */
+    staked: Uint128;
+}
+
+enum RewardsPermissions {
+    UserInfo = 'user_info',
+    Balance = 'balance',
 }
