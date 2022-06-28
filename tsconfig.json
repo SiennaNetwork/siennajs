@@ -2,14 +2,15 @@
   "include": ["."],
   "exclude": [ "tests", "dist", "types", "node_modules" ],
   "compilerOptions": {
-    "outDir":          "./dist",
-    "declaration":     true,
-    "declarationMap":  true,
-    "declarationDir":  "types",
-    "types":           ["node"],
+    "outDir": "./dist/cjs",
+    "declaration": true,
+    "declarationMap": true,
+    "types": ["node"],
     "esModuleInterop": true,
-    "target":          "es6", 
-    "module":          "commonjs",
-    "strict":          true
+    "target": "es6", 
+    "module": "commonjs",
+    "strict": true,
+    "sourceMap": true,
+    "moduleResolution": "node"
   }
 }
