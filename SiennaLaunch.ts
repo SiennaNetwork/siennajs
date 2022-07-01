@@ -1,11 +1,11 @@
-import { Address, Client, ContractLink, Uint128 } from '@fadroma/client';
-import { ViewingKey, ViewingKeyClient } from '@fadroma/client-scrt';
+import { Address, ContractLink, Uint128 } from '@fadroma/client';
+import { ViewingKeyClient } from '@fadroma/client-scrt';
 import { Snip20 } from '@fadroma/tokens';
 import { AuthMethod } from './Auth';
 import sha256 from 'crypto-js/sha256';
 import MerkleTree from 'merkletreejs';
 
-export class Launchpad extends Client {
+export class Launchpad extends ViewingKeyClient {
     /**
      * Creates a new project
      * @param settings
@@ -101,6 +101,7 @@ export class Launchpad extends Client {
             }
         }
     }
+
     private getRandomIntInclusive(min: number, max: number): number {
         var rval = 0;
         var range = max - min;
@@ -131,7 +132,8 @@ export class Launchpad extends Client {
         // Return an integer that falls within the range
         return min + rval;
     }
-    private createMerkleTree(addresses: Address[]): MerkleTreeInfo {
+
+    createMerkleTree(addresses: Address[]): MerkleTreeInfo {
         const leaves = addresses.map((addr) => sha256(addr));
         const tree = new MerkleTree(leaves, sha256);
 
@@ -144,7 +146,7 @@ export class Launchpad extends Client {
     }
 }
 
-export class IDO extends Client {
+export class IDO extends ViewingKeyClient {
     /**
      *
      * @param callback What kind of operation to perform. Swap | Launch | Prelock
@@ -167,6 +169,7 @@ export class IDO extends Client {
     async claimTokens(recipient?: Address) {
         return this.execute({ claim_tokens: { recipient } });
     }
+
     /**
      * Refund tokens to the creator or someone else.
      * Viable when sale ends. Creator only transaction.
@@ -175,8 +178,8 @@ export class IDO extends Client {
      * @param address Whom to send the adress to
      * @returns
      */
-    async refundTokens(return_type: ReturnTokenType, address?: Address) {
-        return this.execute({ refund_tokens: { address, return_type } });
+    async refundTokens(return_type: ReturnTokenType, recipient?: Address) {
+        return this.execute({ refund_tokens: { recipient, return_type } });
     }
 
     /**
@@ -187,6 +190,7 @@ export class IDO extends Client {
     async saleInfo(): Promise<Project> {
         return this.query({ sale_info: {} });
     }
+
     /**
      * Get detailed information about the project sale.
      *
@@ -195,6 +199,7 @@ export class IDO extends Client {
     async saleStatus(): Promise<SaleStatus> {
         return this.query({ sale_status: {} });
     }
+    
     /**
      * Fetch the account information for a user
      *
@@ -204,6 +209,21 @@ export class IDO extends Client {
     async account(auth: AuthMethod<IdoPermissions>): Promise<Account> {
         return this.query({ account: { auth } });
     }
+
+    /**
+     * Get the claimable amount for the given time.
+     * 
+     * @param auth Authentication method.
+     * @param time Unix timestamp as seconds. If omitted provides the current time.
+     * @returns Uint128
+     */
+    async claimable(auth: AuthMethod<IdoPermissions>, time?: number): Promise<Uint128> {
+        return this.query({ claimable: {
+            auth,
+            time: time ? time : Math.floor(Date.now() / 1000)
+        }});
+    }
+
     /**
      * For a given user, check if he is whitelisted
      *
@@ -214,30 +234,57 @@ export class IDO extends Client {
     async eligibility(
         address: Address,
         auth: MerkleAuth
-    ): Promise<Eligibility> {
+    ): Promise<boolean> {
         return this.query({ eligibility: { address, auth } });
     }
 }
 
-interface SaleConfig {
-    // The maximum amount of tokens a user can purchase
+export interface SaleConfig {
+    /**
+     * The maximum amount of tokens a user can purchase.
+     */
     max_allocation: Uint128;
-    // The minimum amount of tokens a user can purchase
+    /**
+     * The minimum amount of tokens a user can purchase
+     */
     min_allocation: Uint128;
-    // What kind of sale this is.
     sale_type: SaleType;
+    vesting_config?: VestingConfig
 }
 
-enum SaleType {
-    // Only supports prelocking tokens beforehand
+export enum SaleType {
+    /**
+     * Only supports prelocking tokens beforehand.
+     */
     PreLock = 'pre_lock',
-    // No prelocking. Only swapping once sale starts
+    /**
+     * No prelocking. Only swapping once sale starts.
+     */
     Swap = 'swap',
-    // Both prelocking and swapping supported
+    /**
+     * Both prelocking and swapping supported.
+     */
     PreLockAndSwap = 'pre_lock_and_swap',
 }
 
-interface TokenSetup {
+/**
+ * One-off: The total amount bought by the user is unlocked only after the set duration. Time is a Unix timestamp in seconds.
+ * 
+ * Periodic: The amount bought by the user is unlocked gradually - over X amount of days, divided evenly into portions.
+ */
+ export type VestingConfig =
+    /**
+     * Unlock the full amount at the end of the duration given.
+     * Time is a Unix timestamp in seconds.
+     */
+    { one_off: number } |
+    /**
+     * Gradually unlock the vested amount over the number of days given.
+     * Each day, unlocks a portion of the amount.
+     */
+    { periodic: number }
+
+export interface TokenSetup {
     name: string;
     symbol: string;
     admin?: Address;
@@ -245,65 +292,113 @@ interface TokenSetup {
     decimals: number;
 }
 
-interface SwapConstants {
-    // At which rate the input token is converted into the output token
+export interface SwapConstants {
+    /**
+     * At what rate the input token is converted into the output token.
+     * The number has to correspond to the decimals of the sold token.
+     * 
+     * E.g: If we want 1:1 rate and the sold token has 6 decimals, then rate = 1_000_000
+     * 
+     * E.g: If we want 2:1 rate and the sold token has 6 decimals, then rate = 5_000_00 (1_000_000 / 2)
+     */
     rate: Uint128;
-    // How many decimals the input token has
+    /**
+     * How many decimals the input token has.
+     */
     input_token_decimals: number;
-    // How many decimals the output token has
+    /**
+     * How many decimals the output token has.
+     */
     sold_token_decimals: number;
 }
 
 /**
- * Helper type around creating or linking existing token for the project
+ * Helper type around creating or linking existing token for the project.
  */
-type TokenRelay = { new: TokenSetup } | { existing: ContractLink };
+export type TokenRelay = { new: TokenSetup } | { existing: ContractLink };
 
-interface ProjectConfig {
-    // The setup or the link to the sold token
+export interface ProjectConfig {
+    /**
+     * The setup or the link to the sold token.
+     */
     sold: TokenRelay;
-    // Link to the token that is to be used for buying
+    /**
+     * Link to the token that is to be used for buying.
+     */
     input: ContractLink;
-    // At which rate the input will be swapped into the output token
+    /**
+     * At what rate the input token is converted into the output token.
+     * The number has to correspond to the decimals of the sold token.
+     * 
+     * E.g: If we want 1:1 rate and the sold token has 6 decimals, then rate = 1_000_000
+     * 
+     * E.g: If we want 2:1 rate and the sold token has 6 decimals, then rate = 5_000_00 (1_000_000 / 2)
+     */
     rate: Uint128;
-    // More configuration for the sale
     sale_config: SaleConfig;
 }
 
-interface TokenConfig {
+export interface TokenConfig {
     sold: TokenRelay;
     input: ContractLink;
     constants: SwapConstants;
 }
-enum ReturnTokenType {
-    // Swap the tokens into the output
+
+export enum ReturnTokenType {
+    /**
+     * Swap the tokens into the output.
+     */
     Claim = 'claim',
-    // Return the original tokens to the creator
+    /**
+     * Return the original tokens to the creator.
+     */
     Refund = 'refund',
 }
 
-enum IdoPermissions {
+export enum IdoPermissions {
     Balance = 'balance',
+    Account = 'account'
 }
 
-interface MerkleTreeInfo {
+export interface MerkleTreeInfo {
+    /**
+     * Base64 encoded.
+     */
     root: string;
     leaves_count: number;
 }
-interface MerkleAuth {
-    partial_tree: String[];
+
+export interface MerkleAuth {
+    /**
+     * Base64 encoded.
+     */
+    partial_tree: string[];
     index: number;
 }
-interface LaunchOptions {
-    // How long the sale lasts
+
+export interface LaunchOptions {
+    /**
+     * How long the sale lasts. Unix timestamp in seconds.
+     */
     sale_duration: number;
-    // When this sale should start
+    /**
+     * Start time of the sale. Unix timestamp in seconds.
+     */
     sale_start?: number;
-    // How long does prelock state last
+    /**
+     * How long is the prelock period. Unix timestamp in seconds.
+     */
     pre_lock_duration?: number;
 }
 
-type CallbackMsgType =
+export interface Account {
+    owner: Address
+    total_bought: Uint128
+    pre_lock_amount: Uint128
+    total_claimed?: Uint128
+}
+
+export type CallbackMsgType =
     | { launch: { options: LaunchOptions } }
     | {
           pre_lock: {
@@ -319,59 +414,74 @@ type CallbackMsgType =
 
 // launchpad
 
-interface IdoSettings {
-    // All the configuration for the project
+export interface IdoSettings {
+    /**
+     * All the configuration for the project.
+     */
     project: ProjectConfig;
-    // The merkle tree which corresponds to the whitelisted users
+    /**
+     * The merkle tree which corresponds to the whitelisted users.
+     */
     merkle_tree: MerkleTreeInfo;
-    // Optional address which can be set as admin of the project
+    /**
+     * Optional address which can be set as admin of the project.
+     */
     admin?: Address;
 }
-interface SaleConstraints {
-    // The minimum amount of time a creator can set for prelock duration on his project
-    min_pre_lock_duration: number;
-    // The minimum amount of time a sale can last
-    min_sale_duration: number;
+
+export interface SaleConstraints {
+    /**
+     * The minimum amount of time a creator can set for prelock duration on his project.
+     */
+    min_pre_lock_duration: number
+    /**
+     * The minimum amount of time a sale can last.
+     */
+    min_sale_duration: number
 }
 
-enum LaunchpadPermissions {
-    ProjectOwner = 'project_owner',
-}
-interface Tier {
-    entries: number;
-    amount: Uint128;
+export enum LaunchpadPermissions {
+    ProjectOwner = 'project_owner'
 }
 
-interface IdoCollection {
+export interface Tier {
+    entries: number
+    amount: Uint128
+}
+
+export interface IdoCollection {
     // List of IDO links
     entries: ContractLink[];
     total: number;
 }
-interface Project {
+
+export interface Project {
     token_coonfig: TokenConfig;
     sale_config: SaleConfig;
     schedule?: SaleSchedule;
 }
-interface SaleSchedule {
+
+export interface SaleSchedule {
     start: number;
     duration: number;
 }
-interface SaleStatus {
-    // How many tokens have been sold
-    total_allocation: Uint128;
-    // How many tokens are left for sale
-    available_for_sale: Uint128;
-    // How many were prelocked
-    prelocked: Uint128;
-    // The time of launch
-    launched?: number;
-}
-interface Account {
-    owner: Address;
-    total_bought: Uint128;
-    pre_lock_amount: Uint128;
-}
-interface Eligibility {
-    eligible: boolean;
-    address: Address;
+
+export interface SaleStatus {
+    /**
+     * How many tokens have been sold.
+     */
+    total_allocation: Uint128
+    /**
+     * How many tokens are left for sale.
+     */
+    available_for_sale: Uint128
+    /**
+     * How many were prelocked.
+     */
+    total_prelocked: Uint128
+    total_bought: Uint128
+    /**
+     * The time of launch. Unix timestamp in seconds.
+     */
+    launched?: number
 }
