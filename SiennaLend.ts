@@ -349,6 +349,10 @@ export class LendOverseer extends Client {
     })
   }
 
+  async getOracleContract(): Promise<ContractLink> {
+    return this.query({oracle_contract: {}})
+  }
+
   /** The hypothetical liquidity after a borrow operation from a market. */
   async getLiquidityAfterBorrow (
     auth: LendAuth,
