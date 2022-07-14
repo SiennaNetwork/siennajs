@@ -9,7 +9,7 @@ import {
 } from '@fadroma/client';
 import { ViewingKeyClient } from '@fadroma/client-scrt';
 import { Console } from '@hackbg/konzola';
-import { Auth, AuthMethod } from './Auth';
+import { AuthMethod } from './Auth';
 
 import { LPToken } from './SiennaSwap';
 
@@ -212,10 +212,10 @@ export abstract class Rewards extends Client {
 
         async getUserInfo(key = '', address = this.agent.address, at = now()) {
             // Cant change signature to throw error when address is not provided
-            const auth: AuthMethod<RewardsPermissions> = {
+            const auth_method: AuthMethod<RewardsPermissions> = {
                 viewing_key: { address: address ?? '', key },
             };
-            const msg = { rewards: { user_info: { at, auth } } };
+            const msg = { rewards: { user_info: { at, auth_method } } };
             const result: { rewards: { user_info: Rewards_v3_Account } } =
                 await this.query(msg);
             return result.rewards.user_info;
