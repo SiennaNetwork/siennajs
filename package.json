@@ -11,8 +11,8 @@
     "node": "^12.16 || >=13.7"
   },
   "dependencies": {
-    "@fadroma/client": "^3",
-    "@fadroma/client-scrt": "^4",
+    "@fadroma/client": "^4.0.0",
+    "@fadroma/client-scrt": "^5.0.0",
     "@fadroma/tokens": "^2",
     "@hackbg/formati": "^1.1.1",
     "@hackbg/konzola": "^1.1.1",
@@ -22,7 +22,7 @@
     "secure-random": "^1.1.2"
   },
   "devDependencies": {
-    "@hackbg/izomorf": "^3",
+    "@hackbg/izomorf": "^4.0.3",
     "@types/crypto-js": "^4.1.1",
     "@types/node": "^17.0.35",
     "@types/secure-random": "^1.1.0",
