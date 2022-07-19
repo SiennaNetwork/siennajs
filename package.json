@@ -1,15 +1,15 @@
 {
-  "name": "siennajs",
-  "version": "1.0.0-rc.3",
+  "name":        "siennajs",
+  "version":     "1.0.0-rc.3",
   "description": "Interact with Sienna Network smart contracts through JS.",
-  "author": "Sienna Network",
-  "license": "MIT",
-  "private": false,
-  "type": "module",
-  "main": "./index.ts",
-  "engines": {
-    "node": "^12.16 || >=13.7"
-  },
+  "author":      "Sienna Network",
+  "license":     "MIT",
+  "type":        "module",
+  "main":        "./index.ts",
+  "engines":     { "node": "^12.16 || >=13.7" },
+  "homepage":    "https://sienna.network",
+  "repository":  { "type": "git", "url": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs" },
+  "bugs":        { "url": "https://github.com/SiennaNetwork/sienna/issues" },
   "dependencies": {
     "@fadroma/client": "^3.0.0",
     "@fadroma/client-scrt": "^4.0.0",
@@ -39,13 +39,5 @@
     "build:esm": "tsc -p tsconfig.esm.json",
     "release": "izdatel",
     "prepublishOnly": "npm run build"
-  },
-  "homepage": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs"
-  },
-  "bugs": {
-    "url": "https://github.com/SiennaNetwork/sienna/issues"
   }
 }
