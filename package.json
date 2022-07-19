@@ -7,11 +7,6 @@
   "private": false,
   "type": "module",
   "main": "./index.ts",
-  "exports": {
-    "ganesha": "./index.ts",
-    "require": "./dist/cjs/index.js",
-    "default": "./dist/esm/index.js"
-  },
   "engines": {
     "node": "^12.16 || >=13.7"
   },
