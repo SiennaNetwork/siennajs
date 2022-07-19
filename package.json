@@ -11,8 +11,8 @@
     "node": "^12.16 || >=13.7"
   },
   "dependencies": {
-    "@fadroma/client": "^4.0.0",
-    "@fadroma/client-scrt": "^5.0.0",
+    "@fadroma/client": "^3.0.0",
+    "@fadroma/client-scrt": "^4.0.0",
     "@fadroma/tokens": "^2",
     "@hackbg/formati": "^1.1.1",
     "@hackbg/konzola": "^1.1.1",
