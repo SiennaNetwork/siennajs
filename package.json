@@ -1,11 +1,10 @@
 {
-  "name":        "siennajs",
-  "version":     "1.0.0-rc.3",
+  "name": "siennajs",
+  "version": "1.0.0-rc.3",
   "description": "Interact with Sienna Network smart contracts through JS.",
-  "author":      "Sienna Network",
-  "license":     "MIT",
-  "private":     false,
-
+  "author": "Sienna Network",
+  "license": "MIT",
+  "private": false,
   "type": "module",
   "main": "./index.ts",
   "exports": {
@@ -16,43 +15,36 @@
   "engines": {
     "node": "^12.16 || >=13.7"
   },
-
   "dependencies": {
-    "@hackbg/konzola": "workspace:*",
-
-    "@fadroma/client":      "workspace:^3",
-    "@fadroma/client-scrt": "workspace:^4",
-    "@fadroma/tokens":      "workspace:^2",
-
+    "@fadroma/client": "^3",
+    "@fadroma/client-scrt": "^4",
+    "@fadroma/tokens": "^2",
+    "@hackbg/formati": "^1.1.1",
+    "@hackbg/konzola": "^1.1.1",
     "@waiting/base64": "^4.2.9",
-    "crypto-js":       "^4.1.1",
-    "merkletreejs":    "^0.2.32",
-    "secure-random":   "^1.1.2"
+    "crypto-js": "^4.1.1",
+    "merkletreejs": "^0.2.32",
+    "secure-random": "^1.1.2"
   },
-
   "devDependencies": {
-    "@hackbg/izdatel":  "workspace:*",
-
-    "concurrently":         "7.2.2",
-    "typescript":           "^4.7",
-    "@types/crypto-js":     "^4.1.1",
-    "@types/node":          "^17.0.35",
-    "@types/secure-random": "^1.1.0"
+    "@hackbg/izomorf": "^3",
+    "@types/crypto-js": "^4.1.1",
+    "@types/node": "^17.0.35",
+    "@types/secure-random": "^1.1.0",
+    "concurrently": "7.2.2",
+    "typescript": "^4.7"
   },
-
   "exclude": [
     "node_modules"
   ],
-
   "scripts": {
-    "check":     "tsc --noEmit",
-    "build":     "concurrently 'npm:build:*'",
+    "check": "tsc --noEmit",
+    "build": "concurrently 'npm:build:*'",
     "build:cjs": "tsc",
     "build:esm": "tsc -p tsconfig.esm.json",
-    "release":   "izdatel",
+    "release": "izdatel",
     "prepublishOnly": "npm run build"
   },
-
   "homepage": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs#readme",
   "repository": {
     "type": "git",
