@@ -22,7 +22,20 @@ const console = Console('Sienna Rewards');
 const now = () => Math.floor(+new Date() / 1000);
 
 export abstract class Rewards extends Client {
-    vk = new ViewingKeyClient(this.agent, this);
+    vk = this.setVKClient()
+
+    setVKClient () {
+        return new ViewingKeyClient(this.agent, {
+            address: this.address,
+            codeHash: this.codeHash,
+        })
+    };
+
+    async populate () {
+        await super.populate()
+        this.setVKClient()
+        return this
+    }
 
     abstract getStakedToken(): Promise<LPToken | null>;
 
@@ -168,23 +181,40 @@ export abstract class Rewards extends Client {
             return this.execute({ set_viewing_key: { key } });
         }
 
-        emigration = new Emigration(this.agent, {
-            address: this.address,
-            codeHash: this.codeHash,
-        });
+        emigration = this.setEmigrationClient();
+
+        setEmigrationClient () {
+            return new Emigration(this.agent, {
+                address: this.address,
+                codeHash: this.codeHash,
+            })
+        }
+
+        async populate () {
+            await super.populate()
+            this.setEmigrationClient()
+            return this
+        }
     };
 
     // for now use this for testing only
     static 'v3.1' = class Rewards_v3_1 extends Rewards['v3'] {
-        emigration = new Emigration(this.agent, {
-            address: this.address,
-            codeHash: this.codeHash,
-        });
 
-        immigration = new Immigration(this.agent, {
-            address: this.address,
-            codeHash: this.codeHash,
-        });
+        immigration = this.setImmigrationClient();
+
+        setImmigrationClient () {
+            return new Immigration(this.agent, {
+                address: this.address,
+                codeHash: this.codeHash,
+            })
+        }
+
+        async populate () {
+            await super.populate()
+            this.setImmigrationClient()
+            return this
+        }
+
     };
 
     static 'v4.1' = class Rewards_v4_1 extends Rewards['v3.1'] {

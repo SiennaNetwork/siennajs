@@ -2,8 +2,10 @@ import { Instance, Template } from '@fadroma/client'
 import { b64encode, b64decode, b64fromBuffer } from "@waiting/base64"
 import SecureRandom from 'secure-random'
 
+export * from '@fadroma/client'
+export * from '@fadroma/tokens'
+
 export type Uint128 = string;
-export type Uint256 = string;
 export type Address = string;
 export type Decimal = string;
 export type Decimal256 = string;
