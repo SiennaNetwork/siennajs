@@ -10,7 +10,6 @@ import {
 import { ViewingKeyClient } from '@fadroma/client-scrt';
 import { Console } from '@hackbg/konzola';
 import { AuthMethod } from './Auth';
-
 import { LPToken } from './SiennaSwap';
 
 export type RewardsAPIVersion = 'v2' | 'v3';
@@ -21,7 +20,11 @@ const console = Console('Sienna Rewards');
 
 const now = () => Math.floor(+new Date() / 1000);
 
+// The `set*Client methods` refresh the sub-client after calling populate()
+// so that the subclients automatically get the correct codehash/id/label.
+
 export abstract class Rewards extends Client {
+
     vk = this.setVKClient()
 
     setVKClient () {
@@ -213,6 +216,15 @@ export abstract class Rewards extends Client {
             await super.populate()
             this.setImmigrationClient()
             return this
+        }
+
+        async depositToken (
+            token: LPToken,
+            amount: Uint128,
+            from: Address|undefined = this.agent.address
+        ) {
+            const callback = { deposit_receiver: { from, amount } }
+            return await token.send(amount, this.address, callback)
         }
 
     };
