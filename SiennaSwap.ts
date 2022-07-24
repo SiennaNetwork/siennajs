@@ -266,6 +266,10 @@ export abstract class AMMFactory extends Client {
 
 }
 
+type TokenPairStr = string
+
+type AMMExchanges = Record<TokenPairStr, AMMExchange>
+
 export class AMMExchange extends Client {
 
   static fromAddress = async function getExchangeByAddress (
