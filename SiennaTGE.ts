@@ -14,37 +14,31 @@ export interface VestingProgress {
 }
 
 export abstract class MGMT extends Client {
-
-  /** launch the vesting */
-  launch() {
+  /** See the full schedule */
+  schedule  () {
+    return this.query({ schedule: {} })
+  }
+  /** Load a schedule */
+  configure (schedule: any) {
+    return this.execute({ configure: { schedule } })
+  }
+  /** Add a new account to a pool */
+  add       (pool_name: any, account: any) {
+    return this.execute({ add_account: { pool_name, account } })
+  }
+  /** Launch the vesting */
+  launch    () {
     return this.execute({ launch: {} })
   }
-
-  /** claim accumulated portions */
-  claim() {
+  /** Claim accumulated portions */
+  claim     () {
     return this.execute({ claim: {} })
   }
-
   /** take over a SNIP20 token */
-  async acquire(token: Snip20) {
+  async acquire (token: Snip20) {
     const tx1 = await token.setMinters([this.address])
     const tx2 = await token.changeAdmin(this.address)
     return [tx1, tx2]
-  }
-
-  /** See the full schedule */
-  schedule() {
-    return this.query({ schedule: {} })
-  }
-
-  /** Load a schedule */
-  async configure(schedule: any) {
-    return this.execute({ configure: { schedule } })
-  }
-
-  /** add a new account to a pool */
-  add(pool_name: any, account: any) {
-    return this.execute({ add_account: { pool_name, account } })
   }
   /** Check how much is claimable by someone at a certain time */
   async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
@@ -54,7 +48,7 @@ export abstract class MGMT extends Client {
   }
 
   static "legacy" = class MGMT_TGE extends MGMT {
-
+    /** Generate an init message for Origina MGMT */
     static init = (
       admin:    Address,
       token:    Instance,
@@ -64,7 +58,6 @@ export abstract class MGMT extends Client {
       token: linkStruct(token),
       schedule
     })
-
     /** Query contract status */
     status() {
       return this.query({ status: {} })
@@ -104,9 +97,15 @@ export type RPTConfig = [RPTRecipient, RPTAmount][]
 export type RPTStatus = unknown
 
 export abstract class RPT extends Client {
+  /** Claim from mgmt and distribute to recipients. Anyone can call this method as:
+    * - the recipients can only be changed by the admin
+    * - the amount is determined by MGMT */
+  vest() {
+    return this.execute({ vest: {} })
+  }
 
   static "legacy" = class RPT_TGE extends RPT {
-
+    /** Generate an init message for original RPT */
     static init = (
       admin:    Address,
       portion:  RPTAmount,
@@ -120,23 +119,15 @@ export abstract class RPT extends Client {
       token: linkStruct(token),
       mgmt:  linkStruct(mgmt),
     })
-
     /** query contract status */
     async status () {
       const { status }: { status: RPTStatus } = await this.query({ status: {} })
       return status
     }
-
     /** set the vesting recipients */
     configure(config = []) {
       return this.execute({ configure: { config } })
     }
-
-    /** claim from mgmt and distribute to recipients */
-    vest() {
-      return this.execute({ vest: {} })
-    }
-
     /** change the admin */
     setOwner (new_admin: Address) {
       return this.execute({ set_owner: { new_admin } })
@@ -147,14 +138,11 @@ export abstract class RPT extends Client {
     configuration() {
       return this.query({ configuration: {} });
     }
-
     configure(distribution: any, portion: any) {
       return this.execute({ configure: { distribution, portion } });
     }
-
     vest() {
       return this.execute({ vest: {} });
     }
-
   }
 }
