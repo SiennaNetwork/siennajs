@@ -1,5 +1,7 @@
-import { Client, Address } from '@fadroma/client'
+import { VestingSchedule } from '@sienna/settings'
+import { Client, Address, Instance } from '@fadroma/client'
 import { Snip20 } from '@fadroma/tokens'
+import { linkStruct } from './Core'
 
 export class SiennaSnip20 extends Snip20 {}
 
@@ -13,52 +15,64 @@ export interface VestingProgress {
 
 export abstract class MGMT extends Client {
 
+  /** launch the vesting */
+  launch() {
+    return this.execute({ launch: {} })
+  }
+
+  /** claim accumulated portions */
+  claim() {
+    return this.execute({ claim: {} })
+  }
+
+  /** take over a SNIP20 token */
+  async acquire(token: Snip20) {
+    const tx1 = await token.setMinters([this.address])
+    const tx2 = await token.changeAdmin(this.address)
+    return [tx1, tx2]
+  }
+
+  /** See the full schedule */
+  schedule() {
+    return this.query({ schedule: {} })
+  }
+
+  /** Load a schedule */
+  async configure(schedule: any) {
+    return this.execute({ configure: { schedule } })
+  }
+
+  /** add a new account to a pool */
+  add(pool_name: any, account: any) {
+    return this.execute({ add_account: { pool_name, account } })
+  }
+  /** Check how much is claimable by someone at a certain time */
+  async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
+    time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
+    const { progress } = await this.query({ progress: { address, time } })
+    return progress
+  }
+
   static "legacy" = class MGMT_TGE extends MGMT {
+
+    static init = (
+      admin:    Address,
+      token:    Instance,
+      schedule: VestingSchedule
+    ) => ({
+      admin,
+      token: linkStruct(token),
+      schedule
+    })
 
     /** Query contract status */
     status() {
       return this.query({ status: {} })
     }
-
-    /** See the full schedule */
-    schedule() {
-      return this.query({ schedule: {} })
-    }
-
-    /** Check how much is claimable by someone at a certain time */
-    async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
-      time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
-      const { progress } = await this.query({ progress: { address, time } })
-      return progress
-    }
-
-    /** take over a SNIP20 token */
-    async acquire(token: Snip20) {
-      const tx1 = await token.setMinters([this.address])
-      const tx2 = await token.changeAdmin(this.address)
-      return [tx1, tx2]
-    }
-
-    /** load a schedule */
-    async configure(schedule: any) {
-      return this.execute({ configure: { schedule } })
-    }
-
-    /** launch the vesting */
-    launch() {
-      return this.execute({ launch: {} })
-    }
-
     /** claim accumulated portions */
-    claim(claimant: any) {
+    claim() {
       return this.execute({ claim: {} })
     }
-
-    /** add a new account to a pool */
-    add(pool_name: any, account: any) {
-      return this.execute({ add_account: { pool_name, account } })
-    }
-
     /** set the admin */
     setOwner(new_admin: any) {
       return this.execute({ set_owner: { new_admin } })
@@ -66,54 +80,20 @@ export abstract class MGMT extends Client {
   }
 
   static "vested" = class MGMT_Vested extends MGMT {
-    /** load a schedule */
-    async configure(schedule: any) {
-      return this.execute({ configure: { schedule } })
-    }
-    /** launch the vesting */
-    launch() {
-      return this.execute({ launch: {} })
-    }
-
-    /** claim accumulated portions */
-    claim() {
-      return this.execute({ claim: {} })
-    }
-
-    /** add a new account to a pool */
-    add(pool_name: any, account: any) {
-      return this.execute({ add_account: { pool_name, account } })
-    }
-
     /** Change the admin of the contract, requires the other user to accept */
     change_admin(new_admin: any) {
       return this.execute({ auth: { change_admin: { address: new_admin } } })
     }
-
     /** accept becoming an admin */
     accept_admin() {
       return this.execute({ auth: { accept_admin: {} } })
     }
-
-    /** See the full schedule */
-    schedule() {
-      return this.query({ schedule: {} })
-    }
-
     history(start: number, limit: number) {
       return this.query({ history: { start, limit } })
     }
-
     config() {
       return this.query({ config: {} })
     }
-
-    async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
-      time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
-      const { progress } = await this.query({ progress: { address, time } })
-      return progress
-    }
-
   }
 
 }
@@ -126,6 +106,21 @@ export type RPTStatus = unknown
 export abstract class RPT extends Client {
 
   static "legacy" = class RPT_TGE extends RPT {
+
+    static init = (
+      admin:    Address,
+      portion:  RPTAmount,
+      config:   RPTConfig,
+      token:    Instance,
+      mgmt:     Instance
+    ) => ({
+      admin,
+      portion,
+      config,
+      token: linkStruct(token),
+      mgmt:  linkStruct(mgmt),
+    })
+
     /** query contract status */
     async status () {
       const { status }: { status: RPTStatus } = await this.query({ status: {} })

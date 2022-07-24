@@ -1,14 +1,19 @@
-import { Instance, Template } from '@fadroma/client'
+import {
+  Instance,
+  Template,
+  Address,
+  CodeHash,
+  Uint128,
+  Decimal,
+  Decimal256,
+} from '@fadroma/client'
+
 import { b64encode, b64decode, b64fromBuffer } from "@waiting/base64"
+
 import SecureRandom from 'secure-random'
 
 export * from '@fadroma/client'
 export * from '@fadroma/tokens'
-
-export type Uint128 = string;
-export type Address = string;
-export type Decimal = string;
-export type Decimal256 = string;
 
 /**
  * Base64 encoded
@@ -71,12 +76,12 @@ export class ContractInstantiationInfo {
   ) { }
 }
 
-export const linkTuple = (instance: Instance) => [
+export const linkTuple = (instance: {address: Address, codeHash: CodeHash}) => [
   instance.address,
   instance.codeHash
 ]
 
-export const linkStruct = (instance: Instance) => ({
+export const linkStruct = (instance: {address: Address, codeHash: CodeHash}) => ({
   address:   instance?.address,
   code_hash: instance?.codeHash?.toUpperCase()
 })

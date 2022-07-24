@@ -7,12 +7,22 @@ import {
     Uint128,
     Uint256,
 } from '@fadroma/client';
-import { ViewingKeyClient } from '@fadroma/client-scrt';
+import type { AMMVersion } from './SiennaSwap';
+import { ViewingKeyClient } from '@fadroma/scrt';
 import { Console } from '@hackbg/konzola';
 import { AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
 
-export type RewardsAPIVersion = 'v2' | 'v3';
+/** Maybe change this to 'v2'|'v3'|'v4' and simplify the classes below? */
+export type RewardsAPIVersion = 'v2' | 'v3' | 'v3.1' | 'v4.1';
+
+/** Which version of AMM corresponds to which version of rewards. */
+export const RewardsToAMMVersion: Record<RewardsAPIVersion, AMMVersion> = {
+    'v2':   'v1',
+    'v3':   'v2',
+    'v3.1': 'v2',
+    'v4.1': 'v2',
+}
 
 type Link = { address: string; code_hash: string };
 
@@ -33,6 +43,10 @@ export abstract class Rewards extends Client {
             codeHash: this.codeHash,
         })
     };
+
+    abstract deposit  (amount: Uint128): Promise<unknown>
+    abstract withdraw (amount: Uint128): Promise<unknown>
+    abstract claim    ():                Promise<unknown>
 
     async populate () {
         await super.populate()
@@ -84,6 +98,9 @@ export abstract class Rewards extends Client {
         set_viewing_key(key: string) {
             return this.execute({ set_viewing_key: { key } });
         }
+
+        deposit  (amount: string) { return this.lock(amount) }
+        withdraw (amount: string) { return this.retrieve(amount) }
     };
 
     static 'v3' = class Rewards_v3 extends Rewards {
