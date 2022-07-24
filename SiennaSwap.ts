@@ -268,7 +268,7 @@ export abstract class AMMFactory extends Client {
 
 type TokenPairStr = string
 
-type AMMExchanges = Record<TokenPairStr, AMMExchange>
+export type AMMExchanges = Record<TokenPairStr, AMMExchange>
 
 export class AMMExchange extends Client {
 
