@@ -20,9 +20,9 @@
   "dependencies": {
     "@hackbg/konzola": "^1.1.1",
 
-    "@fadroma/client":      "workspace:^3",
-    "@fadroma/client-scrt": "workspace:^4",
-    "@fadroma/tokens":      "workspace:^2",
+    "@fadroma/client": "workspace:*",
+    "@fadroma/scrt":   "workspace:*",
+    "@fadroma/tokens": "workspace:*",
 
     "@waiting/base64": "^4.2.9",
     "crypto-js":       "^4.1.1",
