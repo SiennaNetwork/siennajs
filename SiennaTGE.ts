@@ -14,11 +14,9 @@ export interface VestingProgress {
 }
 
 export abstract class MGMT extends Client {
-
   static MINTING_POOL = "MintingPool"
   static LPF = "LPF"
   static RPT = "RPT"
-
   static emptySchedule = (address: Address) => ({
     total: "0",
     pools: [ { 
@@ -32,7 +30,6 @@ export abstract class MGMT extends Client {
       ]
     } ]
   })
-
   /** See the full schedule */
   schedule  () {
     return this.query({ schedule: {} })
@@ -66,49 +63,55 @@ export abstract class MGMT extends Client {
     return progress
   }
 
-  static "legacy" = class MGMT_TGE extends MGMT {
-    /** Generate an init message for Origina MGMT */
-    static init = (
-      admin:    Address,
-      token:    Instance,
-      schedule: VestingSchedule
-    ) => ({
-      admin,
-      token: linkTuple(token),
-      schedule
-    })
-    /** Query contract status */
-    status() {
-      return this.query({ status: {} })
-    }
-    /** claim accumulated portions */
-    claim() {
-      return this.execute({ claim: {} })
-    }
-    /** set the admin */
-    setOwner(new_admin: any) {
-      return this.execute({ set_owner: { new_admin } })
-    }
-  }
-
-  static "vested" = class MGMT_Vested extends MGMT {
-    /** Change the admin of the contract, requires the other user to accept */
-    change_admin(new_admin: any) {
-      return this.execute({ auth: { change_admin: { address: new_admin } } })
-    }
-    /** accept becoming an admin */
-    accept_admin() {
-      return this.execute({ auth: { accept_admin: {} } })
-    }
-    history(start: number, limit: number) {
-      return this.query({ history: { start, limit } })
-    }
-    config() {
-      return this.query({ config: {} })
-    }
-  }
-
+  static legacy: typeof MGMT_TGE
+  static vested: typeof MGMT_Vested
 }
+
+export class MGMT_TGE extends MGMT {
+  /** Generate an init message for Origina MGMT */
+  static init = (
+    admin:    Address,
+    token:    Instance,
+    schedule: VestingSchedule
+  ) => ({
+    admin,
+    token: linkTuple(token),
+    schedule
+  })
+  /** Query contract status */
+  status() {
+    return this.query({ status: {} })
+  }
+  /** claim accumulated portions */
+  claim() {
+    return this.execute({ claim: {} })
+  }
+  /** set the admin */
+  setOwner(new_admin: any) {
+    return this.execute({ set_owner: { new_admin } })
+  }
+}
+
+MGMT.legacy = MGMT_TGE
+
+export class MGMT_Vested extends MGMT {
+  /** Change the admin of the contract, requires the other user to accept */
+  change_admin(new_admin: any) {
+    return this.execute({ auth: { change_admin: { address: new_admin } } })
+  }
+  /** accept becoming an admin */
+  accept_admin() {
+    return this.execute({ auth: { accept_admin: {} } })
+  }
+  history(start: number, limit: number) {
+    return this.query({ history: { start, limit } })
+  }
+  config() {
+    return this.query({ config: {} })
+  }
+}
+
+MGMT.vested = MGMT_Vested
 
 export type RPTRecipient = string
 export type RPTAmount = string

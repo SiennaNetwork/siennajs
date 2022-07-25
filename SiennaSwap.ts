@@ -141,14 +141,6 @@ export abstract class AMMFactory extends Client {
 
   abstract readonly version: AMMVersion
 
-  static "v1" = class AMMFactory_v1 extends AMMFactory {
-    readonly version = "v1" as AMMVersion
-  }
-
-  static "v2" = class AMMFactory_v2 extends AMMFactory {
-    readonly version = "v2" as AMMVersion
-  }
-
   /** Pause or terminate the factory. */
   async setStatus (
     level:        AMMFactoryStatus,
@@ -262,6 +254,14 @@ export abstract class AMMFactory extends Client {
       ido_contract:       config.ido_contract,
       launchpad_contract: config.launchpad_contract,
     }
+  }
+
+  static "v1" = class AMMFactory_v1 extends AMMFactory {
+    readonly version = "v1" as AMMVersion
+  }
+
+  static "v2" = class AMMFactory_v2 extends AMMFactory {
+    readonly version = "v2" as AMMVersion
   }
 
 }
