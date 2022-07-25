@@ -83,10 +83,10 @@ export const linkTuple = (instance: {address: Address, codeHash: CodeHash}) => [
 
 export const linkStruct = (instance: {address: Address, codeHash: CodeHash}) => ({
   address:   instance?.address,
-  code_hash: instance?.codeHash?.toUpperCase()
+  code_hash: instance?.codeHash?.toLowerCase()
 })
 
 export const templateStruct = (template: Template) => ({
   id:        Number(template.codeId),
-  code_hash: template.codeHash?.toUpperCase()
+  code_hash: template.codeHash?.toLowerCase()
 })

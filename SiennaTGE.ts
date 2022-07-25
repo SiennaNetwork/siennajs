@@ -1,7 +1,7 @@
 import { VestingSchedule } from '@sienna/settings'
 import { Client, Address, Instance } from '@fadroma/client'
 import { Snip20 } from '@fadroma/tokens'
-import { linkStruct } from './Core'
+import { linkStruct, linkTuple } from './Core'
 
 export class SiennaSnip20 extends Snip20 {}
 
@@ -14,6 +14,25 @@ export interface VestingProgress {
 }
 
 export abstract class MGMT extends Client {
+
+  static MINTING_POOL = "MintingPool"
+  static LPF = "LPF"
+  static RPT = "RPT"
+
+  static emptySchedule = (address: Address) => ({
+    total: "0",
+    pools: [ { 
+      name: MGMT.MINTING_POOL, total: "0", partial: false, accounts: [
+        { name: MGMT.LPF, amount: "0", address,
+          start_at: 0, interval: 0, duration: 0,
+          cliff: "0", portion_size: "0", remainder: "0" },
+        { name: MGMT.RPT, amount: "0", address,
+          start_at: 0, interval: 0, duration: 0,
+          cliff: "0", portion_size: "0", remainder: "0" }
+      ]
+    } ]
+  })
+
   /** See the full schedule */
   schedule  () {
     return this.query({ schedule: {} })
@@ -55,7 +74,7 @@ export abstract class MGMT extends Client {
       schedule: VestingSchedule
     ) => ({
       admin,
-      token: linkStruct(token),
+      token: linkTuple(token),
       schedule
     })
     /** Query contract status */
@@ -116,8 +135,8 @@ export abstract class RPT extends Client {
       admin,
       portion,
       config,
-      token: linkStruct(token),
-      mgmt:  linkStruct(mgmt),
+      token: linkTuple(token),
+      mgmt:  linkTuple(mgmt),
     })
     /** query contract status */
     async status () {
