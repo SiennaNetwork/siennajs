@@ -1,7 +1,7 @@
-import { Client, Address, Moment, Uint128, Fee, Decimal } from "@fadroma/client";
+import { Client, Address, Moment, Uint128, Fee, Decimal } from '@fadroma/client';
 
-import { Auth } from './Auth'
-import { ContractInfo } from './Core'
+import { Auth } from './Auth';
+import { ContractInfo } from './Core';
 
 export type PollId = number;
 
@@ -10,9 +10,9 @@ export type PollId = number;
  *     min length: 5
  *     max length: 20 */
 export enum PollType {
-  SiennaRewards        = 'sienna_rewards',
+  SiennaRewards = 'sienna_rewards',
   SiennaSwapParameters = 'sienna_swap_parameters',
-  Other                = 'other',
+  Other = 'other',
 }
 
 export enum PollStatus {
@@ -27,57 +27,58 @@ export enum PollStatus {
 /** Possible vote options */
 export enum PollVote {
   Yes = 'yes',
-  No  = 'no',
+  No = 'no',
+  Abstain = 'abstain',
 }
 
 /** Describes the conditions under which a poll expires. */
 export interface Expiration {
-  at_time: Moment
+  at_time: Moment;
 }
 
 export interface PollConfig {
   /** Minimum amount of staked tokens needed to create a poll */
-  threshold:        Uint128;
+  threshold: Uint128;
   /** The amount of time a poll lasts in seconds */
-  deadline:         Moment;
+  deadline: Moment;
   /** Minimum percentage (0-1) which is needed for a poll to be valid */
-  quorum:           Decimal;
+  quorum: Decimal;
   /** Link to the rewards contract */
-  rewards:          ContractInfo;
+  rewards: ContractInfo;
   /** Minimum number of tokens staked to be able to vote */
   voting_threshold: Uint128;
 }
 
 export interface PollMetadata {
   /** The title of the poll. Has a default min and max */
-  title:       string;
+  title: string;
   /** The description of the poll. Has a default min and max */
   description: string;
   /** Generic type of the poll, underlying type can be any string. */
-  poll_type:   PollType;
+  poll_type: PollType;
 }
 
 export interface Poll {
-  id:             PollId;
+  id: PollId;
   /** Saved as the user who send the create poll transaction */
-  creator:        Address;
+  creator: Address;
 
-  metadata:       PollMetadata;
+  metadata: PollMetadata;
 
-  expiration:     Expiration;
+  expiration: Expiration;
 
-  status:         PollStatus;
+  status: PollStatus;
   /** Snapshot of the quorum taken from the configuration at the time of creation.
-    * Used in calculating results until poll has expired */
+   * Used in calculating results until poll has expired */
   current_quorum: Decimal;
 }
 
 export interface PollResult {
-  poll_id:   PollId;
+  poll_id: PollId;
   /** The total number of yes votes, equals the number of tokens staked.
-    * As vote = stake power */
+   * As vote = stake power */
   yes_votes: Uint128;
-  no_votes:  Uint128;
+  no_votes: Uint128;
 }
 
 /** All poll information. */
@@ -85,11 +86,11 @@ export interface PollInfo {
   /** The poll. */
   instance: Poll;
   /** The up-to-date results of the poll. */
-  result:   PollResult;
+  result: PollResult;
 }
 
 export interface VoteStatus {
-  power:  Uint128;
+  power: Uint128;
   choice: PollVote;
 }
 
@@ -98,9 +99,9 @@ export interface GetPollResponse {
 }
 
 export interface PaginatedPollList {
-  polls:       Array<Poll>
-  total:       number
-  total_pages: number
+  polls: Array<Poll>;
+  total: number;
+  total_pages: number;
 }
 
 export interface GetPollConfigResponse {
@@ -108,76 +109,71 @@ export interface GetPollConfigResponse {
 }
 
 export enum SortingDirection {
-  Ascending  = 1,
+  Ascending = 1,
   Descending = 0,
 }
 
 export interface PollUser {
-  created_polls: Array<PollId>
-  active_polls:  Array<PollId>
+  created_polls: Array<PollId>;
+  active_polls: Array<PollId>;
 }
 
 export class Polls extends Client {
-
   fees = {
     create_poll: new Fee('80000', 'uscrt'),
-    vote:        new Fee('75000', 'uscrt'),
-    unvote:      new Fee('75000', 'uscrt'),
-    change_vote: new Fee('75000', 'uscrt')
+    vote: new Fee('100000', 'uscrt'),
+    unvote: new Fee('100000', 'uscrt'),
+    change_vote_choice: new Fee('100000', 'uscrt'),
+  };
+
+  async createPoll(meta: PollMetadata) {
+    return this.execute({ create_poll: { meta } });
   }
 
-  async createPoll (meta: PollMetadata) {
-    return this.execute({ create_poll: { meta } })
+  async vote(poll_id: PollId, choice: PollVote) {
+    return this.execute({ vote: { choice, poll_id } });
   }
 
-  async vote (poll_id: PollId, choice: PollVote) {
-    return this.execute({ vote: { choice, poll_id } })
+  async unvote(poll_id: PollId) {
+    return this.execute({ unvote: { poll_id } });
   }
 
-  async unvote (poll_id: PollId) {
-    return this.execute({ unvote: { poll_id } })
+  async changeVote(poll_id: PollId, choice: PollVote) {
+    console.log(choice);
+    return this.execute({ change_vote_choice: { poll_id, choice } });
   }
 
-  async changeVote (poll_id: PollId, choice: PollVote) {
-    return this.execute({ change_vote: { poll_id, choice } })
-  }
-
-  async getPoll (poll_id: PollId, now: Moment): Promise<PollInfo> {
-    const msg = { poll: { poll_id, now } }
-    const result: { poll: PollInfo } = await this.query(msg)
+  async getPoll(poll_id: PollId, now: Moment): Promise<PollInfo> {
+    const msg = { poll: { poll_id, now } };
+    const result: { poll: PollInfo } = await this.query(msg);
     return result.poll;
   }
 
-  async getPolls (
+  async getPolls(
     now: Moment,
     page: number,
     take: number,
     sort: SortingDirection
   ): Promise<PaginatedPollList> {
     const msg = { polls: { now, page, take, asc: !!sort } };
-    return await this.query(msg)
+    return await this.query(msg);
   }
 
-  async getVoteStatus (
-    address: Address,
-    poll_id: PollId,
-    auth:    Auth
-  ): Promise<VoteStatus> {
+  async getVoteStatus(address: Address, poll_id: PollId, auth: Auth): Promise<VoteStatus> {
     const msg = { vote_status: { address, auth, poll_id } };
-    const result: { vote_status: VoteStatus } = await this.query(msg)
-    return result.vote_status
+    const result: VoteStatus = await this.query(msg);
+    return result;
   }
 
-  async getUser (auth: Auth): Promise<PollUser> {
-    const msg = { user: { at: Date.now() } }
-    const result: { user: PollUser } = await this.query(msg)
+  async getUser(auth: Auth): Promise<PollUser> {
+    const msg = { user: { at: Date.now() } };
+    const result: { user: PollUser } = await this.query(msg);
     return result.user;
   }
 
-  async getPollConfig (): Promise<PollConfig> {
-    const msg = { config: {} }
-    const result: { config: PollConfig } = await this.query(msg)
+  async getPollConfig(): Promise<PollConfig> {
+    const msg = { config: {} };
+    const result: { config: PollConfig } = await this.query(msg);
     return result.config;
   }
-
 }
