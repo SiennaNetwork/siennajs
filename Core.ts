@@ -9,6 +9,7 @@ import {
 } from '@fadroma/client'
 
 import { b64encode, b64decode, b64fromBuffer } from "@waiting/base64"
+export { b64encode, b64decode, b64fromBuffer }
 
 import SecureRandom from 'secure-random'
 
