@@ -73,6 +73,10 @@ export abstract class Rewards extends Client {
   }
   /** Viewing key management for rewards works the same for all versions. */
   vk = this.setVKClient()
+  /** Point this pool to the governance contract that will be using it for voting power. */
+  async setGovernanceLink <T> (link: ContractLink): Promise<T> {
+    throw new Error("Governance integration is only available in Rewards >=4.1")
+  }
 }
 export class Rewards_v2 extends Rewards {
   /** Create an init message for Sienna Rewards v2 */
@@ -107,12 +111,12 @@ export class Rewards_v2 extends Rewards {
   async getRewardToken () {
     throw new Error('not implemented');
   }
-  lock     (amount: string)     { return this.execute({ lock: { amount } }); }
-  retrieve (amount: string)     { return this.execute({ retrieve: { amount } }); }
   deposit  (amount: string)     { return this.lock(amount) }
   withdraw (amount: string)     { return this.retrieve(amount) }
-  set_viewing_key (key: string) { return this.execute({ set_viewing_key: { key } }); }
-  claim    ()                   { return this.execute({ claim: {} }); }
+  lock     (amount: string)     { return this.execute({ lock:            { amount } }) }
+  retrieve (amount: string)     { return this.execute({ retrieve:        { amount } }) }
+  set_viewing_key (key: string) { return this.execute({ set_viewing_key: { key }    }) }
+  claim    ()                   { return this.execute({ claim:           {}         }) }
 }
 export interface Rewards_v2_Pool {
     lp_token: ContractLink;
@@ -340,19 +344,6 @@ export interface Rewards_v3_Account {
 }
 // for now use this for testing only
 export class Rewards_v3_1 extends Rewards_v3 {
-  /** Create an init message for Sienna Rewards v4 */
-  static init ({
-    authProvider, rewardToken, stakedToken, bonding = 86400
-  }: RewardsInitParams): Message {
-    return {
-      provider: linkStruct(authProvider!!),
-      config: {
-        reward_token:   linkStruct(rewardToken),
-        lp_token:       linkStruct(stakedToken),
-        bonding_period: bonding
-      },
-    }
-  }
   immigration = this.setImmigrationClient();
   setImmigrationClient () {
     return new Immigration(this.agent, { address: this.address, codeHash: this.codeHash })
@@ -372,10 +363,26 @@ export class Rewards_v3_1 extends Rewards_v3 {
   }
 };
 export class Rewards_v4_1 extends Rewards_v3_1 {
-  setGovernanceLink(link: ContractLink) {
-    return this.execute({
-      rewards: { configure: { governance: link } },
-    });
+
+  /** Create an init message for Sienna Rewards v4 */
+  static init ({
+    authProvider,
+    rewardToken,
+    stakedToken,
+    bonding = 86400
+  }: RewardsInitParams): Message {
+    return {
+      provider: linkStruct(authProvider!!),
+      config: {
+        reward_token:     linkStruct(rewardToken),
+        lp_token:         linkStruct(stakedToken),
+        bonding_period:   bonding,
+      },
+    }
+  }
+
+  async setGovernanceLink <T> (link: ContractLink): Promise<T> {
+    return await this.execute({ rewards: { configure: { governance: link } } }) as T;
   }
 
   async getConfig() {

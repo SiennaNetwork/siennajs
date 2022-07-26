@@ -76,15 +76,31 @@ export class ContractInstantiationInfo {
   ) { }
 }
 
-export const linkTuple = (instance: {address: Address, codeHash: CodeHash}) => [
-  instance.address,
-  instance.codeHash
-]
+/** Need both address and codeHash to create a linkTuple or linkStruct */
+const validateLink = (instance: {address: Address, codeHash?: CodeHash}) => {
+  if (!instance) throw new Error("Can't create an inter-contract link without a target")
+  if (!instance.address) throw new Error("Can't create an inter-contract link without an address")
+  if (!instance.codeHash) throw new Error("Can't create an inter-contract link without a code hash")
+  return instance
+}
 
-export const linkStruct = (instance: {address: Address, codeHash: CodeHash}) => ({
-  address:   instance?.address,
-  code_hash: instance?.codeHash?.toLowerCase()
-})
+/** Contract address/hash pair as used by MGMT */
+export type LinkTuple = [Address, CodeHash]
+
+/** Convert Fadroma.Instance to address/hash pair as used by MGMT */
+export const linkTuple = (instance: {address: Address, codeHash?: CodeHash}) => {
+  validateLink(instance)
+  return [ instance.address, instance.codeHash ]
+}
+
+/** Contract address/hash pair (ContractLink) */
+export type LinkStruct = { address: Address, code_hash: CodeHash }
+
+/** Convert Fadroma.Instance to address/hash struct (ContractLink) */
+export const linkStruct = (instance: {address: Address, codeHash?: CodeHash}) => {
+  validateLink(instance)
+  return { address: instance.address, code_hash: instance.codeHash?.toLowerCase() }
+}
 
 export const templateStruct = (template: Template) => ({
   id:        Number(template.codeId),
