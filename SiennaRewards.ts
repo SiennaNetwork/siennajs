@@ -1,275 +1,123 @@
-import {
-    Address,
-    Client,
-    ContractLink,
-    Duration,
-    Moment,
-    Uint128,
-    Uint256,
-} from '@fadroma/client';
-import { ViewingKeyClient } from '@fadroma/client-scrt';
 import { Console } from '@hackbg/konzola';
+import { randomBase64 } from '@hackbg/formati';
+import * as Fadroma from '@fadroma/client';
+import {
+  Address,
+  Client,
+  ContractLink,
+  Duration,
+  Moment,
+  Uint128,
+  Uint256,
+  Instance,
+  Message
+} from '@fadroma/client';
+import { ViewingKeyClient } from '@fadroma/scrt';
+import { linkStruct, linkTuple } from './Core';
 import { AuthMethod } from './Auth';
-
 import { LPToken } from './SiennaSwap';
-
-export type RewardsAPIVersion = 'v2' | 'v3';
-
+import type { AMMVersion } from './SiennaSwap';
+import SecureRandom from 'secure-random'
+/** Maybe change this to 'v2'|'v3'|'v4' and simplify the classes below? */
+export type RewardsAPIVersion = 'v2' | 'v3' | 'v3.1' | 'v4.1';
+/** Which version of AMM corresponds to which version of rewards. */
+export const RewardsToAMMVersion: Record<RewardsAPIVersion, AMMVersion> = {
+  'v2':   'v1',
+  'v3':   'v2',
+  'v3.1': 'v2',
+  'v4.1': 'v2',
+}
 type Link = { address: string; code_hash: string };
-
 const console = Console('Sienna Rewards');
-
 const now = () => Math.floor(+new Date() / 1000);
-
+/** Constructs a reward pool of some version. */
+export interface RewardsCtor extends Fadroma.ClientCtor<Rewards, Fadroma.ClientOpts> {
+  /** Generate the correct format of Rewards init message for the given version */
+  init (params: RewardsInitParams): Message
+}
+/** Universal init parameters for all versions of rewards. */
+export interface RewardsInitParams {
+  rewardToken:   Instance
+  stakedToken:   Instance
+  admin?:        Address
+  timekeeper?:   Address
+  authProvider?: Instance
+  threshold?:    number
+  cooldown?:     number
+  bonding?:      number
+}
+/** A reward pool. */
 export abstract class Rewards extends Client {
-    vk = new ViewingKeyClient(this.agent, this);
-
-    abstract getStakedToken(): Promise<LPToken | null>;
-
-    static 'v2' = class Rewards_v2 extends Rewards {
-        async getPoolInfo(at = now()) {
-            const result: { pool_info: Rewards_v2_Pool } = await this.query({
-                pool_info: { at },
-            });
-            return result.pool_info;
-        }
-
-        async getUserInfo(key = '', address = this.agent.address, at = now()) {
-            at = at || (await this.agent.height);
-            const result: { user_info: Rewards_v2_Account } = await this.query({
-                user_info: { address, key, at },
-            });
-            return result.user_info;
-        }
-
-        async getStakedToken() {
-            const at = Math.floor(+new Date() / 1000);
-            const { pool_info } = await this.query({ pool_info: { at } });
-            const { address, code_hash } = pool_info.lp_token;
-            return new LPToken(this.agent, { address, codeHash: code_hash });
-        }
-
-        async getRewardToken() {
-            throw new Error('not implemented');
-        }
-
-        lock(amount: string) {
-            return this.execute({ lock: { amount } });
-        }
-
-        retrieve(amount: string) {
-            return this.execute({ retrieve: { amount } });
-        }
-
-        claim() {
-            return this.execute({ claim: {} });
-        }
-
-        set_viewing_key(key: string) {
-            return this.execute({ set_viewing_key: { key } });
-        }
-    };
-
-    static 'v3' = class Rewards_v3 extends Rewards {
-        async getConfig() {
-            const result: { rewards: { config: Rewards_v3_Config } } =
-                await this.query({ rewards: 'config' });
-            return result.rewards.config;
-        }
-
-        async getStakedToken() {
-            const { lp_token } = await this.getConfig();
-            if (lp_token) {
-                const opts = {
-                    address: lp_token.address,
-                    codeHash: lp_token.code_hash,
-                };
-                return this.agent.getClient(LPToken, opts);
-            } else {
-                return null;
-            }
-        }
-
-        setStakedToken(address: string, code_hash: string) {
-            return this.execute({
-                rewards: { configure: { lp_token: { address, code_hash } } },
-            });
-        }
-
-        async getRewardToken() {
-            throw new Error('not implemented');
-        }
-
-        async getPoolInfo(at = Math.floor(+new Date() / 1000)) {
-            const msg = { rewards: { pool_info: { at } } };
-            const result: { rewards: { pool_info: Rewards_v3_Total } } =
-                await this.query(msg);
-            return result.rewards.pool_info;
-        }
-
-        async getEpoch(): Promise<number> {
-            const {
-                clock: { number },
-            } = await this.getPoolInfo();
-            return number;
-        }
-
-        async beginNextEpoch() {
-            const {
-                clock: { number },
-            } = await this.getPoolInfo();
-            return this.execute({ rewards: { begin_epoch: number + 1 } });
-        }
-
-        async getUserInfo(key = '', address = this.agent.address, at = now()) {
-            const msg = { rewards: { user_info: { address, key, at } } };
-            const result: { rewards: { user_info: Rewards_v3_Account } } =
-                await this.query(msg);
-            return result.rewards.user_info;
-        }
-
-        lock(amount: string) {
-            console.warn(
-                '[@sienna/rewards] Deprecation warning: v2 Lock has been renamed to Deposit in v3. ' +
-                    'It will be gone in 3.1 - plan accordingly.'
-            );
-            return this.deposit(amount);
-        }
-
-        deposit(amount: string) {
-            return this.execute({
-                rewards: { deposit: { amount } },
-            });
-        }
-
-        claim() {
-            return this.execute({
-                rewards: { claim: {} },
-            });
-        }
-
-        close(message: string) {
-            return this.execute({
-                rewards: { close: { message } },
-            });
-        }
-
-        withdraw(amount: string) {
-            return this.execute({
-                rewards: { withdraw: { amount } },
-            });
-        }
-
-        drain(snip20: Link, recipient: string, key?: string) {
-            return this.execute({ drain: { snip20, recipient, key } });
-        }
-
-        set_viewing_key(key: string) {
-            return this.execute({ set_viewing_key: { key } });
-        }
-
-        emigration = new Emigration(this.agent, {
-            address: this.address,
-            codeHash: this.codeHash,
-        });
-    };
-
-    // for now use this for testing only
-    static 'v3.1' = class Rewards_v3_1 extends Rewards['v3'] {
-        emigration = new Emigration(this.agent, {
-            address: this.address,
-            codeHash: this.codeHash,
-        });
-
-        immigration = new Immigration(this.agent, {
-            address: this.address,
-            codeHash: this.codeHash,
-        });
-    };
-
-    static 'v4.1' = class Rewards_v4_1 extends Rewards['v3.1'] {
-        setGovernanceLink(link: ContractLink) {
-            return this.execute({
-                rewards: { configure: { governance: link } },
-            });
-        }
-
-        async getConfig() {
-            const result: { rewards: { config: Rewards_v4_Config } } =
-                await this.query({ rewards: 'config' });
-            return result.rewards.config;
-        }
-
-        async getAccount(
-            auth: AuthMethod<RewardsPermissions>,
-            at: number = now()
-        ) {
-            const msg = { rewards: { user_info: { auth, at } } };
-            const result: { rewards: { user_info: Rewards_v4_Account } } =
-                await this.query(msg);
-            return result.rewards.user_info;
-        }
-
-        async getUserInfo(key = '', address = this.agent.address, at = now()) {
-            // Cant change signature to throw error when address is not provided
-            const auth_method: AuthMethod<RewardsPermissions> = {
-                viewing_key: { address: address ?? '', key },
-            };
-            const msg = { rewards: { user_info: { at, auth_method } } };
-            const result: { rewards: { user_info: Rewards_v3_Account } } =
-                await this.query(msg);
-            return result.rewards.user_info;
-        }
-
-        async getAllBalances(
-            auth: AuthMethod<RewardsPermissions>,
-            at: number = now()
-        ) {
-            const result: {
-                rewards: { all_balances: Rewards_v4_AllBalances };
-            } = await this.query({
-                rewards: { all_balances: { at, auth } },
-            });
-
-            return result.rewards.all_balances;
-        }
-    };
+  /** Rewards v1/v2 with the buggy algo. Counts time in blocks. */
+  static 'v2':   typeof Rewards_v2
+  /** Rewards v3 with the fixed algo. Counts time in seconds. */
+  static 'v3':   typeof Rewards_v3
+  /** Rewards v3.1 adds depositing using SNIP20 Send instead of IncreaseAllowance+Transfer. */
+  static 'v3.1': typeof Rewards_v3_1
+  /** Rewards v4 adds admin authentication via AuthProvider. */
+  static 'v4.1': typeof Rewards_v4_1
+  /** Get a LPToken interface to the staked token. */
+  abstract getStakedToken ():                Promise<LPToken | null>
+  /** Deposit some amount of staked token. */
+  abstract deposit        (amount: Uint128): Promise<unknown>
+  /** Try to withdraw some amount of staked token. */
+  abstract withdraw       (amount: Uint128): Promise<unknown>
+  /** Try to claim a reward. */
+  abstract claim          ():                Promise<unknown>
+  /** Populate the client class with contract info. */
+  async populate () { await super.populate(); this.setVKClient(); return this }
+  /** The `set*Client methods` refresh the sub-client after calling populate()
+    * so that the subclients automatically get the correct codehash/id/label. */
+  setVKClient () {
+    return new ViewingKeyClient(this.agent, { address: this.address, codeHash: this.codeHash })
+  }
+  /** Viewing key management for rewards works the same for all versions. */
+  vk = this.setVKClient()
+  /** Point this pool to the governance contract that will be using it for voting power. */
+  async setGovernanceLink <T> (link: ContractLink): Promise<T> {
+    throw new Error("Governance integration is only available in Rewards >=4.1")
+  }
 }
-
-export class Emigration extends Client {
-    enableTo(link: Link) {
-        return this.execute({
-            emigration: { enable_migration_to: link },
-        });
-    }
-
-    disableTo(link: Link) {
-        return this.execute({
-            emigration: { disable_migration_to: link },
-        });
-    }
+export class Rewards_v2 extends Rewards {
+  /** Create an init message for Sienna Rewards v2 */
+  static init = ({
+    admin, rewardToken, stakedToken, threshold = 15940, cooldown  = 15940
+  }: RewardsInitParams): Message => ({
+    admin,
+    lp_token:     linkStruct(stakedToken),
+    reward_token: linkStruct(rewardToken),
+    viewing_key:  randomBase64(64),
+    ratio:        ["1", "1"],
+    threshold,
+    cooldown
+  })
+  async getPoolInfo (at = now()) {
+    const msg = { pool_info: { at } };
+    const result: { pool_info: Rewards_v2_Pool } = await this.query(msg);
+    return result.pool_info;
+  }
+  async getUserInfo (key = '', address = this.agent?.address, at = now()) {
+    at = at ?? (await this.agent?.height);
+    const msg = { user_info: { address, key, at } };
+    const result: { user_info: Rewards_v2_Account } = await this.query(msg);
+    return result.user_info;
+  }
+  async getStakedToken (): Promise<LPToken> {
+    const at = Math.floor(+new Date() / 1000);
+    const { pool_info } = await this.query({ pool_info: { at } });
+    const { address, code_hash } = pool_info.lp_token;
+    return new LPToken(this.agent, { address, codeHash: code_hash });
+  }
+  async getRewardToken () {
+    throw new Error('not implemented');
+  }
+  deposit  (amount: string)     { return this.lock(amount) }
+  withdraw (amount: string)     { return this.retrieve(amount) }
+  lock     (amount: string)     { return this.execute({ lock:            { amount } }) }
+  retrieve (amount: string)     { return this.execute({ retrieve:        { amount } }) }
+  set_viewing_key (key: string) { return this.execute({ set_viewing_key: { key }    }) }
+  claim    ()                   { return this.execute({ claim:           {}         }) }
 }
-
-export class Immigration extends Client {
-    enableFrom(link: Link) {
-        return this.execute({
-            immigration: { enable_migration_from: link },
-        });
-    }
-
-    disableFrom(link: Link) {
-        return this.execute({
-            immigration: { disable_migration_from: link },
-        });
-    }
-
-    migrateFrom(link: Link) {
-        return this.execute({
-            immigration: { request_migration: link },
-        });
-    }
-}
-
 export interface Rewards_v2_Pool {
     lp_token: ContractLink;
     reward_token: ContractLink;
@@ -292,7 +140,6 @@ export interface Rewards_v2_Pool {
     /** The time for which the pool was not empty. */
     pool_liquid: Uint128;
 }
-
 export interface Rewards_v2_Account {
     /** When liquidity was last updated. */
     pool_last_update: number;
@@ -320,7 +167,113 @@ export interface Rewards_v2_Account {
      * with 6 decimals of precision. */
     user_share: Uint128;
 }
-
+export class Rewards_v3 extends Rewards {
+  static init = ({
+    rewardToken, stakedToken, admin, timekeeper, bonding = 86400
+  }: RewardsInitParams): Message => ({
+    admin,
+    config: {
+      rewards_vk:   randomBase64(36),
+      lp_token:     linkStruct(stakedToken),
+      reward_token: linkStruct(rewardToken),
+      timekeeper,
+      bonding
+    }
+  })
+  async getConfig() {
+    const result: { rewards: { config: Rewards_v3_Config } } =
+      await this.query({ rewards: 'config' });
+    return result.rewards.config;
+  }
+  async getStakedToken() {
+    const { lp_token } = await this.getConfig();
+    if (lp_token) {
+      const opts = {
+        address: lp_token.address,
+        codeHash: lp_token.code_hash,
+      };
+      return this.agent!.getClient(LPToken, opts);
+    } else {
+      return null;
+    }
+  }
+  setStakedToken(address: string, code_hash: string) {
+    return this.execute({
+      rewards: { configure: { lp_token: { address, code_hash } } },
+    });
+  }
+  async getRewardToken() {
+    throw new Error('not implemented');
+  }
+  async getPoolInfo(at = Math.floor(+new Date() / 1000)) {
+    const msg = { rewards: { pool_info: { at } } };
+    const result: { rewards: { pool_info: Rewards_v3_Total } } =
+      await this.query(msg);
+    return result.rewards.pool_info;
+  }
+  async getEpoch(): Promise<number> {
+    const {
+      clock: { number },
+    } = await this.getPoolInfo();
+    return number;
+  }
+  async beginNextEpoch() {
+    const {
+      clock: { number },
+    } = await this.getPoolInfo();
+    return this.execute({ rewards: { begin_epoch: number + 1 } });
+  }
+  async getUserInfo(key = '', address = this.agent?.address, at = now()) {
+    const msg = { rewards: { user_info: { address, key, at } } };
+    console.log('msg', msg)
+    const result: { rewards: { user_info: Rewards_v3_Account } } =
+      await this.query(msg);
+    console.debug(result)
+    return result.rewards.user_info;
+  }
+  lock(amount: string) {
+    console.warn(
+      '[@sienna/rewards] Deprecation warning: v2 Lock has been renamed to Deposit in v3. ' +
+        'It will be gone in 3.1 - plan accordingly.'
+    );
+    return this.deposit(amount);
+  }
+  deposit(amount: string) {
+    return this.execute({
+      rewards: { deposit: { amount } },
+    });
+  }
+  claim() {
+    return this.execute({
+      rewards: { claim: {} },
+    });
+  }
+  close(message: string) {
+    return this.execute({
+      rewards: { close: { message } },
+    });
+  }
+  withdraw(amount: string) {
+    return this.execute({
+      rewards: { withdraw: { amount } },
+    });
+  }
+  drain(snip20: Link, recipient: string, key?: string) {
+    return this.execute({ drain: { snip20, recipient, key } });
+  }
+  set_viewing_key(key: string) {
+    return this.execute({ set_viewing_key: { key } });
+  }
+  emigration = this.setEmigrationClient();
+  setEmigrationClient () {
+    return new Emigration(this.agent, { address: this.address, codeHash: this.codeHash, })
+  }
+  async populate () {
+    await super.populate()
+    this.setEmigrationClient()
+    return this
+  }
+}
 /** Reward pool configuration */
 export interface Rewards_v3_Config {
     lp_token?: ContractLink;
@@ -329,25 +282,6 @@ export interface Rewards_v3_Config {
     bonding?: number;
     timekeeper?: Address;
 }
-
-/** Reward pool configuration */
-export interface Rewards_v4_Config {
-    lp_token?: ContractLink;
-    reward_token?: ContractLink;
-    reward_vk?: string;
-    claim_throttle?: number;
-    timekeeper?: Address;
-    bonding_period?: number;
-    unbonding_period?: number;
-    governance?: ContractLink;
-    rewards_toggle: RewardsToggle;
-}
-
-export interface RewardsToggle {
-    bonded: boolean;
-    unbonding: boolean;
-}
-
 export interface Rewards_v3_Clock {
     /** "For what point in time do the reported values hold true?" */
     now: Moment;
@@ -358,7 +292,6 @@ export interface Rewards_v3_Clock {
     /** "What was the total pool liquidity at the epoch start?" */
     volume: Uint256;
 }
-
 export interface Rewards_v3_Total {
     /** What is the current time and epoch? */
     clock: Rewards_v3_Clock;
@@ -409,7 +342,101 @@ export interface Rewards_v3_Account {
     /** How many units of time (seconds) remain until the user can claim? */
     bonding: Duration;
 }
+// for now use this for testing only
+export class Rewards_v3_1 extends Rewards_v3 {
+  immigration = this.setImmigrationClient();
+  setImmigrationClient () {
+    return new Immigration(this.agent, { address: this.address, codeHash: this.codeHash })
+  }
+  async populate () {
+    await super.populate()
+    this.setImmigrationClient()
+    return this
+  }
+  async depositToken (
+    token:  LPToken,
+    amount: Uint128,
+    from:   Address|undefined = this.agent?.address
+  ) {
+    const callback = { deposit_receiver: { from, amount } }
+    return await token.send(amount, this.address, callback)
+  }
+};
+export class Rewards_v4_1 extends Rewards_v3_1 {
 
+  /** Create an init message for Sienna Rewards v4 */
+  static init ({
+    authProvider,
+    rewardToken,
+    stakedToken,
+    bonding = 86400
+  }: RewardsInitParams): Message {
+    return {
+      provider: linkStruct(authProvider!!),
+      config: {
+        reward_token:     linkStruct(rewardToken),
+        lp_token:         linkStruct(stakedToken),
+        bonding_period:   bonding,
+      },
+    }
+  }
+
+  async setGovernanceLink <T> (link: ContractLink): Promise<T> {
+    return await this.execute({ rewards: { configure: { governance: link } } }) as T;
+  }
+
+  async getConfig() {
+    const result: { rewards: { config: Rewards_v4_Config } } =
+      await this.query({ rewards: 'config' });
+    return result.rewards.config;
+  }
+
+  async getAccount(
+    auth: AuthMethod<RewardsPermissions>,
+    at: number = now()
+  ) {
+    const msg = { rewards: { user_info: { auth, at } } };
+    const result: { rewards: { user_info: Rewards_v4_Account } } =
+      await this.query(msg);
+    return result.rewards.user_info;
+  }
+
+  async getUserInfo(key = '', address = this.agent.address, at = now()) {
+    // Cant change signature to throw error when address is not provided
+    const auth_method: AuthMethod<RewardsPermissions> = {
+      viewing_key: { address: address ?? '', key },
+    };
+    const msg = { rewards: { user_info: { at, auth_method } } };
+    const result: { rewards: { user_info: Rewards_v3_Account } } =
+      await this.query(msg);
+    return result.rewards.user_info;
+  }
+
+  async getAllBalances(
+    auth: AuthMethod<RewardsPermissions>,
+    at: number = now()
+  ) {
+    const result: {
+      rewards: { all_balances: Rewards_v4_AllBalances };
+    } = await this.query({
+      rewards: { all_balances: { at, auth } },
+    });
+
+    return result.rewards.all_balances;
+  }
+}
+/** Reward pool configuration */
+export interface Rewards_v4_Config {
+    lp_token?: ContractLink;
+    reward_token?: ContractLink;
+    reward_vk?: string;
+    claim_throttle?: number;
+    timekeeper?: Address;
+    bonding_period?: number;
+    unbonding_period?: number;
+    governance?: ContractLink;
+    rewards_toggle: RewardsToggle;
+}
 export interface Rewards_v4_Account {
     /** What is the overall state of the pool? */
     total: Rewards_v3_Total;
@@ -451,34 +478,40 @@ export interface Rewards_v4_HistoryEntry {
 }
 
 export interface Rewards_v4_AllBalances {
-    /**
-     * 
-     How much is currently bonded for the user
-     *  */
+    /** How much is currently bonded for the user */
     bonded: Uint128;
-    /**
-     How much is the process of being unbonded, total
-     *  */
+    /** How much is the process of being unbonded, total */
     unbonding: Uint128;
-    /**
-    How much has been unbonded and is ready for withdrawing
-     *  */
+    /** How much has been unbonded and is ready for withdrawing  */
     unbonded: Uint128;
-    /**
-    The total amount of tokens (including bonded and unbonding) that the user has
-     *  */
+    /** The total amount of tokens (including bonded and unbonding) that the user has  */
     total_staked: Uint128;
-    /**
-    All of the entries for bonding and unbonding
-     *  */
+    /** All of the entries for bonding and unbonding */
     entries: Rewards_v4_HistoryEntry[];
-    /**
-    How much the user has staked which is valid for rewards
-     *  */
+    /** How much the user has staked which is valid for rewards */
     staked: Uint128;
 }
-
+export interface RewardsToggle {
+    bonded: boolean;
+    unbonding: boolean;
+}
 enum RewardsPermissions {
     UserInfo = 'user_info',
     Balance = 'balance',
+}
+
+Rewards['v2']   = Rewards_v2
+Rewards['v3']   = Rewards_v3
+Rewards['v3.1'] = Rewards_v3_1
+Rewards['v4.1'] = Rewards_v4_1
+
+export class Emigration extends Client {
+  enableTo    (link: Link) {return this.execute({ emigration:  { enable_migration_to:    link }})}
+  disableTo   (link: Link) {return this.execute({ emigration:  { disable_migration_to:   link }})}
+}
+
+export class Immigration extends Client {
+  enableFrom  (link: Link) {return this.execute({ immigration: { enable_migration_from:  link } })}
+  disableFrom (link: Link) {return this.execute({ immigration: { disable_migration_from: link } })}
+  migrateFrom (link: Link) {return this.execute({ immigration: { request_migration:      link } })}
 }

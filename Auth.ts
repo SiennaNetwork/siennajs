@@ -1,5 +1,5 @@
 import { Client, Address, ContractLink } from "@fadroma/client";
-import { Permit, Signer, ViewingKey } from "@fadroma/client-scrt";
+import { Permit, Signer, ViewingKey } from "@fadroma/scrt";
 import { Pagination } from "./Pagination";
 
 export type AuthStrategy =
