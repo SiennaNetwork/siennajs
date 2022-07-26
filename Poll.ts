@@ -139,7 +139,6 @@ export class Polls extends Client {
   }
 
   async changeVote(poll_id: PollId, choice: PollVote) {
-    console.log(choice);
     return this.execute({ change_vote_choice: { poll_id, choice } });
   }
 
@@ -159,9 +158,12 @@ export class Polls extends Client {
     return await this.query(msg);
   }
 
-  async getVoteStatus(address: Address, poll_id: PollId, auth: Auth): Promise<VoteStatus> {
+  async getVoteStatus(address: Address, poll_id: PollId, auth: Auth): Promise<VoteStatus | null> {
     const msg = { vote_status: { address, auth, poll_id } };
     const result: VoteStatus = await this.query(msg);
+    if (!result.choice || !result.power) {
+      return null;
+    }
     return result;
   }
 
