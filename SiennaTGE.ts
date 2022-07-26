@@ -66,7 +66,6 @@ export abstract class MGMT extends Client {
   static legacy: typeof MGMT_TGE
   static vested: typeof MGMT_Vested
 }
-
 export class MGMT_TGE extends MGMT {
   /** Generate an init message for Origina MGMT */
   static init = (
@@ -91,9 +90,6 @@ export class MGMT_TGE extends MGMT {
     return this.execute({ set_owner: { new_admin } })
   }
 }
-
-MGMT.legacy = MGMT_TGE
-
 export class MGMT_Vested extends MGMT {
   /** Change the admin of the contract, requires the other user to accept */
   change_admin(new_admin: any) {
@@ -110,14 +106,13 @@ export class MGMT_Vested extends MGMT {
     return this.query({ config: {} })
   }
 }
-
+MGMT.legacy = MGMT_TGE
 MGMT.vested = MGMT_Vested
 
 export type RPTRecipient = string
 export type RPTAmount = string
 export type RPTConfig = [RPTRecipient, RPTAmount][]
 export type RPTStatus = unknown
-
 export abstract class RPT extends Client {
   /** Claim from mgmt and distribute to recipients. Anyone can call this method as:
     * - the recipients can only be changed by the admin
@@ -125,46 +120,49 @@ export abstract class RPT extends Client {
   vest() {
     return this.execute({ vest: {} })
   }
-
-  static "legacy" = class RPT_TGE extends RPT {
-    /** Generate an init message for original RPT */
-    static init = (
-      admin:    Address,
-      portion:  RPTAmount,
-      config:   RPTConfig,
-      token:    Instance,
-      mgmt:     Instance
-    ) => ({
-      admin,
-      portion,
-      config,
-      token: linkTuple(token),
-      mgmt:  linkTuple(mgmt),
-    })
-    /** query contract status */
-    async status () {
-      const { status }: { status: RPTStatus } = await this.query({ status: {} })
-      return status
-    }
-    /** set the vesting recipients */
-    configure(config = []) {
-      return this.execute({ configure: { config } })
-    }
-    /** change the admin */
-    setOwner (new_admin: Address) {
-      return this.execute({ set_owner: { new_admin } })
-    }
+  static legacy: typeof RPT_TGE
+  static vested: typeof RPT_Vested
+}
+export class RPT_TGE extends RPT {
+  /** Generate an init message for original RPT */
+  static init = (
+    admin:    Address,
+    portion:  RPTAmount,
+    config:   RPTConfig,
+    token:    Instance,
+    mgmt:     Instance
+  ) => ({
+    admin,
+    portion,
+    config,
+    token: linkTuple(token),
+    mgmt:  linkTuple(mgmt),
+  })
+  /** query contract status */
+  async status () {
+    const { status }: { status: RPTStatus } = await this.query({ status: {} })
+    return status
   }
-
-  static "vested" = class RPT_Vested extends RPT {
-    configuration() {
-      return this.query({ configuration: {} });
-    }
-    configure(distribution: any, portion: any) {
-      return this.execute({ configure: { distribution, portion } });
-    }
-    vest() {
-      return this.execute({ vest: {} });
-    }
+  /** set the vesting recipients */
+  configure(config = []) {
+    return this.execute({ configure: { config } })
+  }
+  /** change the admin */
+  setOwner (new_admin: Address) {
+    return this.execute({ set_owner: { new_admin } })
   }
 }
+export class RPT_Vested extends RPT {
+  configuration() {
+    return this.query({ configuration: {} });
+  }
+  configure(distribution: any, portion: any) {
+    return this.execute({ configure: { distribution, portion } });
+  }
+  vest() {
+    return this.execute({ vest: {} });
+  }
+}
+
+RPT.legacy = RPT_TGE
+RPT.vested = RPT_Vested

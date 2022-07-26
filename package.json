@@ -19,6 +19,7 @@
 
   "dependencies": {
     "@hackbg/konzola": "^1.1.1",
+    "@hackbg/formati": "workspace:*",
 
     "@fadroma/client": "workspace:*",
     "@fadroma/scrt":   "workspace:*",
