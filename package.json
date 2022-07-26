@@ -20,7 +20,7 @@
   "dependencies": {
     "@fadroma/client": "^3.0.0",
     "@fadroma/client-scrt": "^4.0.0",
-    "@fadroma/tokens": "^2.0.1",
+    "@fadroma/tokens": "^2.0.2",
     "@hackbg/formati": "^1.1.1",
     "@hackbg/konzola": "^1.1.1",
     "@waiting/base64": "^4.2.9",
