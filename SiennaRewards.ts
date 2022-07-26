@@ -1,5 +1,5 @@
-import { Console   } from '@hackbg/konzola';
-import { randomB64 } from '@hackbg/formati';
+import { Console } from '@hackbg/konzola';
+import { randomBase64 } from '@hackbg/formati';
 import * as Fadroma from '@fadroma/client';
 import {
   Address,
@@ -86,7 +86,7 @@ export class Rewards_v2 extends Rewards {
     admin,
     lp_token:     linkStruct(stakedToken),
     reward_token: linkStruct(rewardToken),
-    viewing_key:  randomB64(64),
+    viewing_key:  randomBase64(64),
     ratio:        ["1", "1"],
     threshold,
     cooldown
@@ -173,7 +173,7 @@ export class Rewards_v3 extends Rewards {
   }: RewardsInitParams): Message => ({
     admin,
     config: {
-      rewards_vk:   randomB64(36),
+      rewards_vk:   randomBase64(36),
       lp_token:     linkStruct(stakedToken),
       reward_token: linkStruct(rewardToken),
       timekeeper,
