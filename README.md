@@ -7,9 +7,11 @@ Client library to interact with smart contracts on Sienna Network.
 ### Standard setup: install from NPM
 
 The general form of the installation instruction is **`$_NPM_INSTALL $_API $_AGENT`**, where:
-* **`$_NPM_INSTALL`** is your usual install command (e.g. `npm install --save`, `pnpm add` or `yarn add`)
+* **`$_NPM_INSTALL`** is your usual install command
+  (e.g. `npm install --save`, `pnpm add` or `yarn add`)
 * **`$_API`** is this package (just `siennajs` if installing from GitHub)
-* **`$_AGENT`** is the package that provides a compatible Fadroma Agent class, such as `@fadroma/client-scrt-grpc`
+* **`$_AGENT`** is the package that provides a compatible Fadroma Agent class,
+  e.g. `@fadroma/client-scrt-grpc`
 
 So, for example, I'd use:
 
@@ -19,41 +21,16 @@ pnpm add siennajs @fadroma/client-scrt-grpc
 
 ### Advanced setup: install from Git submodule
 
-You can add SiennaJS as a submodule to your repo.
-This enables you to edit SiennaJS in the context
-of your project for rapid local development.
-
-0. **Before you begin**, make sure you have a working TypeScript compile environment and can use TS in your project normally.
-
-1. **Add submodule:** run ``git submodule add $URL siennajs``` in your repo
-   * **`$URL`** is the Git origin URL of this repo **in the form `https://`**,
-     e.g. `https://github.com/SiennaNetwork/sienna`
-     * This is important. **Always use HTTPS URLs in `.gitmodules`** for public submodules.
-     * Otherwise CI and containerized builds won't be able to load the submodules unless
-       you take extra steps to set them up with deploy keys.
-   * Make sure to **commit .gitmodules in Git**.
-   * Repos with submodules are best cloned with **`git clone --recursive`**.
-     * If you forget the `--recursive`, use **`git submodule update --init --recursive`** to get latest submodules.
-
-
-2. **Add package:**
-   * The most compatible way is to **add `"siennajs":"link:./siennajs"`
-     to the `dependencies` or `devDependencies` section of your `package.json`**
-   * After modifying your project's `package.json` to add SiennaJS, **re-run `$_NPM_INSTALL` to link `siennajs` into `node_modules`.**
-
-3. **Now you are ready to develop with a local copy of SiennaJS**.
-   * Edits in `./siennajs` and your changes to SiennaJS are automatically reflected in your project's `./node_modules/siennajs`.
-
-4. **Having made a change to the submodule:**
-   * `cd /myproject/siennajs` to **enter submodule directory**.
-   * `git commit`... to **commit to submodule**.
-   * `git push` to **push submodule**.
-     * Since you have the `https://` URL in your project's `.gitmodules`, it'll ask you for **password**. Now is a good time to hit "cancel", stop committing over HTTPS, set up your SSH-based commit workflow, and run **`cd /myproject && git submodule set-url origin git@my.git.host/myproject.git`** to enable pushing over SSH. This you'll have to do once per clone of `myproject`
-   * Go back to your project directory and **`git add`** the updated submodule to your project commit.
-
-5. **To pull others' changes to the submodule:** `cd siennajs && git pull`.
+You can also add SiennaJS to your Git repository as a [Git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
+This enables you to rapidly edit SiennaJS in the context of an actual project that uses it. For
+internal use, this is the preferred method. See how to add a development copy of SiennaJS to your
+project in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Usage
+
+> TODO
+
+## Publishing releases to NPM
 
 > TODO
 
