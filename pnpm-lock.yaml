@@ -5,7 +5,7 @@ specifiers:
   '@fadroma/client-scrt': ^4.0.0
   '@fadroma/tokens': ^2.0.2
   '@hackbg/formati': ^1.1.1
-  '@hackbg/izomorf': ^4.0.4
+  '@hackbg/izomorf': ^4.1.0
   '@hackbg/konzola': ^1.1.1
   '@types/crypto-js': ^4.1.1
   '@types/node': ^17.0.35
@@ -29,7 +29,7 @@ dependencies:
   secure-random: 1.1.2
 
 devDependencies:
-  '@hackbg/izomorf': 4.0.4
+  '@hackbg/izomorf': 4.1.0
   '@types/crypto-js': 4.1.1
   '@types/node': 17.0.45
   '@types/secure-random': 1.1.0
@@ -102,8 +102,8 @@ packages:
       secure-random: 1.1.2
     dev: false
 
-  /@hackbg/izomorf/4.0.4:
-    resolution: {integrity: sha512-ajErTXdaiqjJPhSciRFpRvM+y1r25t/209obcarsoFFNiRhbsSK5EjC3GfNsibuUgNjs33KJ9ftHc1PMSwTPXA==}
+  /@hackbg/izomorf/4.1.0:
+    resolution: {integrity: sha512-lgpKpuywMroikQOeah+JyQlO/yrnnt30DeME9DDTSDqJe5Gmq+4+rvS8DTC/HvtHPvuUzWnhGUCqKlXx5W8dmQ==}
     hasBin: true
     dependencies:
       concurrently: 7.2.2
