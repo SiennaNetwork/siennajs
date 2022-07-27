@@ -1,5 +1,5 @@
 import { Client, Fee, Address, Decimal256, Uint128, Uint256, ContractLink } from '@fadroma/client'
-import { Permit, Signer, ViewingKey, ViewingKeyClient } from '@fadroma/scrt'
+import { Permit, Signer, ViewingKey, ViewingKeyClient } from '@fadroma/client-scrt'
 import { Snip20, TokenInfo } from '@fadroma/tokens'
 import { Pagination, PaginatedResponse } from './Pagination'
 

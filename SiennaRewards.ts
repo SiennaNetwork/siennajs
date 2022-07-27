@@ -12,7 +12,7 @@ import {
   Instance,
   Message
 } from '@fadroma/client';
-import { ViewingKeyClient } from '@fadroma/scrt';
+import { ViewingKeyClient } from '@fadroma/client-scrt';
 import { linkStruct, linkTuple } from './Core';
 import { AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
