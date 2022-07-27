@@ -74,7 +74,7 @@
     bech32 "^2.0.0"
     secure-random "^1.1.2"
 
-"@hackbg/izomorf@^4.0.3":
+"@hackbg/izomorf@^4.0.4":
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/@hackbg/izomorf/-/izomorf-4.0.4.tgz#11cc7507a463a906738b3441ab98c0e983205c29"
   integrity sha512-ajErTXdaiqjJPhSciRFpRvM+y1r25t/209obcarsoFFNiRhbsSK5EjC3GfNsibuUgNjs33KJ9ftHc1PMSwTPXA==

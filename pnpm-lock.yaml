@@ -5,7 +5,7 @@ specifiers:
   '@fadroma/client-scrt': ^4.0.0
   '@fadroma/tokens': ^2.0.2
   '@hackbg/formati': ^1.1.1
-  '@hackbg/izomorf': ^4.0.3
+  '@hackbg/izomorf': ^4.0.4
   '@hackbg/konzola': ^1.1.1
   '@types/crypto-js': ^4.1.1
   '@types/node': ^17.0.35
