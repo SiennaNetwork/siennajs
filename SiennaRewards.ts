@@ -12,7 +12,7 @@ import {
   Instance,
   Message,
 } from '@fadroma/client';
-import { ViewingKeyClient } from '@fadroma/client-scrt';
+import { ViewingKeyClient } from '@fadroma/scrt';
 import { linkStruct, linkTuple } from './Core';
 import { AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
@@ -420,7 +420,7 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
     return result.rewards.user_info;
   }
 
-  async getUserInfo(key = '', address = this.agent.address, at = now()) {
+  async getUserInfo(key = '', address = this.agent?.address, at = now()) {
     // Cant change signature to throw error when address is not provided
     const auth_method: AuthMethod<RewardsPermissions> = {
       viewing_key: { address: address ?? '', key },

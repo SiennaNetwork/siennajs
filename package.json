@@ -1,6 +1,6 @@
 {
   "name": "siennajs",
-  "version": "1.0.0-rc.3",
+  "version": "1.0.0-rc.4",
   "description": "Interact with Sienna Network smart contracts through JS.",
   "homepage": "https://sienna.network",
   "repository": { "type": "git", "url": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs" },
@@ -29,12 +29,6 @@
     "crypto-js":       "^4.1.1",
     "merkletreejs":    "^0.2.32",
     "secure-random":   "^1.1.2"
-  },
-  "peerDependencies": {
-    "@fadroma/client-scrt-grpc": "^5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@fadroma/client-scrt-grpc": { "optional": true }
   },
   "devDependencies": {
     "@hackbg/izomorf":      "^4.1.0",
