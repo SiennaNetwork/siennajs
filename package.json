@@ -20,6 +20,7 @@
     "ci":             "izomorf fix"
   },
   "dependencies": {
+    "@fadroma/client-scrt-amino": "^4.1.1",
     "@fadroma/scrt":   "^1.0.0",
     "@fadroma/tokens": "^3.0.0",
     "@hackbg/formati": "^1.1.1",

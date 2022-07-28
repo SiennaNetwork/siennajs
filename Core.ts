@@ -6,14 +6,13 @@ import {
   Uint128,
   Decimal,
   Decimal256,
-} from '@fadroma/client'
+} from '@fadroma/scrt'
 
 import { b64encode, b64decode, b64fromBuffer } from "@waiting/base64"
 export { b64encode, b64decode, b64fromBuffer }
 
 import SecureRandom from 'secure-random'
 
-export * from '@fadroma/client'
 export * from '@fadroma/scrt'
 export * from '@fadroma/tokens'
 

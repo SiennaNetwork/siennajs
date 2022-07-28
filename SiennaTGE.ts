@@ -1,4 +1,4 @@
-import { Client, Address, Instance, Uint128, Duration } from '@fadroma/client'
+import { Client, Address, Instance, Uint128, Duration } from '@fadroma/scrt'
 import { Snip20 } from '@fadroma/tokens'
 import { linkTuple } from './Core'
 

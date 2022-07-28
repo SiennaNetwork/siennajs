@@ -1,4 +1,4 @@
-import { Address, Client } from '@fadroma/client';
+import { Address, Client } from '@fadroma/scrt';
 
 export class Multicall extends Client {
   async version(): Promise<MulticallVersion> {

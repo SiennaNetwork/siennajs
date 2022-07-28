@@ -1,5 +1,4 @@
-import { Address, ContractLink, Uint128 } from '@fadroma/client';
-import { ViewingKeyClient } from '@fadroma/scrt';
+import { ViewingKeyClient, Address, ContractLink, Uint128 } from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens';
 import { AuthMethod } from './Auth';
 import sha256 from 'crypto-js/sha256';

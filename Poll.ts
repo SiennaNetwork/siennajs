@@ -1,4 +1,4 @@
-import { Client, Address, Moment, Uint128, Fee, Decimal } from '@fadroma/client';
+import { Client, Address, Moment, Uint128, Fee, Decimal } from '@fadroma/scrt';
 
 import { Auth } from './Auth';
 import { ContractInfo } from './Core';

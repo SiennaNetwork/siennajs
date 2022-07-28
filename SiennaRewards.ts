@@ -1,6 +1,6 @@
 import { Console } from '@hackbg/konzola';
 import { randomBase64 } from '@hackbg/formati';
-import * as Fadroma from '@fadroma/client';
+import * as Fadroma from '@fadroma/scrt';
 import {
   Address,
   Client,
@@ -11,8 +11,8 @@ import {
   Uint256,
   Instance,
   Message,
-} from '@fadroma/client';
-import { ViewingKeyClient } from '@fadroma/scrt';
+  ViewingKeyClient
+} from '@fadroma/scrt';
 import { linkStruct, linkTuple } from './Core';
 import { AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';

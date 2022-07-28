@@ -13,7 +13,7 @@ import {
   ExecOpts,
   Fee,
   Uint128,
-} from '@fadroma/client'
+} from '@fadroma/scrt'
 import {
   Snip20,
   CustomToken,
