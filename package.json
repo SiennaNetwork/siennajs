@@ -20,15 +20,15 @@
     "ci":             "izomorf fix"
   },
   "dependencies": {
-    "@fadroma/client":      "^3.0.0",
-    "@fadroma/client-scrt": "^4.0.0",
-    "@fadroma/tokens":      "^2.0.2",
-    "@hackbg/formati":      "^1.1.1",
-    "@hackbg/konzola":      "^1.1.1",
-    "@waiting/base64":      "^4.2.9",
-    "crypto-js":            "^4.1.1",
-    "merkletreejs":         "^0.2.32",
-    "secure-random":        "^1.1.2"
+    "@fadroma/client": "^4.0.0",
+    "@fadroma/scrt":   "^1.0.0",
+    "@fadroma/tokens": "workspace:*",
+    "@hackbg/formati": "^1.1.1",
+    "@hackbg/konzola": "^1.1.1",
+    "@waiting/base64": "^4.2.9",
+    "crypto-js":       "^4.1.1",
+    "merkletreejs":    "^0.2.32",
+    "secure-random":   "^1.1.2"
   },
   "peerDependencies": {
     "@fadroma/client-scrt-grpc": "^5.0.0"

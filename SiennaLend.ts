@@ -1,5 +1,5 @@
 import { Client, Fee, Address, Decimal256, Uint128, Uint256, ContractLink } from '@fadroma/client'
-import { Permit, Signer, ViewingKey, ViewingKeyClient } from '@fadroma/client-scrt'
+import { Permit, Signer, ViewingKey, ViewingKeyClient } from '@fadroma/scrt'
 import { Snip20, TokenInfo } from '@fadroma/tokens'
 import { Pagination, PaginatedResponse } from './Pagination'
 
@@ -168,7 +168,7 @@ export class LendMarket extends Client {
 
   async deposit (amount: Uint256, underlying_asset?: Address) {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
-    return this.agent.getClient(Snip20, address)
+    return this.agent!.getClient(Snip20, address)
       .withFee(this.getFee('deposit'))
       .send(amount, this.address, 'deposit')
   }
@@ -180,7 +180,7 @@ export class LendMarket extends Client {
     underlying_asset?: Address
   ) {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
-    return this.agent.getClient(Snip20, address)
+    return this.agent!.getClient(Snip20, address)
       .withFee(this.getFee('repay'))
       .send(amount, this.address, { repay: { borrower } })
   }
@@ -197,7 +197,7 @@ export class LendMarket extends Client {
     underlying_asset?: Address
   ) {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
-    return this.agent.getClient(Snip20, address)
+    return this.agent!.getClient(Snip20, address)
       .withFee(this.getFee('liquidate'))
       .send(amount, this.address, { liquidate: { borrower, collateral } })
   }
@@ -225,11 +225,11 @@ export class LendMarket extends Client {
   }
 
   async getTokenInfo (): Promise<TokenInfo> {
-    return this.agent.getClient(Snip20, this.address).getTokenInfo()
+    return this.agent!.getClient(Snip20, this.address).getTokenInfo()
   }
 
   async getBalance (address: Address, key: ViewingKey): Promise<Uint128> {
-    return this.agent.getClient(Snip20, this.address).getBalance(address, key)
+    return this.agent!.getClient(Snip20, this.address).getBalance(address, key)
   }
 
   async getUnderlyingBalance (auth: LendAuth, block?: number): Promise<Uint128> {

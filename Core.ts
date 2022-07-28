@@ -14,6 +14,7 @@ export { b64encode, b64decode, b64fromBuffer }
 import SecureRandom from 'secure-random'
 
 export * from '@fadroma/client'
+export * from '@fadroma/scrt'
 export * from '@fadroma/tokens'
 
 /**

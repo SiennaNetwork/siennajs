@@ -1,5 +1,5 @@
 import { Address, ContractLink, Uint128 } from '@fadroma/client';
-import { ViewingKeyClient } from '@fadroma/client-scrt';
+import { ViewingKeyClient } from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens';
 import { AuthMethod } from './Auth';
 import sha256 from 'crypto-js/sha256';
@@ -155,7 +155,7 @@ export class IDO extends ViewingKeyClient {
      * @returns
      */
     async deposit(callback: CallbackMsgType, amount: Uint128, token: Address) {
-        return this.agent
+        return this.agent!
             .getClient(Snip20, token)
             .withFee(this.getFee('deposit'))
             .send(amount, this.address, callback);
