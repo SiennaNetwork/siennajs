@@ -63,8 +63,8 @@ export abstract class AMMFactory extends Client {
     }
     // conform pairs
     const tokenPairs: [Token, Token][] = pairs.map(({ pair: { token_0, token_1 } })=>{
-      if (token_0 instanceof Snip20) token_0 = { custom_token: token_0.custom_token }
-      if (token_1 instanceof Snip20) token_1 = { custom_token: token_1.custom_token }
+      if (token_0 instanceof Snip20) token_0 = token_0.asDescriptor
+      if (token_1 instanceof Snip20) token_1 = token_1.asDescriptor
       return [token_0, token_1]
     })
     const newPairs: AMMCreateExchangesResults = []
@@ -377,7 +377,7 @@ export class AMMRouter extends Client {
     return await Promise.all(tokens.map(async address=>{
       const token = this.agent!.getClient(AMMSnip20, address)
       await token.populate()
-      return { custom_token: token.custom_token }
+      return token.asDescriptor
     }))
   }
   assemble (
