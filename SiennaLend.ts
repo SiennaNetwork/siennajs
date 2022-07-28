@@ -220,7 +220,7 @@ export class LendMarket extends Client {
     amount: Uint256,
     block?: number
   ): Promise<LendSimulatedLiquidation> {
-    block = block || await this.agent.height
+    block = block || await this.agent!.height
     return this.query({ block, borrower, collateral, amount })
   }
 
@@ -233,13 +233,13 @@ export class LendMarket extends Client {
   }
 
   async getUnderlyingBalance (auth: LendAuth, block?: number): Promise<Uint128> {
-    block = block || await this.agent.height
+    block = block || await this.agent!.height
     const method = await auth.createMethod<LendMarketPermissions>(this.address, 'balance')
     return this.query({ balance_underlying: { block, method } })
   }
 
   async getState (block?: number): Promise<LendMarketState> {
-    block = block || await this.agent.height
+    block = block || await this.agent!.height
     return this.query({ state: { block } })
   }
 
@@ -248,22 +248,22 @@ export class LendMarket extends Client {
   }
 
   async getBorrowRate (block?: number): Promise<Decimal256> {
-    block = block || await this.agent.height
+    block = block || await this.agent!.height
     return this.query({ borrow_rate: { block } })
   }
 
   async getSupplyRate (block?: number): Promise<Decimal256> {
-    block = block || await this.agent.height
+    block = block || await this.agent!.height
     return this.query({ supply_rate: { block } })
   }
 
   async getExchangeRate (block?: number): Promise<Decimal256> {
-    block = block || await this.agent.height
+    block = block || await this.agent!.height
     return this.query({ exchange_rate: { block } })
   }
 
   async getAccount (auth: LendAuth, block?: number): Promise<LendMarketAccount> {
-    block = block || await this.agent.height
+    block = block || await this.agent!.height
     const method = await auth.createMethod<LendMarketPermissions>(this.address, 'account_info')
     return this.query({ account: { block, method } })
   }
@@ -279,7 +279,7 @@ export class LendMarket extends Client {
     pagination: Pagination,
     block?:     number
   ): Promise<PaginatedResponse<LendMarketBorrower>> {
-    block = block || await this.agent.height
+    block = block || await this.agent!.height
     return this.query({ borrowers: { block, pagination } })
   }
 
@@ -320,7 +320,7 @@ export class LendOverseer extends Client {
   ): Promise<LendAccountLiquidity> {
     return this.query({
       account_liquidity: {
-        block:  block ?? await this.agent.height,
+        block:  block ?? await this.agent!.height,
         method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
         market: null,
         redeem_amount: '0',
@@ -340,7 +340,7 @@ export class LendOverseer extends Client {
   ): Promise<LendAccountLiquidity> {
     return this.query({
       account_liquidity: {
-        block:  block ?? await this.agent.height,
+        block:  block ?? await this.agent!.height,
         method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
         market,
         redeem_amount,
@@ -364,7 +364,7 @@ export class LendOverseer extends Client {
   ): Promise<LendAccountLiquidity> {
     return this.query({
       account_liquidity: {
-        block:  block ?? await this.agent.height,
+        block:  block ?? await this.agent!.height,
         method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
         market,
         redeem_amount: '0',
