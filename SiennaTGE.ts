@@ -1,10 +1,30 @@
-import { VestingSchedule } from '@sienna/settings'
-import { Client, Address, Instance } from '@fadroma/client'
+import { Client, Address, Instance, Uint128, Duration } from '@fadroma/client'
 import { Snip20 } from '@fadroma/tokens'
-import { linkStruct, linkTuple } from './Core'
+import { linkTuple } from './Core'
 
 export class SiennaSnip20 extends Snip20 {}
 
+export interface VestingSchedule {
+  total: Uint128
+  pools: Array<VestingPool>
+}
+export interface VestingPool {
+  name:     string
+  total:    Uint128
+  partial:  boolean
+  accounts: Array<VestingAccount>
+}
+export interface VestingAccount {
+  name:         string
+  amount:       Uint128
+  address:      Address
+  start_at:     Duration
+  interval:     Duration
+  duration:     Duration
+  cliff:        Uint128
+  portion_size: Uint128
+  remainder:    Uint128
+}
 export interface VestingProgress {
   time:     number
   launcher: number
