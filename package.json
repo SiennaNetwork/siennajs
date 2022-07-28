@@ -20,9 +20,8 @@
     "ci":             "izomorf fix"
   },
   "dependencies": {
-    "@fadroma/client": "^4.0.0",
     "@fadroma/scrt":   "^1.0.0",
-    "@fadroma/tokens": "workspace:*",
+    "@fadroma/tokens": "^3.0.0",
     "@hackbg/formati": "^1.1.1",
     "@hackbg/konzola": "^1.1.1",
     "@waiting/base64": "^4.2.9",
