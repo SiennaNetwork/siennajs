@@ -3,6 +3,8 @@ import { Client, Address, Moment, Uint128, Fee, Decimal } from '@fadroma/client'
 import { Auth } from './Auth';
 import { ContractInfo } from './Core';
 
+const getNow = () => Math.floor(+new Date() / 1000);
+
 export type PollId = number;
 
 /** Supports any number of additions, saved as a string in the contract.
@@ -142,10 +144,10 @@ export class Polls extends Client {
     return this.execute({ change_vote_choice: { poll_id, choice } });
   }
 
-  async getPoll(poll_id: PollId, now: Moment): Promise<PollInfo> {
+  async getPoll(poll_id: PollId, now: Moment = getNow()): Promise<PollInfo> {
     const msg = { poll: { poll_id, now } };
-    const result: { poll: PollInfo } = await this.query(msg);
-    return result.poll;
+    const result: PollInfo = await this.query(msg);
+    return result;
   }
 
   async getPolls(
