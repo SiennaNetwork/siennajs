@@ -81,6 +81,7 @@ export interface PollResult {
    * As vote = stake power */
   yes_votes: Uint128;
   no_votes: Uint128;
+  abstain_votes: Uint128;
 }
 
 /** All poll information. */
