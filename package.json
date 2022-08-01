@@ -22,7 +22,7 @@
   "dependencies": {
     "@fadroma/client-scrt-amino": "^4.1.1",
     "@fadroma/scrt":   "^1.0.2",
-    "@fadroma/tokens": "^3.0.0",
+    "@fadroma/tokens": "^3.0.1",
     "@hackbg/formati": "^1.1.1",
     "@hackbg/konzola": "^1.1.1",
     "@waiting/base64": "^4.2.9",
