@@ -9,5 +9,5 @@ export * from './Poll'
 export * from './Pagination'
 export * from './Multicall'
 
-import { PatchedSigningCosmWasmClient_1_2 } from '@fadroma/client-scrt-amino'
+import { PatchedSigningCosmWasmClient_1_2 } from '@fadroma/scrt-amino'
 export { PatchedSigningCosmWasmClient_1_2 as PatchedSigningCosmWasmClient }
