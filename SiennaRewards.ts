@@ -249,9 +249,7 @@ export class Rewards_v3 extends Rewards {
   }
   async getUserInfo(key = '', address = this.agent?.address, at = now()) {
     const msg = { rewards: { user_info: { address, key, at } } };
-    console.log('msg', msg);
     const result: { rewards: { user_info: Rewards_v3_Account } } = await this.query(msg);
-    console.debug(result);
     return result.rewards.user_info;
   }
   lock(amount: string) {
