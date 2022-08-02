@@ -177,8 +177,8 @@ export class IDO extends ViewingKeyClient {
      * @param address Whom to send the adress to
      * @returns
      */
-    async refundTokens(return_type: ReturnTokenType, recipient?: Address) {
-        return this.execute({ refund_tokens: { recipient, return_type } });
+    async refundTokens(recipient?: Address) {
+        return this.execute({ refund_tokens: { recipient } });
     }
 
     /**
@@ -341,17 +341,6 @@ export interface TokenConfig {
     sold: TokenRelay;
     input: ContractLink;
     constants: SwapConstants;
-}
-
-export enum ReturnTokenType {
-    /**
-     * Swap the tokens into the output.
-     */
-    Claim = 'claim',
-    /**
-     * Return the original tokens to the creator.
-     */
-    Refund = 'refund',
 }
 
 export enum IdoPermissions {
