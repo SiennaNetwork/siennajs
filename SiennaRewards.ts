@@ -428,6 +428,19 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
     return result.rewards.user_info;
   }
 
+  async getBalance(
+    auth_method: AuthMethod<RewardsPermissions>,
+    address = this.agent?.address,
+    at      = now()
+  ) {
+    const result: {
+      rewards: { balance: { amount: Uint128 } }
+    } = await this.query({
+      rewards: { balance: { address, auth_method } },
+    });
+    return result.rewards.balance;
+  }
+
   async getAllBalances(auth_method: AuthMethod<RewardsPermissions>, at: number = now()) {
     const result: {
       rewards: { all_balances: Rewards_v4_AllBalances };
