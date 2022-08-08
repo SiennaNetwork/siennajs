@@ -77,11 +77,27 @@ export class ContractInstantiationInfo {
   ) { }
 }
 
+/** Support either casing of the codeHash parameter. */
+interface IntoLink {
+  address:    Address,
+  codeHash?:  CodeHash,
+  code_hash?: CodeHash
+}
+
 /** Need both address and codeHash to create a linkTuple or linkStruct */
-const validateLink = (instance: {address: Address, codeHash?: CodeHash}) => {
-  if (!instance) throw new Error("Can't create an inter-contract link without a target")
-  if (!instance.address) throw new Error("Can't create an inter-contract link without an address")
-  if (!instance.codeHash) throw new Error("Can't create an inter-contract link without a code hash")
+function validateLink (instance: IntoLink) {
+  if (!instance) {
+    throw new Error("Can't create an inter-contract link without a target")
+  }
+  if (!instance.address) {
+    throw new Error("Can't create an inter-contract link without an address")
+  }
+  if (!instance.codeHash && !instance.code_hash) {
+    throw new Error("Can't create an inter-contract link without a code hash")
+  }
+  if (instance.codeHash && instance.code_hash && (instance.codeHash!==instance.code_hash)) {
+    throw new Error("Both code_hash and codeHash are present, and are different.")
+  }
   return instance
 }
 
@@ -89,18 +105,21 @@ const validateLink = (instance: {address: Address, codeHash?: CodeHash}) => {
 export type LinkTuple = [Address, CodeHash]
 
 /** Convert Fadroma.Instance to address/hash pair as used by MGMT */
-export const linkTuple = (instance: {address: Address, codeHash?: CodeHash}) => {
+export const linkTuple = (instance: IntoLink) => {
   validateLink(instance)
-  return [ instance.address, instance.codeHash ]
+  return [ instance.address, instance.codeHash ?? instance.code_hash ]
 }
 
 /** Contract address/hash pair (ContractLink) */
 export type LinkStruct = { address: Address, code_hash: CodeHash }
 
 /** Convert Fadroma.Instance to address/hash struct (ContractLink) */
-export const linkStruct = (instance: {address: Address, codeHash?: CodeHash}) => {
+export const linkStruct = (instance: IntoLink) => {
   validateLink(instance)
-  return { address: instance.address, code_hash: instance.codeHash?.toLowerCase() }
+  return {
+    address: instance.address,
+    code_hash: (instance.codeHash??instance.code_hash)!.toLowerCase()
+  }
 }
 
 export const templateStruct = (template: Template) => ({
