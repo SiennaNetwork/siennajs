@@ -14,3 +14,14 @@ jobs:
           run_install: |
             - recursive: true
       - run: pnpm check
+      - run: pnpm ci
+      - id:  pack
+        run: pnpm pack | tail -n1 # lol
+      - uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file:       ${{ steps.pack.outputs.stdout }}
+          asset_name: ${{ steps.pack.outputs.stdout }}
+          tag:        ${{ github.ref }}
+          overwrite:  true
+          body:       "Automated release by https://github.com/marketplace/actions/automated-releases-for-npm-packages"
