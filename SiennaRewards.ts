@@ -390,11 +390,14 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
     stakedToken,
     bonding = 86400,
   }: RewardsInitParams): Message {
+    if (!authProvider) {
+      throw new Error('Pass authProvider')
+    }
     return {
-      provider: linkStruct(authProvider!!),
+      provider:         linkStruct(authProvider),
       config: {
-        reward_token: linkStruct(rewardToken),
-        lp_token: linkStruct(stakedToken),
+        reward_token:   linkStruct(rewardToken),
+        lp_token:       linkStruct(stakedToken),
         bonding_period: bonding,
       },
     };
