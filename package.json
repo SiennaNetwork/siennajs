@@ -24,7 +24,7 @@
     "check": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "release": "izomorf",
-    "ci": "izomorf fix"
+    "release:ci": "izomorf fix"
   },
   "dependencies": {
     "@fadroma/scrt": "^1.0.4",

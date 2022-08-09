@@ -15,23 +15,25 @@ jobs:
       - uses: actions/setup-node@v3
         with: { node-version: 18 }
 
+      # Get PNPM:
+      - run: npm i -g pnpm@^7.5.2
+
       # Don't compile native modules:
       - run: npm config set node-gyp /bin/true
 
-      # Get PNPM and install deps:
-      - uses: pnpm/action-setup@v2.0.1
-        with: { version: ^7.5.2 }
+      # Install deps:
+      - run: pnpm i
 
       # Check types:
-      - run: pnpm check
+      - run: npm run check
 
       # Build for packaging
-      - run: pnpm ci
+      - run: npm run release:ci
 
       # Package
       # See: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
       - id:  pack
-        run: echo '::set-output name=file::$(pnpm pack | tail -n1)' # lol
+        run: echo '::set-output name=file::$(npm pack | tail -n1)' # lol
 
       # Upload release
       - uses: svenstaro/upload-release-action@v2
