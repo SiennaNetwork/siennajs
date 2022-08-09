@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@fadroma/scrt": "^1.0.4",
-    "@fadroma/scrt-amino": "^1.0.4",
+    "@fadroma/scrt-amino": "^1.0.5",
     "@fadroma/tokens": "^3.0.3",
     "@hackbg/formati": "^3.0.1",
     "@hackbg/konzola": "^1.1.2",
