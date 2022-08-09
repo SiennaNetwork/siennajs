@@ -38,6 +38,15 @@ jobs:
       - id:  pack
         run: echo "::set-output name=file::$(npm pack | tail -n1)" # lol
 
+      # Make sure release can be installed
+      - run: |
+          pwd
+          mkdir /tmp/downstream
+          cd /tmp/downstream
+          echo "{}" > package.json
+          npm i --save /src/${{ steps.pack.outputs.file }}
+          cat package.json
+
       # Upload release
       - uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
