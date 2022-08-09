@@ -3,7 +3,7 @@ on: [push, pull_request]
 
 jobs:
   js:
-    name: pnpm check
+    name: check, build, fix, and release
     runs-on: ubuntu-latest
     steps:
 
@@ -31,7 +31,7 @@ jobs:
       - run: npm run release:ci
 
       # Fix TypeScript insanity
-      - run: npx tsc-esm-fix
+      - run: npx -y tsc-esm-fix
 
       # Package
       # See: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
