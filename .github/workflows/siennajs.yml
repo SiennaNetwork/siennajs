@@ -18,7 +18,7 @@ jobs:
       - name: Get PNPM
         run:  npm i -g pnpm@^7.5.2
 
-      - name: Don't compile native modules:
+      - name: Don't compile native modules
         run:  pnpm config set node-gyp /bin/true
 
       - name: Install deps
