@@ -48,6 +48,7 @@ jobs:
           echo "{}" > package.json
           npm i --save $SRC/${{ steps.pack.outputs.file }}
           cat package.json
+          node -e 'import("siennajs").then(console.log)'
           cd $SRC
           rm -rf /tmp/downstream
 
@@ -68,3 +69,4 @@ jobs:
           echo "{}" > package.json
           npm i --save $URL/$TAG/siennajs-$TAG.tgz
           cat package.json
+          node -e 'import("siennajs").then(console.log)'
