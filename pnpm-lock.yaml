@@ -5,7 +5,7 @@ importers:
   .:
     specifiers:
       '@fadroma/scrt': ^1.0.4
-      '@fadroma/scrt-amino': ^1.0.3
+      '@fadroma/scrt-amino': ^1.0.4
       '@fadroma/tokens': ^3.0.3
       '@hackbg/formati': ^3.0.1
       '@hackbg/izomorf': ^4.1.0
@@ -18,7 +18,7 @@ importers:
       typescript: ^4.7.4
     dependencies:
       '@fadroma/scrt': 1.0.4
-      '@fadroma/scrt-amino': 1.0.3
+      '@fadroma/scrt-amino': 1.0.4
       '@fadroma/tokens': 3.0.3
       '@hackbg/formati': 3.0.1
       '@hackbg/konzola': 1.1.2
@@ -94,8 +94,8 @@ packages:
     resolution: {integrity: sha512-TKBT08I5vhc63NaGJ9eABMDVgZyFMDryAakIpOsjD6k8bfPO3URUbeemacF2GIfQwJI8TMUv42w/4QsgD77WLA==}
     dev: false
 
-  /@fadroma/scrt-amino/1.0.3:
-    resolution: {integrity: sha512-J08eCy1zXfMCSybSX5zipVmH2qR0la3x9fhB2kl84vVy13eIfFihltkg8leNV2ycMjDu+u19G/9rhvZIAgghNg==}
+  /@fadroma/scrt-amino/1.0.4:
+    resolution: {integrity: sha512-+Kyh86oqNsQB2HizfhwEEnIDFzmuzzraVfgoagbej0iWsu1pi/AJhEccCUWbGuxGPQbTXC4BhVOtQHvFFIsThw==}
     dependencies:
       '@fadroma/scrt': 1.0.4
       '@hackbg/formati': 1.2.0
@@ -203,7 +203,7 @@ packages:
   /@iov/crypto/2.1.0:
     resolution: {integrity: sha512-jnb4XuK50admolm7fBxOcxfAW2TO+wYrZlhDWiMETItY/Y5gNNa1zaDSO2wNIjjfGng+8nQ1yqnNhqy7busV2Q==}
     dependencies:
-      '@iov/encoding': 2.1.0
+      '@iov/encoding': 2.5.0
       bip39: 3.0.4
       bn.js: 4.12.0
       elliptic: 6.5.4
