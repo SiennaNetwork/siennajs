@@ -21,6 +21,7 @@
     "build": "concurrently 'npm:build:*'",
     "build:cjs": "tsc",
     "build:esm": "tsc -p tsconfig.esm.json",
+    "clean": "rm -rf dist *.dist.*; git checkout package.json",
     "check": "tsc --noEmit",
     "prepublishOnly": "npm run build",
     "release": "izomorf",
