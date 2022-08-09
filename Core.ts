@@ -1,18 +1,7 @@
-import {
-  Instance,
-  Template,
-  Address,
-  CodeHash,
-  Uint128,
-  Decimal,
-  Decimal256,
-} from '@fadroma/scrt'
+import * as Scrt from '@fadroma/scrt'
+import { SecureRandom, Base64 } from '@hackbg/formati'
 
-import { b64encode, b64decode, b64fromBuffer } from "@waiting/base64"
-export { b64encode, b64decode, b64fromBuffer }
-
-import SecureRandom from 'secure-random'
-
+export const { b64encode, b64decode, b64fromBuffer } = Base64
 export * from '@fadroma/scrt'
 export * from '@fadroma/tokens'
 
@@ -29,7 +18,7 @@ export interface Coin {
 
 export interface Fee {
   readonly amount: ReadonlyArray<Coin>
-  readonly gas:    Uint128
+  readonly gas:    Scrt.Uint128
 }
 
 export function decode_data<T>(result: { data: Buffer }): T {
@@ -37,14 +26,14 @@ export function decode_data<T>(result: { data: Buffer }): T {
   return JSON.parse(b64decode(b64string))
 }
 
-export function create_coin(amount: Uint128): Coin {
+export function create_coin(amount: Scrt.Uint128): Coin {
   return {
     denom: 'uscrt',
     amount: `${amount}`
   }
 }
 
-export function create_fee(amount: Uint128, gas?: Uint128): Fee {
+export function create_fee(amount: Scrt.Uint128, gas?: Scrt.Uint128): Fee {
   if (gas === undefined) {
     gas = amount
   }
@@ -66,7 +55,7 @@ export function create_entropy (bytes = 32): string {
 export class ContractInfo {
   constructor(
     readonly code_hash: string,
-    readonly address: Address
+    readonly address: Scrt.Address
   ) { }
 }
 
@@ -79,9 +68,9 @@ export class ContractInstantiationInfo {
 
 /** Support either casing of the codeHash parameter. */
 interface IntoLink {
-  address:    Address,
-  codeHash?:  CodeHash,
-  code_hash?: CodeHash
+  address:    Scrt.Address,
+  codeHash?:  Scrt.CodeHash,
+  code_hash?: Scrt.CodeHash
 }
 
 /** Need both address and codeHash to create a linkTuple or linkStruct */
@@ -102,7 +91,7 @@ function validateLink (instance: IntoLink) {
 }
 
 /** Contract address/hash pair as used by MGMT */
-export type LinkTuple = [Address, CodeHash]
+export type LinkTuple = [Scrt.Address, Scrt.CodeHash]
 
 /** Convert Fadroma.Instance to address/hash pair as used by MGMT */
 export const linkTuple = (instance: IntoLink) => {
@@ -111,7 +100,7 @@ export const linkTuple = (instance: IntoLink) => {
 }
 
 /** Contract address/hash pair (ContractLink) */
-export type LinkStruct = { address: Address, code_hash: CodeHash }
+export type LinkStruct = { address: Scrt.Address, code_hash: Scrt.CodeHash }
 
 /** Convert Fadroma.Instance to address/hash struct (ContractLink) */
 export const linkStruct = (instance: IntoLink) => {
@@ -122,7 +111,7 @@ export const linkStruct = (instance: IntoLink) => {
   }
 }
 
-export const templateStruct = (template: Template) => ({
+export const templateStruct = (template: Scrt.Template) => ({
   id:        Number(template.codeId),
   code_hash: template.codeHash?.toLowerCase()
 })
