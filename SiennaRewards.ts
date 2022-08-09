@@ -1,5 +1,5 @@
 import { Console } from '@hackbg/konzola';
-import { randomBase64 } from '@hackbg/formati';
+import { randomBase64, SecureRandom } from '@hackbg/formati';
 import * as Fadroma from '@fadroma/scrt';
 import {
   Address,
@@ -17,7 +17,6 @@ import { linkStruct, linkTuple } from './Core';
 import { AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
 import type { AMMVersion } from './SiennaSwap';
-import SecureRandom from 'secure-random';
 /** Maybe change this to 'v2'|'v3'|'v4' and simplify the classes below? */
 export type RewardsAPIVersion = 'v2' | 'v3' | 'v3.1' | 'v4.1';
 /** Which version of AMM corresponds to which version of rewards. */

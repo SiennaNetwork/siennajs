@@ -1,41 +1,45 @@
 {
   "name": "siennajs",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "description": "Interact with Sienna Network smart contracts through JS.",
   "homepage": "https://sienna.network",
-  "repository": { "type": "git", "url": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs" },
-  "bugs": { "url": "https://github.com/SiennaNetwork/sienna/issues" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs"
+  },
+  "bugs": {
+    "url": "https://github.com/SiennaNetwork/sienna/issues"
+  },
   "author": "Sienna Network",
   "license": "MIT",
   "type": "module",
   "main": "./index.ts",
-  "engines": { "node": "^12.16 || >=13.7" },
+  "engines": {
+    "node": "^12.16 || >=13.7"
+  },
   "scripts": {
-    "build":          "concurrently 'npm:build:*'",
-    "build:cjs":      "tsc",
-    "build:esm":      "tsc -p tsconfig.esm.json",
-    "check":          "tsc --noEmit",
+    "build": "concurrently 'npm:build:*'",
+    "build:cjs": "tsc",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "check": "tsc --noEmit",
     "prepublishOnly": "npm run build",
-    "release":        "izomorf",
-    "ci":             "izomorf fix"
+    "release": "izomorf",
+    "ci": "izomorf fix"
   },
   "dependencies": {
-    "@fadroma/scrt":       "^1.0.2",
-    "@fadroma/scrt-amino": "^1.0.1",
-    "@fadroma/tokens":     "^3.0.1",
-    "@hackbg/formati":     "^1.1.1",
-    "@hackbg/konzola":     "^1.1.1",
-    "@waiting/base64":     "^4.2.9",
-    "crypto-js":           "^4.1.1",
-    "merkletreejs":        "^0.2.32",
-    "secure-random":       "^1.1.2"
+    "@fadroma/scrt": "^1.0.4",
+    "@fadroma/scrt-amino": "^1.0.4",
+    "@fadroma/tokens": "^3.0.3",
+    "@hackbg/formati": "^3.0.1",
+    "@hackbg/konzola": "^1.1.2",
+    "crypto-js": "^4.1.1",
+    "merkletreejs": "^0.2.32"
   },
   "devDependencies": {
-    "@hackbg/izomorf":      "^4.1.0",
-    "@types/crypto-js":     "^4.1.1",
-    "@types/node":          "^17.0.35",
-    "@types/secure-random": "^1.1.0",
-    "concurrently":         "7.2.2",
-    "typescript":           "^4.7"
+    "@hackbg/izomorf": "^4.1.0",
+    "@types/crypto-js": "^4.1.1",
+    "@types/node": "^17.0.45",
+    "concurrently": "7.2.2",
+    "typescript": "^4.7.4"
   }
 }
