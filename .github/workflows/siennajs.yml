@@ -40,11 +40,11 @@ jobs:
 
       # Make sure release can be installed
       - run: |
-          pwd
+          export SRC=$(pwd)
           mkdir /tmp/downstream
           cd /tmp/downstream
           echo "{}" > package.json
-          npm i --save /src/${{ steps.pack.outputs.file }}
+          npm i --save $SRC/${{ steps.pack.outputs.file }}
           cat package.json
 
       # Upload release
