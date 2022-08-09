@@ -31,7 +31,10 @@ jobs:
         run:  npm run release:ci
 
       - name: Fix TypeScript insanity
-        run:  npx -y tsc-esm-fix
+        run: |
+          cat index.dist.js
+          npx -y tsc-esm-fix
+          cat index.dist.js
 
       # See: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
       - name: Package as tarball
