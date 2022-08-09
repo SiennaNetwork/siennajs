@@ -19,7 +19,7 @@ jobs:
       - run: npm i -g pnpm@^7.5.2
 
       # Don't compile native modules:
-      - run: npm config set node-gyp /bin/true
+      - run: pnpm config set node-gyp /bin/true
 
       # Install deps:
       - run: pnpm i
@@ -41,6 +41,6 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file:       ${{ steps.pack.outputs.file }}
           asset_name: ${{ steps.pack.outputs.file }}
-          tag:        ${{ github.ref }}
+          tag_name:   ${{ github.ref }}
           overwrite:  true
           body:       "Automated release by https://github.com/marketplace/actions/automated-releases-for-npm-packages"
