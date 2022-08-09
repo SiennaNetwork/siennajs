@@ -7,39 +7,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      # Get source:
-      - uses: actions/checkout@v2
+      - name: Get source
+        uses: actions/checkout@v2
         with: { submodules: recursive }
 
-      # Get Node:
-      - uses: actions/setup-node@v3
+      - name: Get Node 18
+        uses: actions/setup-node@v3
         with: { node-version: 18 }
 
-      # Get PNPM:
-      - run: npm i -g pnpm@^7.5.2
+      - name: Get PNPM
+        run:  npm i -g pnpm@^7.5.2
 
-      # Don't compile native modules:
-      - run: pnpm config set node-gyp /bin/true
+      - name: Don't compile native modules:
+        run:  pnpm config set node-gyp /bin/true
 
-      # Install deps:
-      - run: pnpm i
+      - name: Install deps
+        run:  pnpm i
 
-      # Check types:
-      - run: npm run check
+      - name: Check types
+        run:  npm run check
 
-      # Build for packaging
-      - run: npm run release:ci
+      - name: Build for packaging
+        run:  npm run release:ci
 
-      # Fix TypeScript insanity
-      - run: npx -y tsc-esm-fix
+      - name: Fix TypeScript insanity
+        run:  npx -y tsc-esm-fix
 
-      # Package
       # See: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
-      - id:  pack
-        run: echo "::set-output name=file::$(npm pack | tail -n1)" # lol
+      - name: Package as tarball
+        id:   pack
+        run:  echo "::set-output name=file::$(npm pack | tail -n1)" # lol
 
-      # Make sure release can be installed
-      - run: |
+      - name: Check that tarball can be installed
+        run: |
           export SRC=$(pwd)
           mkdir /tmp/downstream
           cd /tmp/downstream
@@ -47,9 +47,9 @@ jobs:
           npm i --save $SRC/${{ steps.pack.outputs.file }}
           cat package.json
 
-      # Upload release
-      - uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload release
+        if:   startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
         with:
           files: ${{ steps.pack.outputs.file }}
           body:  Automated release by https://github.com/softprops/action-gh-release
