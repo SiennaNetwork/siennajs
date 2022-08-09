@@ -30,16 +30,14 @@ jobs:
       - name: Build for packaging
         run:  npm run release:ci
 
-      - name: Fix TypeScript insanity
-        run: |
-          cat index.dist.js
-          npx -y tsc-esm-fix
-          cat index.dist.js
+      - name: Fix TypeScript/ESM insanity
+        run:  find . -maxdepth 1 -name '*.dist.js' -exec npx -y fix-esm-import-path {} \;
+        #see: https://github.com/beenotung/fix-esm-import-path/issues/3
 
-      # See: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
       - name: Package as tarball
         id:   pack
         run:  echo "::set-output name=file::$(npm pack | tail -n1)" # lol
+        #see: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
 
       - name: Check that tarball can be installed
         run: |
