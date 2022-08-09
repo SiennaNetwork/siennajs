@@ -6,22 +6,39 @@ jobs:
     name: pnpm check
     runs-on: ubuntu-latest
     steps:
+
+      # Get source:
       - uses: actions/checkout@v2
         with: { submodules: recursive }
+
+      # Get Node:
+      - uses: actions/setup-node@v3
+        with: { node-version: 18 }
+
+      # Don't compile native modules:
+      - run: npm config set node-gyp /bin/true
+
+      # Get PNPM and install deps:
       - uses: pnpm/action-setup@v2.0.1
-        with:
-          version: 7.5.2
-          run_install: |
-            - recursive: true
+        with: { version: ^7.5.2 }
+
+      # Check types:
       - run: pnpm check
+
+      # Build for packaging
       - run: pnpm ci
+
+      # Package
+      # See: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
       - id:  pack
-        run: pnpm pack | tail -n1 # lol
+        run: echo '::set-output name=file::$(pnpm pack | tail -n1)' # lol
+
+      # Upload release
       - uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file:       ${{ steps.pack.outputs.stdout }}
-          asset_name: ${{ steps.pack.outputs.stdout }}
+          file:       ${{ steps.pack.outputs.file }}
+          asset_name: ${{ steps.pack.outputs.file }}
           tag:        ${{ github.ref }}
           overwrite:  true
           body:       "Automated release by https://github.com/marketplace/actions/automated-releases-for-npm-packages"
