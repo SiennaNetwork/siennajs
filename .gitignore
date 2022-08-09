@@ -2,3 +2,4 @@ test-directory
 node_modules
 dist
 *.tgz
+*.dist.*
