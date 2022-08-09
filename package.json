@@ -27,7 +27,6 @@
     "ci": "izomorf fix"
   },
   "dependencies": {
-    "@types/node": "latest",
     "@fadroma/scrt": "^1.0.4",
     "@fadroma/scrt-amino": "^1.0.5",
     "@fadroma/tokens": "^3.0.3",
