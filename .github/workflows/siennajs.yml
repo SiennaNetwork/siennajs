@@ -52,6 +52,7 @@ jobs:
           npm i --save $SRC/${{ steps.pack.outputs.file }}
           cat package.json
           node -e 'import("siennajs").then(console.log)'
+          node -e 'console.log(require("siennajs"))'
           cd $SRC
           rm -rf /tmp/downstream
 
@@ -73,3 +74,4 @@ jobs:
           cat package.json
           npm i
           node -e 'import("siennajs").then(console.log)'
+          node -e 'console.log(require("siennajs"))'
