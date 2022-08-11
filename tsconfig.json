@@ -1,6 +1,6 @@
 {
   "include": ["."],
-  "exclude": [ "tests", "dist", "types", "node_modules", "fadroma" ],
+  "exclude": [ "tests", "dist", "types", "node_modules", "fadroma", "toolbox" ],
   "compilerOptions": {
     "outDir": "./dist/cjs",
     "declaration": true,
