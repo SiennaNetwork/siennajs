@@ -69,7 +69,7 @@ jobs:
           export URL=https://github.com/SiennaNetwork/siennajs/releases/download
           mkdir /tmp/downstream
           cd /tmp/downstream
-          echo "{\"siennajs\":\"$URL/$TAG/siennajs-$TAG.tgz\"}" > package.json
+          echo "{\"dependencies\":{\"siennajs\":\"$URL/$TAG/siennajs-$TAG.tgz\"}}" > package.json
           cat package.json
           npm i
           node -e 'import("siennajs").then(console.log)'
