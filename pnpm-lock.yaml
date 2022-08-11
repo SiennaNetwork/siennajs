@@ -8,7 +8,7 @@ importers:
       '@fadroma/scrt-amino': ^1.0.5
       '@fadroma/tokens': ^3.0.3
       '@hackbg/formati': ^3.0.1
-      '@hackbg/izomorf': ^4.2.2
+      '@hackbg/izomorf': ^4.2.3
       '@hackbg/konzola': ^1.1.2
       '@types/crypto-js': ^4.1.1
       '@types/node': ^17.0.45
@@ -25,7 +25,7 @@ importers:
       crypto-js: 4.1.1
       merkletreejs: 0.2.32
     devDependencies:
-      '@hackbg/izomorf': 4.2.2
+      '@hackbg/izomorf': 4.2.3
       '@types/crypto-js': 4.1.1
       '@types/node': 17.0.45
       concurrently: 7.2.2
@@ -159,8 +159,8 @@ packages:
       secure-random: 1.1.2
     dev: false
 
-  /@hackbg/izomorf/4.2.2:
-    resolution: {integrity: sha512-xfIgW5MzLPtdQOeazBysI6QW0ZU8eZQJe2vsjtcYTb5IhbwmlH7KhxHWr8p5rJnjfm7fFR6DW4/bGkjMFQjYDw==}
+  /@hackbg/izomorf/4.2.3:
+    resolution: {integrity: sha512-3gm0T3EpbuOqa7qiPfHue2Qq7TowP5iihwatKhxz3rK8UN5MCpf0ec9/iqQCt+g2t9EWzTYV0ujvaTJ+4ZAUFQ==}
     hasBin: true
     dependencies:
       boxen: 7.0.0
