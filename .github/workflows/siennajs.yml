@@ -30,12 +30,18 @@ jobs:
       - name: Build for packaging
         run:  npm run release:ci
 
+      - name: Fix TypeScript/ESM insanity
+        #see: https://github.com/beenotung/fix-esm-import-path/issues/3
+        run: |
+          find . -maxdepth 1 -name '*.dist.js' -exec npx -y fix-esm-import-path {} \;
+          git checkout '*.ts' # dirty
+
       - name: Package as tarball
         #see: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
         run:  echo "::set-output name=file::$(npm pack | tail -n1)" # lol
         id:   pack
 
-      - name: Check that tarball can be installed, imported, and required
+      - name: Check that tarball can be installed
         run: |
           export SRC=$(pwd)
           export TAG=$(printf $GITHUB_REF | cut -c11-)
@@ -46,7 +52,6 @@ jobs:
           npm i --save $SRC/${{ steps.pack.outputs.file }}
           cat package.json
           node -e 'import("siennajs").then(console.log)'
-          node -e 'console.log(require("siennajs"))'
           cd $SRC
           rm -rf /tmp/downstream
 
@@ -57,7 +62,7 @@ jobs:
           files: ${{ steps.pack.outputs.file }}
           body:  Automated release by https://github.com/softprops/action-gh-release
 
-      - name: Check that release can be installed, imported, and required
+      - name: Check that release can be installed
         if:   startsWith(github.ref, 'refs/tags/')
         run: |
           export TAG=$(printf $GITHUB_REF | cut -c11-)
@@ -68,4 +73,3 @@ jobs:
           npm i --save $URL/$TAG/siennajs-$TAG.tgz
           cat package.json
           node -e 'import("siennajs").then(console.log)'
-          node -e 'console.log(require("siennajs"))'
