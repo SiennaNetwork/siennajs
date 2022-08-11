@@ -71,4 +71,5 @@ jobs:
           cd /tmp/downstream
           echo "{\"siennajs\":\"$URL/$TAG/siennajs-$TAG.tgz\"}" > package.json
           cat package.json
+          npm i
           node -e 'import("siennajs").then(console.log)'
