@@ -14,7 +14,7 @@ import {
   ViewingKeyClient
 } from '@fadroma/scrt';
 import { linkStruct, linkTuple } from './Core';
-import { AuthMethod } from './Auth';
+import { AuthClient, AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
 import type { AMMVersion } from './SiennaSwap';
 /** Maybe change this to 'v2'|'v3'|'v4' and simplify the classes below? */
@@ -63,19 +63,18 @@ export abstract class Rewards extends Client {
   abstract withdraw(amount: Uint128): Promise<unknown>;
   /** Try to claim a reward. */
   abstract claim(): Promise<unknown>;
-  /** Populate the client class with contract info. */
-  async populate() {
-    await super.populate();
-    this.setVKClient();
-    return this;
+  get vk (): ViewingKeyClient {
+    return new ViewingKeyClient(this.agent, { address: this.address, codeHash: this.codeHash })
   }
-  /** The `set*Client methods` refresh the sub-client after calling populate()
-   * so that the subclients automatically get the correct codehash/id/label. */
-  setVKClient() {
-    return new ViewingKeyClient(this.agent, { address: this.address, codeHash: this.codeHash });
+  get auth (): AuthClient {
+    throw new Error('Auth provider is only available in Rewards >=4.1');
   }
-  /** Viewing key management for rewards works the same for all versions. */
-  vk = this.setVKClient();
+  get emigration (): Emigration {
+    throw new Error('Migration is only available in Rewards >=3');
+  }
+  get immigration (): Immigration {
+    throw new Error('Migration is only available in Rewards >=3');
+  }
   /** Point this pool to the governance contract that will be using it for voting power. */
   async setGovernanceLink<T>(link: ContractLink): Promise<T> {
     throw new Error('Governance integration is only available in Rewards >=4.1');
@@ -203,6 +202,12 @@ export class Rewards_v3 extends Rewards {
       bonding,
     },
   });
+  get emigration (): Emigration {
+    return new Emigration(this.agent, { address: this.address, codeHash: this.codeHash });
+  }
+  get immigration (): Immigration {
+    return new Immigration(this.agent, { address: this.address, codeHash: this.codeHash });
+  }
   async getConfig() {
     const result: { rewards: { config: Rewards_v3_Config } } = await this.query({
       rewards: 'config',
@@ -284,15 +289,6 @@ export class Rewards_v3 extends Rewards {
   set_viewing_key(key: string) {
     return this.execute({ set_viewing_key: { key } });
   }
-  emigration = this.setEmigrationClient();
-  setEmigrationClient() {
-    return new Emigration(this.agent, { address: this.address, codeHash: this.codeHash });
-  }
-  async populate() {
-    await super.populate();
-    this.setEmigrationClient();
-    return this;
-  }
 }
 /** Reward pool configuration */
 export interface Rewards_v3_Config {
@@ -364,15 +360,6 @@ export interface Rewards_v3_Account {
 }
 // for now use this for testing only
 export class Rewards_v3_1 extends Rewards_v3 {
-  immigration = this.setImmigrationClient();
-  setImmigrationClient() {
-    return new Immigration(this.agent, { address: this.address, codeHash: this.codeHash });
-  }
-  async populate() {
-    await super.populate();
-    this.setImmigrationClient();
-    return this;
-  }
   async depositToken(
     token: LPToken,
     amount: Uint128,
@@ -401,6 +388,10 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
         bonding_period: bonding,
       },
     };
+  }
+
+  get auth (): AuthClient {
+    return new AuthClient(this.agent, { address: this.address, codeHash: this.codeHash })
   }
 
   async setGovernanceLink<T>(link: ContractLink): Promise<T> {
