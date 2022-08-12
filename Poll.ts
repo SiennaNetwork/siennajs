@@ -1,6 +1,6 @@
 import { Client, Address, Moment, Uint128, Fee, Decimal } from '@fadroma/scrt';
 
-import { Auth } from './Auth';
+import { Auth, AuthClient } from './Auth';
 import { ContractInfo } from './Core';
 
 const getNow = () => Math.floor(+new Date() / 1000);
@@ -128,6 +128,8 @@ export class Polls extends Client {
     unvote: new Fee('100000', 'uscrt'),
     change_vote_choice: new Fee('100000', 'uscrt'),
   };
+
+  get auth () { return new AuthClient(this.agent, this.address, this.codeHash) }
 
   async createPoll(meta: PollMetadata) {
     return this.execute({ create_poll: { meta } });
