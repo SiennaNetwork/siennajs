@@ -1,4 +1,5 @@
-import { Permit, Signer, ViewingKey, Client, Address, ContractLink } from "@fadroma/scrt";
+import { Permit, Signer, ViewingKey, Client, Address, CodeHash, ContractLink } from "@fadroma/scrt";
+import { IntoLink, linkStruct } from "./Core";
 import { Pagination } from "./Pagination";
 
 export type AuthStrategy =
@@ -12,6 +13,18 @@ export type AuthMethod<T> =
 export class MockAuthClient extends Client {
   async update(second_contract: any) {
     return this.execute({ update: { second_contract } });
+  }
+}
+
+export class AuthClient extends Client {
+  async setGroupKey (key: string, group_id: number) {
+    return await this.execute({ auth_client: { set_group_key: { key, group_id } } })
+  }
+  async changeProvider (provider: IntoLink) {
+    return await this.execute({ auth_client: { change_provider: { provider: linkStruct(provider) } } })
+  }
+  async getProvider (): Promise<AuthProvider> {
+    return await this.query({ auth_client: { provider: {} } })
   }
 }
 

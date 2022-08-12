@@ -67,7 +67,7 @@ export class ContractInstantiationInfo {
 }
 
 /** Support either casing of the codeHash parameter. */
-interface IntoLink {
+export interface IntoLink {
   address:    Scrt.Address,
   codeHash?:  Scrt.CodeHash,
   code_hash?: Scrt.CodeHash

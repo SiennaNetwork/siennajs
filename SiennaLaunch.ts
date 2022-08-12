@@ -1,10 +1,14 @@
 import { ViewingKeyClient, Address, ContractLink, Uint128 } from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens';
-import { AuthMethod } from './Auth';
+import { AuthClient, AuthMethod } from './Auth';
+import { linkStruct } from './Core';
 import sha256 from 'crypto-js/sha256';
 import MerkleTree from 'merkletreejs';
 
 export class Launchpad extends ViewingKeyClient {
+
+    get auth () { return new AuthClient(this.agent, this.address, this.codeHash) }
+
     /**
      * Creates a new project
      * @param settings
@@ -18,14 +22,12 @@ export class Launchpad extends ViewingKeyClient {
     /**
      * Admin only transaction to add new creators
      * @param addresses List of users
-     *
      */
     async addCreators(addresses: Address[]) {
         return this.execute({ add_project_owners: { addresses } });
     }
 
     /**
-     *
      * Get the entries for a list of users
      * @param auth Authentication method
      * @param addresses List of HumanAddr's to be checked
@@ -42,7 +44,6 @@ export class Launchpad extends ViewingKeyClient {
 
     /**
      * Fetch the constraints to which every launched project is limited to.
-     *
      * @returns SaleConstraints
      */
     async saleConstraints(): Promise<SaleConstraints> {
@@ -50,7 +51,6 @@ export class Launchpad extends ViewingKeyClient {
     }
     /**
      * Get a paginated list of IDO's stored on the launchpad
-     *
      * @param start Starting page
      * @param limit Items per page
      * @returns IdoCollection
