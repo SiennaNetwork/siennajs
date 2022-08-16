@@ -442,6 +442,12 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
     });
     return result.rewards.all_balances;
   }
+
+  unbond(amount: Uint128) {
+    return this.execute({
+      rewards: { unbond: { amount } },
+    });
+  }
 }
 /** Reward pool configuration */
 export interface Rewards_v4_Config {
