@@ -1,6 +1,6 @@
 {
   "name": "siennajs",
-  "version": "1.0.0-rc.10",
+  "version": "1.0.0-rc.11",
   "description": "Interact with Sienna Network smart contracts through JS.",
   "homepage": "https://sienna.network",
   "repository": {
@@ -28,8 +28,8 @@
     "release:ci": "izomorf fix"
   },
   "dependencies": {
-    "@fadroma/scrt": "^1.0.4",
-    "@fadroma/scrt-amino": "^1.0.5",
+    "@fadroma/scrt": "^1.2.0",
+    "@fadroma/scrt-amino": "^1.1.0",
     "@fadroma/tokens": "^3.0.3",
     "@hackbg/formati": "^3.0.1",
     "@hackbg/konzola": "^1.1.2",
