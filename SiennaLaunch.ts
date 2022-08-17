@@ -1,7 +1,7 @@
 import { ViewingKeyClient, Address, ContractLink, Uint128 } from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens';
 import { AuthClient, AuthMethod } from './Auth';
-import { linkStruct } from './Core';
+import { linkStruct } from './ICC';
 import sha256 from 'crypto-js/sha256';
 import MerkleTree from 'merkletreejs';
 

@@ -1,5 +1,5 @@
 import { Permit, Signer, ViewingKey, Client, Address, CodeHash, ContractLink } from "@fadroma/scrt";
-import { IntoLink, linkStruct } from "./Core";
+import { IntoLink, linkStruct } from "./ICC";
 import { Pagination } from "./Pagination";
 
 export type AuthStrategy =

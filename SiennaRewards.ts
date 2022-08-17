@@ -13,7 +13,7 @@ import {
   Message,
   ViewingKeyClient
 } from '@fadroma/scrt';
-import { linkStruct, linkTuple } from './Core';
+import { linkStruct, linkTuple } from './ICC';
 import { AuthClient, AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
 import type { AMMVersion } from './SiennaSwap';
