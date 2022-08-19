@@ -1,6 +1,6 @@
 {
   "name": "siennajs",
-  "version": "1.0.0-rc.13",
+  "version": "1.0.0-rc.14",
   "description": "Interact with Sienna Network smart contracts through JS.",
   "homepage": "https://sienna.network",
   "repository": {

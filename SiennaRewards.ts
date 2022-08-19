@@ -434,9 +434,9 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
     return result.rewards.balance;
   }
 
-  async getAllBalances(auth_method: AuthMethod<RewardsPermissions>, at: number = now()) {
+  async getBondingBalances(auth_method: AuthMethod<RewardsPermissions>, at: number = now()) {
     const result: {
-      rewards: { all_balances: Rewards_v4_AllBalances };
+      rewards: { all_balances: Rewards_v4_BondingBalances };
     } = await this.query({
       rewards: { all_balances: { at, auth_method } },
     });
@@ -463,15 +463,15 @@ export interface Rewards_v4_Config {
 }
 export interface Rewards_v4_Account {
   /** What is the overall state of the pool? */
-  total: Rewards_v3_Total;
+  total:   Rewards_v3_Total;
   /** "When did this user's liquidity amount last change?" Set to current time on update. */
   updated: Moment;
   /** How much time has passed since the user updated their stake? */
   elapsed: Duration;
   /** How much liquidity does this user currently provide which is valid for rewards? */
-  staked: Uint128;
+  staked:  Uint128;
   /** How much total liquidity does this user provide.  */
-  total_staked: Uint128;
+  balance: Uint128;
   /** What portion of the pool is currently owned by this user? */
   pool_share: [Uint128, Uint128];
   /** How much liquidity has this user provided since they first appeared? */
@@ -489,7 +489,7 @@ export interface Rewards_v4_Account {
   /** How much rewards has this user earned? */
   earned: Uint128;
   /** How many units of time (seconds) remain until the user can claim? */
-  bonding: Duration;
+  claim_countdown: Duration;
 }
 
 export interface Rewards_v4_HistoryEntry {
@@ -501,19 +501,21 @@ export interface Rewards_v4_HistoryEntry {
   amount: Uint128;
 }
 
-export interface Rewards_v4_AllBalances {
+export interface Rewards_v4_BondingBalances {
+  /** How much is deposited by the user */
+  balance:   Uint128;
+  /** How much the user has staked which is valid for rewards */
+  staked:    Uint128;
+  /** How much is currently bonding for the user */
+  bonding:   Uint128;
   /** How much is currently bonded for the user */
-  bonded: Uint128;
+  bonded:    Uint128;
   /** How much is the process of being unbonded, total */
   unbonding: Uint128;
   /** How much has been unbonded and is ready for withdrawing  */
-  unbonded: Uint128;
-  /** The total amount of tokens (including bonded and unbonding) that the user has  */
-  total_staked: Uint128;
+  unbonded:  Uint128;
   /** All of the entries for bonding and unbonding */
-  entries: Rewards_v4_HistoryEntry[];
-  /** How much the user has staked which is valid for rewards */
-  staked: Uint128;
+  history:   Rewards_v4_HistoryEntry[];
 }
 export interface RewardsToggle {
   bonded: boolean;
