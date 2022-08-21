@@ -29,15 +29,6 @@ export function validatedCodeHashOf ({ code_hash, codeHash }: Hashed): Scrt.Code
 /** Objects that have a code hash in either capitalization. */
 interface Hashed { code_hash?: Scrt.CodeHash, codeHash?: Scrt.CodeHash }
 
-/** Contract links. Passed to contracts to that they can talk to other contracts
-    by returning messages invoking subsequent contract calls to known addresses. */
-export class ContractInfo {
-  constructor(
-    readonly code_hash: string,
-    readonly address: Scrt.Address
-  ) { }
-}
-
 /** Contract address/hash pair as used by MGMT */
 export type LinkTuple = [Scrt.Address, Scrt.CodeHash]
 

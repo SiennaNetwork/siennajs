@@ -1,7 +1,5 @@
-import { Client, Address, Moment, Uint128, Fee, Decimal } from '@fadroma/scrt';
-
+import { Client, Address, Moment, Uint128, Fee, Decimal, ContractLink } from '@fadroma/scrt';
 import { Auth, AuthClient } from './Auth';
-import { ContractInfo } from './Core';
 
 const getNow = () => Math.floor(+new Date() / 1000);
 
@@ -46,7 +44,7 @@ export interface PollConfig {
   /** Minimum percentage (0-1) which is needed for a poll to be valid */
   quorum: Decimal;
   /** Link to the rewards contract */
-  rewards: ContractInfo;
+  rewards: ContractLink;
   /** Minimum number of tokens staked to be able to vote */
   voting_threshold: Uint128;
 }
