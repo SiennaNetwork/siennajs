@@ -1,4 +1,4 @@
-import { AMMRouter, AMMRouterHop, AMMRouterPair, Token } from '../index';
+import { AMMRouter, AMMRouterHop, AMMRouterPair } from '../index';
 const pairs: any = require('./pairs.json');
 
 describe('Router hop assembly', () => {
