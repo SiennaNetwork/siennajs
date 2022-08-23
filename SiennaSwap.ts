@@ -419,7 +419,7 @@ export class AMMRouter extends Client {
         // Parents can be any of the pairs that have a matching from_token
         if (pair.from_token_id !== token_id) continue
         // Skip pairs that we've already visited
-        if (visited.includes(pair.from_token_id)) continue
+        //if (visited.includes(pair.from_token_id)) continue
         if (visited.includes(pair.into_token_id)) continue
         // Collect token ids that have already been used
         // and therefore cannot be used again
