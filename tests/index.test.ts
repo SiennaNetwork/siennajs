@@ -1,18 +1,17 @@
 import { AMMRouter, AMMRouterHop, AMMRouterPair } from '../index';
 const pairs: any = require('./pairs.json');
+const routerPairs: AMMRouterPair[] = pairs.map(
+  (x: any) =>
+    new AMMRouterPair(
+      x.from_token,
+      x.into_token,
+      x.pair_address,
+      x.pair_code_hash,
+    ),
+);
 
 describe('Router hop assembly', () => {
   test('should assemble correct route with 2 hops', () => {
-    const routerPairs: AMMRouterPair[] = pairs.map(
-      (x: any) =>
-        new AMMRouterPair(
-          x.from_token,
-          x.into_token,
-          x.pair_address,
-          x.pair_code_hash,
-        ),
-    );
-
     const routerContract = new AMMRouter();
 
     // Sienna
@@ -51,16 +50,6 @@ describe('Router hop assembly', () => {
   });
 
   test('should assemble correct route with 2 hops in reverse', () => {
-    const routerPairs: AMMRouterPair[] = pairs.map(
-      (x: any) =>
-        new AMMRouterPair(
-          x.from_token,
-          x.into_token,
-          x.pair_address,
-          x.pair_code_hash,
-        ),
-    );
-
     const routerContract = new AMMRouter();
 
     // SILK
