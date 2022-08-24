@@ -86,4 +86,20 @@ describe('Router hop assembly', () => {
       'secret1c8pxr9d7hgul6wdun3ktt64tjn53ass3y6sn9t',
     );
   });
+
+  test.skip('TODO: should assemble correct route with 3 hops', () => {
+    expect(true);
+  });
+
+  test.skip('TODO: should assemble correct route with 3 hops in reverse', () => {
+    expect(true);
+  });
+
+  test.skip('TODO: should assemble correct route with 4 hops', () => {
+    expect(true);
+  });
+
+  test.skip('TODO: should assemble correct route with 4 hops in reverse', () => {
+    expect(true);
+  });
 });
