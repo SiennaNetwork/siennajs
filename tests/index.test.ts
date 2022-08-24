@@ -40,9 +40,11 @@ describe('Router hop assembly', () => {
     );
 
     expect(hops).toHaveLength(2);
+    // SIENNA<>sSCRT
     expect(hops[0].pair_address).toEqual(
       'secret1g3xnvw0cw5a9qdvwu73k8kuu5nue3qqdawxzy4',
     );
+    // sSCRT<>SILK
     expect(hops[1].pair_address).toEqual(
       'secret1tgqnx0yqtdjx4k2cspggm5ur8yz9vgm0h4tlwj',
     );
@@ -86,9 +88,11 @@ describe('Router hop assembly', () => {
     );
 
     expect(hops).toHaveLength(2);
+    // SILK<>SHD
     expect(hops[0].pair_address).toEqual(
       'secret1ktv5j6qtadq3yeurpdvzymz9ffvs5aalymxl0y',
     );
+    // SHD<>SIENNA
     expect(hops[1].pair_address).toEqual(
       'secret1c8pxr9d7hgul6wdun3ktt64tjn53ass3y6sn9t',
     );
