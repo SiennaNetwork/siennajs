@@ -88,22 +88,6 @@
     },
     "into_token": {
       "custom_token": {
-        "contract_addr": "secret18vd8fpwxzck93qlwghaj6arh4p7c5n8978vsyg",
-        "token_code_hash": "9587d60b8e6b078ace12014ceeee089530b9fabcd76535d93666a6c127ad8813"
-      }
-    },
-    "pair_address": "secret1qnpz5n6uq8dhfkpmld2yxgaff4p27qps7maja5",
-    "pair_code_hash": "33eac42c44ee69acfe1f56ce7b14fe009a7b611e86f275d7af2d32dd0d33d5a9"
-  },
-  {
-    "from_token": {
-      "custom_token": {
-        "contract_addr": "secret12vy64457jysxf3x4hwr64425ztlauq98zchpgt",
-        "token_code_hash": "46e5bca7904e5247952a831cfe426586f614767ec1485bfb2d78c40ae5bf10c8"
-      }
-    },
-    "into_token": {
-      "custom_token": {
         "contract_addr": "secret18r5szma8hm93pvx6lwpjwyxruw27e0k57tncfy",
         "token_code_hash": "9587d60b8e6b078ace12014ceeee089530b9fabcd76535d93666a6c127ad8813"
       }
