@@ -454,16 +454,37 @@ export class AMMRouterPair {
     readonly pair_address:   Address,
     readonly pair_code_hash: string
   ) { }
+
   get from_token_id (): string { return getTokenId(this.from_token) }
   get into_token_id (): string { return getTokenId(this.into_token) }
-  eq (other: AMMRouterPair): boolean {
-    return this.from_token_id === other.from_token_id
-        && this.into_token_id === other.into_token_id
+
+  hasNative(): boolean {
+    return this.from_token_id === 'native' ||
+      this.into_token_id === 'native'
   }
+
+  contains(token: Token): boolean {
+    const id = getTokenId(token)
+
+    return this.from_token_id === id ||
+      this.into_token_id === id
+  }
+
+  intersects (other: AMMRouterPair): boolean {
+    return this.contains(other.from_token) ||
+      this.contains(other.into_token)
+  }
+
+  eq (other: AMMRouterPair): boolean {
+    return this.contains(other.from_token) &&
+      this.contains(other.into_token)
+  }
+  
   asHop (): AMMRouterHop {
     const { from_token, pair_address, pair_code_hash } = this
     return { from_token, pair_address, pair_code_hash }
   }
+
   /** Return a new AMMRouterPair with the order of the two tokens swapped. */
   reverse (): AMMRouterPair {
     const { from_token, into_token, pair_address, pair_code_hash } = this
