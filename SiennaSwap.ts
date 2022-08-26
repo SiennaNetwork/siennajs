@@ -428,24 +428,9 @@ export class LPToken extends Snip20 {
 }
 
 /// # ROUTER //////////////////////////////////////////////////////////////////////////////////////
-class PathGraph {
-  constructor(pairs: AMMRouterPair[]) {
-    pairs.forEach((pair) => {
-      this.addEdge(pair.from_token_id, pair.into_token_id);
-    });
-  }
-  neighbors: Map<string, string[]> = new Map();
-  addEdge(u: string, v: string) {
-    if (!this.neighbors.get(u)) {
-      this.neighbors.set(u, []);
-    }
-    this.neighbors.get(u)?.push(v);
-
-    if (!this.neighbors.get(v)) {
-      this.neighbors.set(v, []);
-    }
-    this.neighbors.get(v)?.push(u);
-  }
+interface Route {
+  indices: number[],
+  from_tokens: Token[]
 }
 
 export class AMMRouter extends Client {
@@ -487,84 +472,112 @@ export class AMMRouter extends Client {
     from_token: Token,
     into_token: Token
   ): AMMRouterHop[] {
-    // Make sure there are pairs to pick from
-    if (known_pairs.length === 0 || !from_token || !into_token)
-      throw AMMRouter.E00();
-    // Make sure we're not routing from and into the same token
-    const from_token_id = getTokenId(from_token);
-    const into_token_id = getTokenId(into_token);
-    if (from_token_id === into_token_id) throw AMMRouter.E01();
+    const map_route = (route: Route): AMMRouterHop[] => {
+      const result: AMMRouterHop[] = []
 
-    // Add reversed pairs
-    const pairs = known_pairs.reduce(
-      (pairs: AMMRouterPair[], pair: AMMRouterPair) => {
-        return [...pairs, pair, pair.reverse()];
-      },
-      []
-    );
+      for (let i = 0; i < route.indices.length; i++) {
+        const pair = known_pairs[route.indices[i]]
 
-    // Create a map of pairs.
-    const pairsMap = new Map();
-    pairs.forEach((pair) => {
-      pairsMap.set(pair.from_token_id + pair.into_token_id, pair);
-    });
+        result.push({
+          from_token: route.from_tokens[i],
+          pair_address: pair.pair_address,
+          pair_code_hash: pair.pair_code_hash
+        })
+      }
 
-    // Build the graph from pairs.
-    let graph = new PathGraph(pairs);
-    let path = this.shortestPath(graph, from_token_id, into_token_id);
-    let route = [];
+      return result
+    }
 
-    // Construct the route from path.
-    for (let i = path.length - 1; i >= 1; i--) {
-      let pair = pairsMap.get(path[i] + path[i - 1]);
-      if (pair) {
-        route.push(pair.asHop());
+    let best_route: Route | null = null
+
+    for (let i = 0; i < known_pairs.length; i++) {
+      if (known_pairs[i].contains(from_token)) {
+        const route = this.buildRoute(
+          known_pairs,
+          from_token,
+          into_token,
+          i
+        )
+
+        if (!route) {
+          continue
+        } else if (route.indices.length == 2) {
+          return map_route(route)
+        } else if (!best_route ||
+          best_route.indices.length > route.indices.length
+        ) {
+          best_route = route
+        }
       }
     }
 
-    if (route.length > 0) return route;
-    throw AMMRouter.E02();
+    if (best_route) {
+      return map_route(best_route)
+    }
+
+    throw AMMRouter.E02()
   }
 
-  shortestPath(graph: PathGraph, source: string, target: string): string[] {
-    if (source == target) {
-      return [target, source];
-    }
-    let queue = [source];
-    let visited = new Map();
-    let predecessor = new Map();
-    let tail = 0;
+  private buildRoute(
+    known_pairs: AMMRouterPair[],
+    from_token: Token,
+    into_token: Token,
+    root: number
+  ): Route | null {
+    let best_route: Route | null = null
 
-    while (tail < queue.length) {
-      let u = queue[tail++];
-      let neighbors = graph.neighbors.get(u);
+    const stack: Route[] = [{
+      indices: [root],
+      from_tokens: [from_token]
+    }]
 
-      if (!neighbors) {
-        return [];
+    while (stack.length > 0) {
+      const route = stack.pop() as Route
+      const last = route.indices[route.indices.length - 1]
+      
+      if (known_pairs[last].contains(into_token)) {
+        if (route.indices.length == 2) {
+          return route
+        } else if (!best_route ||
+          best_route.indices.length > route.indices.length
+        ) {
+          best_route = route
+        }
+
+        continue
       }
 
-      for (var i = 0; i < neighbors.length; ++i) {
-        let v = neighbors[i];
-        if (visited.get(v)) {
-          continue;
+      for (let i = 0; i < known_pairs.length; i++) {
+        const pair = known_pairs[i]
+
+        // The router cannot have pairs with native
+        // tokens in the middle of the route.
+        if (route.indices.includes(i) ||
+          (!pair.contains(into_token) && pair.hasNative())) {
+          continue
         }
-        visited.set(v, true);
-        if (v === target) {
-          let path = [v];
-          while (u !== source) {
-            path.push(u);
-            u = predecessor.get(u);
-          }
-          path.push(u);
-          return path;
+
+        const prev = known_pairs[route.indices[route.indices.length - 1]]
+        const intersection = prev.intersection(pair)
+
+        if (intersection.length == 0) {
+          continue
         }
-        predecessor.set(v, u);
-        queue.push(v);
+
+        stack.push({
+          indices: [...route.indices, i],
+          from_tokens: [...route.from_tokens, intersection[0]]
+        })
+
+        if (pair.contains(into_token)) {
+          break
+        }
       }
     }
 
-    return [];
+    return best_route
   }
+
   async swap(route: AMMRouterHop[], amount: Uint128) {}
 }
 
@@ -592,9 +605,18 @@ export class AMMRouterPair {
       this.into_token_id === id
   }
 
-  intersects (other: AMMRouterPair): boolean {
-    return this.contains(other.from_token) ||
-      this.contains(other.into_token)
+  intersection (other: AMMRouterPair): Token[] {
+    const result: Token[] = []
+
+    if (this.contains(other.from_token)) {
+      result.push(other.from_token)
+    }
+
+    if (this.contains(other.into_token)) {
+      result.push(other.into_token)
+    }
+
+    return result
   }
 
   eq (other: AMMRouterPair): boolean {
