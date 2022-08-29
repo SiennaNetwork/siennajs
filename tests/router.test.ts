@@ -166,4 +166,26 @@ describe("Router hops test", () => {
     expect(result[2]).toHaveProperty("pair_address", "pair_2")
     expect(result[3]).toHaveProperty("pair_address", "pair_5")
   })
+
+  test("should throw an error when no routes exist", () => {
+    const pairs = create_pairs((pair, pair_native) => {
+      pair("SSCRT", "SIENNA")
+      pair("SIENNA", "SHD")
+      pair_native("SHD")
+      pair_native("ETH")
+      pair("ETH", "BTC")
+      pair("SSCRT", "SHD")
+      pair("SHD", "OSMO")
+    })
+
+    expect(() => {
+      const router = new AMMRouter()
+
+      router.assemble(
+        pairs,
+        pairs[0].from_token,
+        pairs[4].into_token
+      )
+    }).toThrowError(AMMRouter.E02())
+  })
 })
