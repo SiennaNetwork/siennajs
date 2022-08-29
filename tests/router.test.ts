@@ -72,8 +72,6 @@ describe("Router hops test", () => {
       pairs[4].into_token
     )
 
-    console.log(JSON.stringify(result, null, 2))
-
     expect(result).toHaveLength(3)
     expect(result[0]).toHaveProperty("pair_address", "pair_0")
     expect(result[1]).toHaveProperty("pair_address", "pair_1")
@@ -91,8 +89,11 @@ describe("Router hops test", () => {
     expect(result[0]).toHaveProperty("pair_address", "pair_0")
     expect(result[1]).toHaveProperty("pair_address", "pair_1")
 
-    result = router.assemble(pairs, pairs[0].from_token, pairs[0].into_token)
-    expect(result).toHaveLength(1)
+    expect(() => router.assemble(
+      pairs,
+      pairs[0].from_token,
+      pairs[0].into_token
+    )).toThrowError(AMMRouter.E03())
   })
 
   test("should find the best route among multiple roots", () => {

@@ -439,6 +439,8 @@ export class AMMRouter extends Client {
     new Error("AMMRouter#assemble: can't swap token with itself");
   static E02 = () =>
     new Error("AMMRouter#assemble: could not find route for given pair");
+  static E03 = () =>
+    new Error("AMMRouter#assemble: a pair for the provided tokens already exists");
   supportedTokens: Token[] | null = null;
   /** Register one or more supported tokens to router contract. */
   async register(...tokens: (Snip20 | Token)[]) {
@@ -491,7 +493,12 @@ export class AMMRouter extends Client {
     let best_route: Route | null = null
 
     for (let i = 0; i < known_pairs.length; i++) {
-      if (known_pairs[i].contains(from_token)) {
+      const pair = known_pairs[i]
+      if (pair.contains(from_token)) {
+        if (pair.contains(into_token)) {
+          throw AMMRouter.E03()
+        }
+
         const route = this.buildRoute(
           known_pairs,
           from_token,
@@ -524,28 +531,18 @@ export class AMMRouter extends Client {
     into_token: Token,
     root: number
   ): Route | null {
-    let best_route: Route | null = null
-
-    const stack: Route[] = [{
+    const queue: Route[] = [{
       indices: [root],
       from_tokens: [from_token]
     }]
 
-    while (stack.length > 0) {
-      const route = stack.pop() as Route
-      const last = route.indices[route.indices.length - 1]
-      
-      if (known_pairs[last].contains(into_token)) {
-        if (route.indices.length == 2) {
-          return route
-        } else if (!best_route ||
-          best_route.indices.length > route.indices.length
-        ) {
-          best_route = route
-        }
+    while (queue.length > 0) {
+      const route = queue.pop() as Route
+      const prev = known_pairs[route.indices[route.indices.length - 1]]
 
-        continue
-      }
+      const next_token = prev.getOtherToken(
+        route.from_tokens[route.from_tokens.length - 1]
+      ) as Token
 
       for (let i = 0; i < known_pairs.length; i++) {
         const pair = known_pairs[i]
@@ -557,25 +554,22 @@ export class AMMRouter extends Client {
           continue
         }
 
-        const prev = known_pairs[route.indices[route.indices.length - 1]]
-        const intersection = prev.intersection(pair)
+        if (pair.contains(next_token)) {
+          const next_route = {
+            indices: [...route.indices, i],
+            from_tokens: [...route.from_tokens, next_token]
+          }
 
-        if (intersection.length == 0) {
-          continue
-        }
-
-        stack.push({
-          indices: [...route.indices, i],
-          from_tokens: [...route.from_tokens, intersection[0]]
-        })
-
-        if (pair.contains(into_token)) {
-          break
+          if (pair.contains(into_token)) {
+            return next_route
+          } else {
+            queue.unshift(next_route)
+          }
         }
       }
     }
 
-    return best_route
+    return null
   }
 
   async swap(route: AMMRouterHop[], amount: Uint128) {}
@@ -596,6 +590,18 @@ export class AMMRouterPair {
   hasNative(): boolean {
     return this.from_token_id === 'native' ||
       this.into_token_id === 'native'
+  }
+
+  getOtherToken(token: Token): Token | null {
+    const id = getTokenId(token)
+
+    if (this.from_token_id === id) {
+      return this.into_token
+    } else if (this.into_token_id === id) {
+      return this.from_token
+    }
+
+    return null
   }
 
   contains(token: Token): boolean {
