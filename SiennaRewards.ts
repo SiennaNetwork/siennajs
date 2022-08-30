@@ -26,11 +26,11 @@ export const now = () => Math.floor(+new Date() / 1000);
 
 /** Universal init parameters for all versions of rewards. */
 export interface RewardsInitParams {
-  rewardToken:   Fadroma.Instance;
-  stakedToken:   Fadroma.Instance;
+  rewardToken:   Fadroma.IntoLink;
+  stakedToken:   Fadroma.IntoLink;
   admin?:        Fadroma.Address;
   timekeeper?:   Fadroma.Address;
-  authProvider?: Fadroma.Instance;
+  authProvider?: Fadroma.IntoLink;
   threshold?:    number;
   cooldown?:     number;
   bonding?:      number;
@@ -78,7 +78,7 @@ export abstract class Rewards extends Fadroma.Client {
 }
 
 /** Constructs a reward pool of some version. */
-export interface RewardsCtor extends Fadroma.ClientCtor<Rewards, Fadroma.ClientOpts> {
+export interface RewardsCtor extends Fadroma.NewClient<Rewards> {
   /** Generate the correct format of Rewards init message for the given version */
   init(params: RewardsInitParams): Fadroma.Message;
 }
