@@ -1,5 +1,4 @@
 export * from './Core'
-export * from './ICC'
 export * from './Auth'
 export * from './SiennaTGE'
 export * from './SiennaSwap'

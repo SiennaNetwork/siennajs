@@ -1,43 +1,28 @@
-import { Client, Address, Instance, Uint128, Duration } from '@fadroma/scrt'
-import { Snip20 } from '@fadroma/tokens'
-import { linkTuple } from './ICC'
+import * as Scrt   from '@fadroma/scrt'
+import * as Tokens from '@fadroma/tokens'
+import * as ICC    from './ICC'
 
-export class SiennaSnip20 extends Snip20 {}
+/** Contract address/hash pair as used by MGMT */
+export type LinkTuple = [Scrt.Address, Scrt.CodeHash]
 
-export interface VestingSchedule {
-  total: Uint128
-  pools: Array<VestingPool>
-}
-export interface VestingPool {
-  name:     string
-  total:    Uint128
-  partial:  boolean
-  accounts: Array<VestingAccount>
-}
-export interface VestingAccount {
-  name:         string
-  amount:       Uint128
-  address:      Address
-  start_at:     Duration
-  interval:     Duration
-  duration:     Duration
-  cliff:        Uint128
-  portion_size: Uint128
-  remainder:    Uint128
-}
-export interface VestingProgress {
-  time:     number
-  launcher: number
-  elapsed:  number
-  unlocked: string
-  claimed:  string
-}
+/** Convert Fadroma.Instance to address/hash pair as used by MGMT */
+export const linkTuple = (instance: ICC.IntoLink) => (
+  [ ICC.validatedAddressOf(instance), ICC.validatedCodeHashOf(instance) ]
+)
 
-export abstract class MGMT extends Client {
+/** The SIENNA SNIP20 token. */
+export class SiennaSnip20 extends Tokens.Snip20 {}
+
+/** A MGMT vesting contract of either version. */
+export abstract class MGMT extends Scrt.Client {
+
   static MINTING_POOL = "MintingPool"
+
   static LPF = "LPF"
+
   static RPT = "RPT"
-  static emptySchedule = (address: Address) => ({
+
+  static emptySchedule = (address: Scrt.Address) => ({
     total: "0",
     pools: [ { 
       name: MGMT.MINTING_POOL, total: "0", partial: false, accounts: [
@@ -50,6 +35,7 @@ export abstract class MGMT extends Client {
       ]
     } ]
   })
+
   /** See the full schedule */
   schedule  () {
     return this.query({ schedule: {} })
@@ -71,46 +57,138 @@ export abstract class MGMT extends Client {
     return this.execute({ claim: {} })
   }
   /** take over a SNIP20 token */
-  async acquire (token: Snip20) {
-    const tx1 = await token.setMinters([this.address])
-    const tx2 = await token.changeAdmin(this.address)
+  async acquire (token: Tokens.Snip20) {
+    const tx1 = await token.setMinters([this.address!])
+    const tx2 = await token.changeAdmin(this.address!)
     return [tx1, tx2]
   }
   /** Check how much is claimable by someone at a certain time */
-  async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
+  async progress (address: Scrt.Address, time = +new Date()): Promise<VestingProgress> {
     time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
     const { progress } = await this.query({ progress: { address, time } })
     return progress
   }
-
-  static legacy: typeof MGMT_TGE
-  static vested: typeof MGMT_Vested
 }
+
+/** A MGMT schedule. */
+export interface VestingSchedule {
+  total: Scrt.Uint128
+  pools: Array<VestingPool>
+}
+
+export interface VestingPool {
+  name:     string
+  total:    Scrt.Uint128
+  partial:  boolean
+  accounts: Array<VestingAccount>
+}
+
+export interface VestingAccount {
+  name:         string
+  amount:       Scrt.Uint128
+  address:      Scrt.Address
+  start_at:     Scrt.Duration
+  interval:     Scrt.Duration
+  duration:     Scrt.Duration
+  cliff:        Scrt.Uint128
+  portion_size: Scrt.Uint128
+  remainder:    Scrt.Uint128
+}
+
+export interface VestingProgress {
+  time:     number
+  launcher: number
+  elapsed:  number
+  unlocked: string
+  claimed:  string
+}
+
+/** A RPT (redistribution) contract of each version. */
+export abstract class RPT extends Scrt.Client {
+  /** Claim from mgmt and distribute to recipients. Anyone can call this method as:
+    * - the recipients can only be changed by the admin
+    * - the amount is determined by MGMT */
+  vest() {
+    return this.execute({ vest: {} })
+  }
+  static legacy: typeof RPT_TGE
+  static vested: typeof RPT_PFR
+}
+
+export type RPTRecipient = string
+
+export type RPTAmount    = string
+
+export type RPTConfig    = [RPTRecipient, RPTAmount][]
+
+export type RPTStatus    = unknown
+
 export class MGMT_TGE extends MGMT {
+
   /** Generate an init message for Origina MGMT */
   static init = (
-    admin:    Address,
-    token:    Instance,
+    admin:    Scrt.Address,
+    token:    Scrt.IntoLink,
     schedule: VestingSchedule
   ) => ({
     admin,
     token: linkTuple(token),
     schedule
   })
+
   /** Query contract status */
   status() {
     return this.query({ status: {} })
   }
+
   /** claim accumulated portions */
   claim() {
     return this.execute({ claim: {} })
   }
+
   /** set the admin */
   setOwner(new_admin: any) {
     return this.execute({ set_owner: { new_admin } })
   }
+
 }
-export class MGMT_Vested extends MGMT {
+
+export class RPT_TGE extends RPT {
+
+  /** Generate an init message for original RPT */
+  static init = (
+    admin:    Scrt.Address,
+    portion:  RPTAmount,
+    config:   RPTConfig,
+    token:    Scrt.IntoLink,
+    mgmt:     Scrt.IntoLink
+  ) => ({
+    admin,
+    portion,
+    config,
+    token: linkTuple(token),
+    mgmt:  linkTuple(mgmt),
+  })
+
+  /** query contract status */
+  async status () {
+    const { status }: { status: RPTStatus } = await this.query({ status: {} })
+    return status
+  }
+
+  /** set the vesting recipients */
+  configure(config = []) {
+    return this.execute({ configure: { config } })
+  }
+
+  /** change the admin */
+  setOwner (new_admin: Scrt.Address) {
+    return this.execute({ set_owner: { new_admin } })
+  }
+
+}
+
+export class MGMT_PFR extends MGMT {
   /** Change the admin of the contract, requires the other user to accept */
   change_admin(new_admin: any) {
     return this.execute({ auth: { change_admin: { address: new_admin } } })
@@ -126,53 +204,8 @@ export class MGMT_Vested extends MGMT {
     return this.query({ config: {} })
   }
 }
-MGMT.legacy = MGMT_TGE
-MGMT.vested = MGMT_Vested
 
-export type RPTRecipient = string
-export type RPTAmount = string
-export type RPTConfig = [RPTRecipient, RPTAmount][]
-export type RPTStatus = unknown
-export abstract class RPT extends Client {
-  /** Claim from mgmt and distribute to recipients. Anyone can call this method as:
-    * - the recipients can only be changed by the admin
-    * - the amount is determined by MGMT */
-  vest() {
-    return this.execute({ vest: {} })
-  }
-  static legacy: typeof RPT_TGE
-  static vested: typeof RPT_Vested
-}
-export class RPT_TGE extends RPT {
-  /** Generate an init message for original RPT */
-  static init = (
-    admin:    Address,
-    portion:  RPTAmount,
-    config:   RPTConfig,
-    token:    Instance,
-    mgmt:     Instance
-  ) => ({
-    admin,
-    portion,
-    config,
-    token: linkTuple(token),
-    mgmt:  linkTuple(mgmt),
-  })
-  /** query contract status */
-  async status () {
-    const { status }: { status: RPTStatus } = await this.query({ status: {} })
-    return status
-  }
-  /** set the vesting recipients */
-  configure(config = []) {
-    return this.execute({ configure: { config } })
-  }
-  /** change the admin */
-  setOwner (new_admin: Address) {
-    return this.execute({ set_owner: { new_admin } })
-  }
-}
-export class RPT_Vested extends RPT {
+export class RPT_PFR extends RPT {
   configuration() {
     return this.query({ configuration: {} });
   }
@@ -183,6 +216,3 @@ export class RPT_Vested extends RPT {
     return this.execute({ vest: {} });
   }
 }
-
-RPT.legacy = RPT_TGE
-RPT.vested = RPT_Vested

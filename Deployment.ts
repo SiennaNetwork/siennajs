@@ -1,79 +1,87 @@
-import { Instance } from '@fadroma/scrt'
-import { Snip20 } from '@fadroma/tokens'
-import { MGMT, MGMT_Vested, RPT, RPT_Vested, RPTConfig } from './SiennaTGE'
-import { AMMVersion, AMMRouter, AMMExchanges, AMMFactory } from './SiennaSwap'
-import { RewardsAPIVersion, Rewards } from './SiennaRewards'
-import { Rewards_v3_1 } from './SiennaRewards_v3'
-import { LendOverseer, LendInterestModel, LendMarket, LendOracle, MockOracle } from './SiennaLend'
-import { AuthProvider } from './Auth'
-import { Poll } from './Poll'
-import { Launchpad } from './SiennaLaunch'
+import * as Fadroma from '@fadroma/scrt'
+import * as Tokens  from '@fadroma/tokens'
+
+import * as Vesting    from './SiennaTGE'
+import * as AMM        from './SiennaSwap'
+import * as Rewards    from './SiennaRewards'
+import * as Lend       from './SiennaLend'
+import * as Auth       from './Auth'
+import * as Governance from './Poll'
+import * as Launchpad  from './SiennaLaunch'
 
 export interface Deployment {
-  token:      Snip20
+  token:      Tokens.Snip20
   tge:        TGEDeployment
-  amm:        Record<AMMVersion, AMMDeployment>
-  rewards:    Record<RewardsAPIVersion, RewardsDeployment>
-  pfr:        PFRDeployment[]
+  amm:        Record<AMM.AMMVersion, AMMDeployment>
+  rewards:    Record<Rewards.RewardsAPIVersion, RewardsDeployment>
+  pfr:        Record<string, PFRDeployment>
   governance: GovernanceDeployment
   launchpad:  LaunchpadDeployment
 }
 
 export interface TGEDeployment {
   /** The deployed SIENNA SNIP20 token contract. */
-  SIENNA: Snip20
+  SIENNA:           Tokens.Snip20
   /** The deployed MGMT contract. */
-  MGMT:   MGMT
+  MGMT:             Vesting.MGMT
   /** The deployed RPT contract. */
-  RPT:    RPT
+  RPT:              Vesting.RPT
+
+  schedule:  Vesting.VestingSchedule
+  rptConfig: Vesting.RPTConfig
 }
 
 export interface AMMDeployment {
-  version:   AMMVersion
-  router:    AMMRouter|null
-  exchanges: AMMExchanges
-  factory:   AMMFactory
+  version:          AMM.AMMVersion
+  router:           AMM.AMMRouter|null
+  exchanges:        AMM.AMMExchanges
+  factory:          AMM.AMMFactory
 }
 
 export interface RewardsDeployment {
-  rewards:          Rewards[],
-  rewardsRPTConfig: RPTConfig
-}
-
-export interface LendDeployment {
-  OVERSEER:       LendOverseer
-  INTEREST_MODEL: LendInterestModel
-  MARKET?:        LendMarket
-  ORACLE?:        LendOracle
-  MOCK_ORACLE?:   MockOracle
-  TOKEN1?:        Snip20
+  rewards:          Rewards.Rewards[],
+  rewardsRPTConfig: Vesting.RPTConfig
 }
 
 /** The tokens for a non-SIENNA vesting. */
 export interface RewardsTokens {
-  stakedToken: Snip20
-  rewardToken: Snip20
+  stakedToken:      Tokens.Snip20
+  rewardToken:      Tokens.Snip20
 }
 
-/** A non-SIENNA vesting. */
 export interface PFRDeployment extends RewardsTokens {
-  mgmt:    MGMT_Vested
-  rpt:     RPT_Vested
-  rewards: Rewards_v3_1
+  /** The deployed SIENNA SNIP20 token contract. */
+  vestedToken:      Tokens.Snip20
+  /** The deployed MGMT contract. */
+  mgmt:             Vesting.MGMT_PFR
+  /** The deployed RPT contract. */
+  rpt:              Vesting.RPT_PFR
+  /** The deployed staking pool. */
+  rewards:          Rewards.Rewards_v3_1
+}
+
+export interface LendDeployment {
+  overseer:         Lend.LendOverseer
+  interestModel:    Lend.LendInterestModel
+  market?:          Lend.LendMarket
+  oracle?:          Lend.LendOracle
+  mockOracle?:      Lend.MockOracle
+  token1?:          Tokens.Snip20
 }
 
 export interface AuthProviderDeployment {
-  authOracle:   Instance
-  authProvider: AuthProvider
+  authOracle:       Fadroma.Client
+  authProvider:     Auth.AuthProvider
 }
 
 export interface GovernanceDeployment {
-  governancePolls: Poll
-  governancePool:  Rewards
-  governanceToken: Snip20
+  governancePolls:  Governance.Poll
+  governancePool:   Rewards.Rewards
+  governanceToken:  Tokens.Snip20
 }
 
 export interface LaunchpadDeployment {
   /** The deployed launchpad contract. */
-  launchpad: Launchpad
+  launchpad:        Launchpad.Launchpad
+  idos:             Launchpad.IDO[]
 }
