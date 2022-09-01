@@ -188,18 +188,18 @@ export type AMMExchanges = Record<TokenPairStr, AMMExchange>
 export class AMMExchange extends Scrt.Client {
 
   static fromAddress = async function getExchangeByAddress (
-    agent:   Scrt.Executor,
+    agent:   Scrt.Agent,
     address: Scrt.Address
   ): Promise<AMMExchange> {
-    const Self: AMMExchangeCtor = AMMExchange as AMMExchangeCtor
-    const self: AMMExchange = agent.getClient(Self, address) as unknown as AMMExchange
+    const Self: NewAMMExchange = AMMExchange as unknown as NewAMMExchange
+    const self: AMMExchange    = agent.getClient(Self, address) as unknown as AMMExchange
     await self.populate()
     return self
   }
 
   /** Get the exchange and its related contracts by querying the factory. */
   static fromAddressAndTokens = async function getExchangeInfo (
-    agent:   Scrt.Executor,
+    agent:   Scrt.Agent,
     address: Scrt.Address,
     token_0: Tokens.Snip20|Tokens.Token,
     token_1: Tokens.Snip20|Tokens.Token,
@@ -217,7 +217,7 @@ export class AMMExchange extends Scrt.Client {
     // </dumb>
   }
 
-  constructor (agent: Scrt.Executor, options: AMMExchangeOpts) {
+  constructor (agent: Scrt.Agent, options: AMMExchangeOpts) {
     super(agent, options)
     if (options.token_0)  this.token_0 = options.token_0
     if (options.token_1)  this.token_1 = options.token_1
@@ -232,6 +232,7 @@ export class AMMExchange extends Scrt.Client {
     swap_snip20:      new Scrt.Fee('100000', 'uscrt'),
   }
 
+  name?:     string
   token_0?:  Tokens.Token
   token_1?:  Tokens.Token
   lpToken?:  LPToken
@@ -239,21 +240,24 @@ export class AMMExchange extends Scrt.Client {
 
   async populate () {
     await super.populate()
+
     this.pairInfo = await this.getPairInfo()
-    const { pair: { token_0, token_1 }, liquidity_token } = await this.getPairInfo()
-    //@ts-ignore
-    this.token_0 = token_0?.custom_token
-      //@ts-ignore
-      ? await this.agent.getClient(Snip20, token_0?.custom_token?.contract_addr).populate()
-      : token_0
-    //@ts-ignore
-    this.token_1 = token_1?.custom_token
-      //@ts-ignore
-      ? await this.agent.getClient(Snip20, token_1?.custom_token?.contract_addr).populate()
-      : token_1
-    if (this.token_0 instanceof Snip20 && this.token_1 instanceof Snip20) {
+
+    let { pair: { token_0, token_1 }, liquidity_token } = await this.getPairInfo()
+
+    if (Tokens.isCustomToken(token_0)) token_0 = await this.agent!
+      .getClient(Tokens.Snip20, token_0?.custom_token?.contract_addr)
+      .populate()
+    if (Tokens.isCustomToken(token_1)) token_1 = await this.agent!
+      .getClient(Tokens.Snip20, token_1?.custom_token?.contract_addr)
+      .populate()
+
+    if (this.token_0 instanceof Tokens.Snip20 && this.token_1 instanceof Tokens.Snip20) {
       this.name = `${this.token_0.symbol}-${this.token_1.symbol}`
     }
+
+    this.token_0 = token_0
+    this.token_1 = token_1
     this.lpToken = this.agent!.getClient(LPToken, liquidity_token)
     return this
   }
@@ -268,8 +272,8 @@ export class AMMExchange extends Scrt.Client {
     const pair    = new Tokens.TokenPair(snip20_0.asDescriptor, snip20_1.asDescriptor)
     const deposit = new Tokens.TokenPairAmount(pair, amount_0, amount_1)
     return await this.agent!.bundle().wrap(async bundle=>{
-      await snip20_0.as(bundle).increaseAllowance(amount_0, this.address)
-      await snip20_1.as(bundle).increaseAllowance(amount_1, this.address)
+      await snip20_0.as(bundle).increaseAllowance(amount_0, this.address!)
+      await snip20_1.as(bundle).increaseAllowance(amount_1, this.address!)
       await this.as(bundle).addLiquidity(deposit, slippage_tolerance)
     })
   }
@@ -291,7 +295,7 @@ export class AMMExchange extends Scrt.Client {
     return this.agent!
       .getClient(Tokens.Snip20, info.liquidity_token.address)
       .withFee(this.getFee('remove_liquidity'))
-      .send(amount, this.address, { remove_liquidity: { recipient } })
+      .send(amount, this.address!, { remove_liquidity: { recipient } })
   }
 
   async swap (
@@ -311,7 +315,7 @@ export class AMMExchange extends Scrt.Client {
       const tokenAddr = (amount.token as Tokens.CustomToken).custom_token.contract_addr
       return this.agent!
         .getClient(Tokens.Snip20, tokenAddr)
-        .send(amount.amount, this.address, msg);
+        .send(amount.amount, this.address!, msg);
     }
   }
 
@@ -346,8 +350,8 @@ export class AMMExchange extends Scrt.Client {
 
 }
 
-export interface AMMExchangeCtor extends Scrt.NewClient<AMMExchange> {
-  new (agent: Scrt.Executor, options: AMMExchangeOpts): AMMExchange
+export interface NewAMMExchange extends Scrt.NewClient<AMMExchange> {
+  new (agent?: Scrt.Executor, options?: AMMExchangeOpts): AMMExchange
 }
 
 export interface AMMExchangeOpts extends Partial<Scrt.Client> {

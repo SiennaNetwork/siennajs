@@ -1,6 +1,5 @@
 import * as Fadroma from '@fadroma/scrt'
 import { randomBase64 } from '@hackbg/formati';
-import { linkStruct } from './ICC'
 import { now, Rewards, RewardsInitParams } from './SiennaRewards'
 import { LPToken } from './SiennaSwap'
 import { Emigration, Immigration } from './Migration'
@@ -21,8 +20,8 @@ export class Rewards_v3 extends Rewards {
     admin,
     config: {
       rewards_vk:   randomBase64(36),
-      lp_token:     linkStruct(stakedToken),
-      reward_token: linkStruct(rewardToken),
+      lp_token:     Fadroma.linkStruct(stakedToken),
+      reward_token: Fadroma.linkStruct(rewardToken),
       timekeeper,
       bonding,
     },
@@ -125,7 +124,7 @@ export class Rewards_v3_1 extends Rewards_v3 {
     from: Fadroma.Address | undefined = this.agent?.address
   ) {
     const callback = { deposit_receiver: { from, amount } };
-    return await token.send(amount, this.address, callback);
+    return await token.send(amount, this.address!, callback);
   }
 }
 

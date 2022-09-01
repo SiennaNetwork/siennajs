@@ -4,12 +4,15 @@ import * as Tokens  from '@fadroma/tokens'
 import * as Vesting    from './SiennaTGE'
 import * as AMM        from './SiennaSwap'
 import * as Rewards    from './SiennaRewards'
+import * as Rewards2   from './SiennaRewards_v2'
+import * as Rewards3   from './SiennaRewards_v3'
+import * as Rewards4   from './SiennaRewards_v4'
 import * as Lend       from './SiennaLend'
 import * as Auth       from './Auth'
 import * as Governance from './Poll'
 import * as Launchpad  from './SiennaLaunch'
 
-export interface Deployment {
+export interface SiennaDeployment {
   token:      Tokens.Snip20
   tge:        TGEDeployment
   amm:        Record<AMM.AMMVersion, AMMDeployment>
@@ -57,7 +60,7 @@ export interface PFRDeployment extends RewardsTokens {
   /** The deployed RPT contract. */
   rpt:              Vesting.RPT_PFR
   /** The deployed staking pool. */
-  rewards:          Rewards.Rewards_v3_1
+  rewards:          Rewards3.Rewards_v3_1
 }
 
 export interface LendDeployment {
@@ -76,7 +79,7 @@ export interface AuthProviderDeployment {
 
 export interface GovernanceDeployment {
   governancePolls:  Governance.Poll
-  governancePool:   Rewards.Rewards
+  governancePool:   Rewards4.Rewards_v4_1
   governanceToken:  Tokens.Snip20
 }
 

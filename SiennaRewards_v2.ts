@@ -1,6 +1,5 @@
 import * as Fadroma from '@fadroma/scrt'
 import { randomBase64 } from '@hackbg/formati';
-import { linkStruct } from './ICC'
 import { now, Rewards, RewardsInitParams } from './SiennaRewards'
 import { LPToken } from './SiennaSwap'
 
@@ -17,8 +16,8 @@ export class Rewards_v2 extends Rewards {
     cooldown = 15940,
   }: RewardsInitParams): Fadroma.Message => ({
     admin,
-    lp_token:     linkStruct(stakedToken),
-    reward_token: linkStruct(rewardToken),
+    lp_token:     Fadroma.linkStruct(stakedToken),
+    reward_token: Fadroma.linkStruct(rewardToken),
     viewing_key:  randomBase64(64),
     ratio:        ['1', '1'],
     threshold,

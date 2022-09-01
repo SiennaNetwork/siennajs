@@ -1,7 +1,6 @@
 import { ViewingKeyClient, Address, ContractLink, Uint128 } from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens';
 import { AuthClient, AuthMethod } from './Auth';
-import { linkStruct } from './ICC';
 import sha256 from 'crypto-js/sha256';
 import MerkleTree from 'merkletreejs';
 
@@ -157,7 +156,7 @@ export class IDO extends ViewingKeyClient {
         return this.agent!
             .getClient(Snip20, token)
             .withFee(this.getFee('deposit'))
-            .send(amount, this.address, callback);
+            .send(amount, this.address!, callback);
     }
 
     /**

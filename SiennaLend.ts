@@ -172,7 +172,7 @@ export class LendMarket extends Client {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent!.getClient(Snip20, address)
       .withFee(this.getFee('deposit'))
-      .send(amount, this.address, 'deposit')
+      .send(amount, this.address!, 'deposit')
   }
 
   async repay (
@@ -184,7 +184,7 @@ export class LendMarket extends Client {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent!.getClient(Snip20, address)
       .withFee(this.getFee('repay'))
-      .send(amount, this.address, { repay: { borrower } })
+      .send(amount, this.address!, { repay: { borrower } })
   }
 
   /** Try to liquidate an existing borrower in this market. */
@@ -201,7 +201,7 @@ export class LendMarket extends Client {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent!.getClient(Snip20, address)
       .withFee(this.getFee('liquidate'))
-      .send(amount, this.address, { liquidate: { borrower, collateral } })
+      .send(amount, this.address!, { liquidate: { borrower, collateral } })
   }
 
   /** Dry run a liquidation returning a result indicating the amount of `collateral`
@@ -227,16 +227,16 @@ export class LendMarket extends Client {
   }
 
   async getTokenInfo (): Promise<TokenInfo> {
-    return this.agent!.getClient(Snip20, this.address).getTokenInfo()
+    return this.agent!.getClient(Snip20, this.address!).getTokenInfo()
   }
 
   async getBalance (address: Address, key: ViewingKey): Promise<Uint128> {
-    return this.agent!.getClient(Snip20, this.address).getBalance(address, key)
+    return this.agent!.getClient(Snip20, this.address!).getBalance(address, key)
   }
 
   async getUnderlyingBalance (auth: LendAuth, block?: number): Promise<Uint128> {
     block = block || await this.agent!.height
-    const method = await auth.createMethod<LendMarketPermissions>(this.address, 'balance')
+    const method = await auth.createMethod<LendMarketPermissions>(this.address!, 'balance')
     return this.query({ balance_underlying: { block, method } })
   }
 
@@ -266,13 +266,13 @@ export class LendMarket extends Client {
 
   async getAccount (auth: LendAuth, block?: number): Promise<LendMarketAccount> {
     block = block || await this.agent!.height
-    const method = await auth.createMethod<LendMarketPermissions>(this.address, 'account_info')
+    const method = await auth.createMethod<LendMarketPermissions>(this.address!, 'account_info')
     return this.query({ account: { block, method } })
   }
 
   /** Will throw if the account hasn't borrowed at least once before. */
   async getAccountId (auth: LendAuth): Promise<string> {
-    const method = await auth.createMethod<LendMarketPermissions>(this.address, 'id')
+    const method = await auth.createMethod<LendMarketPermissions>(this.address!, 'id')
     return this.query({ id: { method } })
   }
 
@@ -312,7 +312,7 @@ export class LendOverseer extends Client {
   }
 
   async getEnteredMarkets (auth: LendAuth): Promise<LendOverseerMarket[]> {
-    const method = await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info')
+    const method = await auth.createMethod<LendOverseerPermissions>(this.address!, 'account_info')
     return this.query({ entered_markets: { method } })
   }
 
@@ -323,7 +323,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? await this.agent!.height,
-        method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<LendOverseerPermissions>(this.address!, 'account_info'),
         market: null,
         redeem_amount: '0',
         borrow_amount: '0'
@@ -343,7 +343,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? await this.agent!.height,
-        method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<LendOverseerPermissions>(this.address!, 'account_info'),
         market,
         redeem_amount,
         borrow_amount: '0'
@@ -367,7 +367,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? await this.agent!.height,
-        method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<LendOverseerPermissions>(this.address!, 'account_info'),
         market,
         redeem_amount: '0',
         borrow_amount
