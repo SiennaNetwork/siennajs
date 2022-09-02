@@ -1,9 +1,42 @@
 import {
   Client, Fee, Address, Decimal256, Uint128, Uint256, ContractLink,
-  Permit, Signer, ViewingKey, ViewingKeyClient
+  Permit, Signer, VersionedDeployment, ViewingKey, ViewingKeyClient
 } from '@fadroma/scrt'
 import { Snip20, TokenInfo } from '@fadroma/tokens'
 import { Pagination, PaginatedResponse } from './Pagination'
+import TGEDeployment from './SiennaTGE'
+
+export type LendVersions = 'v1'
+
+export default class LendDeployment extends VersionedDeployment<LendVersions> {
+  names = {
+    interestModel: `Lend[${this.version}].InterestModel`,
+    oracle:        `Lend[${this.version}].Oracle`,
+    mockOracle:    `Lend[${this.version}].MockOracle`,
+    overseer:      `Lend[${this.version}].Overseer`,
+    rewardToken:   `Lend[${this.version}].Placeholder.SIENNA`,
+  }
+
+  interestModel = this.client(LendInterestModel)
+    .called(this.names.interestModel)
+    .expect('Lend interest model not found.')
+
+  overseer = this.client(LendOverseer)
+    .called(this.names.overseer)
+    .expect('Lend overseer not found.')
+
+  markets:     LendMarket[] = [] // TODO populate
+
+  oracle?:     LendOracle // TODO populate
+
+  mockOracle?: MockOracle // TODO populate
+
+  /** The reward token for Lend. Defaults to SIENNA. */
+  get rewardToken (): Promise<Snip20> { return this.tge.token }
+
+  /** The TGE containing the token and RPT used by the deployment. */
+  tge = new TGEDeployment(this.name, this.state)
+}
 
 export type LendAuthStrategy =
   | { type: 'permit', signer: Signer }

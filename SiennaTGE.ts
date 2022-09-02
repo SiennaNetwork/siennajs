@@ -2,6 +2,34 @@ import * as Scrt   from '@fadroma/scrt'
 import * as Tokens from '@fadroma/tokens'
 import * as ICC    from './ICC'
 
+/** Connect to an existing TGE. */
+export default class TGEDeployment extends Scrt.Deployment {
+  names = { token: 'SIENNA', mgmt: 'SIENNA.MGMT', rpt: 'SIENNA.RPT' }
+
+  /** The deployed SIENNA SNIP20 token contract. */
+  token = this.client(SiennaSnip20).called(this.names.token).expect('SIENNA not found.')
+
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  mgmt = this.client(MGMT_TGE).called(this.names.mgmt).expect('SIENNA MGMT not found.')
+
+  /** The deployed RPT contract, which claims tokens from MGMT
+    * and distributes them to the reward pools.  */
+  rpt = this.client(RPT_TGE).called(this.names.rpt).expect('SIENNA RPT not found.')
+
+  /** Fetch the current schedule of MGMT. */
+  getMgmtSchedule = () => this.mgmt?.then((mgmt: MGMT_TGE)=>mgmt.schedule())
+
+  /** Fetch the current schedule of MGMT. */
+  getMgmtProgress = (addr: Scrt.Address) => this.mgmt.then((mgmt: MGMT_TGE) => mgmt.progress(addr))
+
+  /** Fetch the current status of RPT. */
+  getRptStatus = ()=>this.rpt?.then((rpt: RPT_TGE)=>rpt.status())
+
+  /** Update the RPT configuration. */
+  setRptConfig (config: RPTConfig) { throw 'TODO' }
+}
+
 /** Contract address/hash pair as used by MGMT */
 export type LinkTuple = [Scrt.Address, Scrt.CodeHash]
 
@@ -186,33 +214,4 @@ export class RPT_TGE extends RPT {
     return this.execute({ set_owner: { new_admin } })
   }
 
-}
-
-export class MGMT_PFR extends MGMT {
-  /** Change the admin of the contract, requires the other user to accept */
-  change_admin(new_admin: any) {
-    return this.execute({ auth: { change_admin: { address: new_admin } } })
-  }
-  /** accept becoming an admin */
-  accept_admin() {
-    return this.execute({ auth: { accept_admin: {} } })
-  }
-  history(start: number, limit: number) {
-    return this.query({ history: { start, limit } })
-  }
-  config() {
-    return this.query({ config: {} })
-  }
-}
-
-export class RPT_PFR extends RPT {
-  configuration() {
-    return this.query({ configuration: {} });
-  }
-  configure(distribution: any, portion: any) {
-    return this.execute({ configure: { distribution, portion } });
-  }
-  vest() {
-    return this.execute({ vest: {} });
-  }
 }

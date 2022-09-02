@@ -1,8 +1,30 @@
-import { ViewingKeyClient, Address, ContractLink, Uint128 } from '@fadroma/scrt';
+import {
+  ViewingKeyClient, Address, ContractLink, Uint128,
+  VersionedDeployment
+} from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens';
-import { AuthClient, AuthMethod } from './Auth';
+import AuthProviderDeployment, { AuthClient, AuthMethod } from './Auth';
+import TGEDeployment, { RPT_TGE } from './SiennaTGE';
 import sha256 from 'crypto-js/sha256';
 import MerkleTree from 'merkletreejs';
+
+export default class LaunchpadDeployment extends VersionedDeployment<'v1'> {
+  /** The TGE containing the token and RPT used by the deployment. */
+  tge = new TGEDeployment(this.name, this.state)
+  /** The token staked in the launchpad pool. */
+  get token (): Promise<Snip20>  { return this.tge.token }
+  /** TODO: What does launchpad use RPT for? */
+  get rpt   (): Promise<RPT_TGE> { return this.tge.rpt   }
+  /** The auth provider and oracle used by the deployment. */
+  auth = new AuthProviderDeployment('Rewards_and_Launchpad', 'v1', this.name, this.state)
+  /** The name of the launchpad contract. */
+  launchpadName = `Launchpad[${this.version}]`
+  /** The launchpad contract. */
+  launchpad = this.client(Launchpad).called(this.launchpadName)
+    .expect(`Launchpad ${this.version} not found.`)
+  /** The known IDOs, matched by name */
+  idos = this.clients(IDO).select((name: string) => name.startsWith(`${this.launchpadName}.IDO[`))
+}
 
 export class Launchpad extends ViewingKeyClient {
 

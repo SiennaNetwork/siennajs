@@ -113,3 +113,5 @@ export interface Rewards_v2_Account {
    * with 6 decimals of precision. */
   user_share: Fadroma.Uint128;
 }
+
+Rewards['v2'] = Rewards_v2

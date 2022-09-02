@@ -81,13 +81,6 @@ export class Rewards_v3 extends Rewards {
     const result: { rewards: { user_info: Rewards_v3_Account } } = await this.query(msg);
     return result.rewards.user_info;
   }
-  lock(amount: string) {
-    console.warn(
-      '[@sienna/rewards] Deprecation warning: v2 Lock has been renamed to Deposit in v3. ' +
-        'It will be gone in 3.1 - plan accordingly.'
-    );
-    return this.deposit(amount);
-  }
   deposit(amount: string) {
     return this.execute({
       rewards: { deposit: { amount } },
@@ -113,6 +106,12 @@ export class Rewards_v3 extends Rewards {
   }
   set_viewing_key(key: string) {
     return this.execute({ set_viewing_key: { key } });
+  }
+  lock (amount: string) {
+    throw new Error('lock is deprecated, use deposit or depositToken')
+  }
+  retrieve (amount: string) {
+    throw new Error('retrieve is deprecated, use withdraw')
   }
 }
 
@@ -198,3 +197,6 @@ export interface Rewards_v3_Account {
   /** How many units of time (seconds) remain until the user can claim? */
   bonding?: Fadroma.Duration;
 }
+
+Rewards['v3']   = Rewards_v3
+Rewards['v3.1'] = Rewards_v3_1

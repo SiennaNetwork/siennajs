@@ -1,8 +1,10 @@
-import * as Fadroma from '@fadroma/scrt';
+import * as Scrt from '@fadroma/scrt';
+import { Snip20 } from '@fadroma/tokens'
 import { randomBase64, SecureRandom } from '@hackbg/formati';
 import { linkStruct, linkTuple } from './ICC';
 import { AuthClient, AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
+import { RPT_TGE } from './SiennaTGE';
 import type { AMMVersion } from './SiennaSwap';
 import type { Rewards_v2 } from './SiennaRewards_v2'
 import type { Rewards_v3, Rewards_v3_1 } from './SiennaRewards_v3'
@@ -13,6 +15,22 @@ const console = Console('Sienna Rewards');
 
 /** Maybe change this to 'v2'|'v3'|'v4' and simplify the classes below? */
 export type RewardsAPIVersion = 'v2' | 'v3' | 'v3.1' | 'v4.1';
+
+export default class RewardsDeployment extends Scrt.VersionedDeployment<RewardsAPIVersion> {
+
+  rpt = this.client(RPT_TGE)
+    .called('SIENNA.RPT')
+    .expect('Deploy RPT first')
+
+  rewardToken = this.client(Snip20)
+    .called('SIENNA')
+    .expect('Deploy SIENNA first.')
+
+  rewards = this.clients(Rewards[this.version] as any)
+    .select((name: string)=>name.includes('Rewards'))
+
+}
+
 
 /** Which version of AMM corresponds to which version of rewards. */
 export const RewardsToAMMVersion: Record<RewardsAPIVersion, AMMVersion> = {
@@ -26,11 +44,11 @@ export const now = () => Math.floor(+new Date() / 1000);
 
 /** Universal init parameters for all versions of rewards. */
 export interface RewardsInitParams {
-  rewardToken:   Fadroma.IntoLink;
-  stakedToken:   Fadroma.IntoLink;
-  admin?:        Fadroma.Address;
-  timekeeper?:   Fadroma.Address;
-  authProvider?: Fadroma.IntoLink;
+  rewardToken:   Scrt.IntoLink;
+  stakedToken:   Scrt.IntoLink;
+  admin?:        Scrt.Address;
+  timekeeper?:   Scrt.Address;
+  authProvider?: Scrt.IntoLink;
   threshold?:    number;
   cooldown?:     number;
   bonding?:      number;
@@ -38,7 +56,7 @@ export interface RewardsInitParams {
 }
 
 /** A reward pool. */
-export abstract class Rewards extends Fadroma.Client {
+export abstract class Rewards extends Scrt.Client {
 
   /** Rewards v1/v2 with the buggy algo. Counts time in blocks. */
   static 'v2':   typeof Rewards_v2;
@@ -52,15 +70,15 @@ export abstract class Rewards extends Fadroma.Client {
   /** Get a LPToken interface to the staked token. */
   abstract getStakedToken(): Promise<LPToken | null>;
   /** Deposit some amount of staked token. */
-  abstract deposit(amount: Fadroma.Uint128): Promise<unknown>;
+  abstract deposit(amount: Scrt.Uint128): Promise<unknown>;
   /** Try to withdraw some amount of staked token. */
-  abstract withdraw(amount: Fadroma.Uint128): Promise<unknown>;
+  abstract withdraw(amount: Scrt.Uint128): Promise<unknown>;
   /** Try to claim a reward. */
   abstract claim(): Promise<unknown>;
 
-  get vk (): Fadroma.ViewingKeyClient {
+  get vk (): Scrt.ViewingKeyClient {
     const { address, codeHash } = this
-    return new Fadroma.ViewingKeyClient(this.agent, { address, codeHash })
+    return new Scrt.ViewingKeyClient(this.agent, address, codeHash)
   }
   get emigration (): Emigration {
     throw new Error('Migration is only available in Rewards >=3');
@@ -72,13 +90,13 @@ export abstract class Rewards extends Fadroma.Client {
     throw new Error('Auth provider is only available in Rewards >=4.1');
   }
   /** Point this pool to the governance contract that will be using it for voting power. */
-  async setGovernanceLink<T>(link: Fadroma.ContractLink): Promise<T> {
+  async setGovernanceLink<T>(link: Scrt.ContractLink): Promise<T> {
     throw new Error('Governance integration is only available in Rewards >=4.1');
   }
 }
 
 /** Constructs a reward pool of some version. */
-export interface RewardsCtor extends Fadroma.NewClient<Rewards> {
+export interface RewardsCtor extends Scrt.NewClient<Rewards> {
   /** Generate the correct format of Rewards init message for the given version */
-  init(params: RewardsInitParams): Fadroma.Message;
+  init(params: RewardsInitParams): Scrt.Message;
 }

@@ -1,5 +1,44 @@
-import { Client, Address, Moment, Uint128, Fee, Decimal, ContractLink } from '@fadroma/scrt';
-import { Auth, AuthClient } from './Auth';
+import {
+  Client, Address, Moment, Uint128, Fee, Decimal, ContractLink,
+  VersionedDeployment
+} from '@fadroma/scrt';
+import AuthProviderDeployment, { Auth, AuthClient } from './Auth';
+import TGEDeployment, { RPT_TGE } from './SiennaTGE';
+import { Rewards_v4_1 } from './SiennaRewards_v4'
+import { Snip20 } from '@fadroma/tokens'
+
+export default class GovernanceDeployment extends VersionedDeployment<'v1'> {
+  names = {
+    /** The name of the auth group that gives the voting contract
+      * access to the balances in the staking contract, which it
+      * uses to compute voting power. */
+    authGroup: 'Rewards_and_Governance',
+    /** The name of the governance staking pool where voting power is accumulated. */
+    pool:      `SIENNA.Rewards[v4]`,
+    /** The name of the governance contract where users vote on proposals. */
+    polls:     `SIENNA.Rewards[v4].Polls[${this.version}]`
+  }
+  Clients = {
+    /** The client class used to talk to the governance staking pool. */
+    Pool:  Rewards_v4_1,
+    Polls: Polls
+  }
+  /** The TGE containing the token and RPT used by the deployment. */
+  tge = new TGEDeployment(this.name, this.state)
+  /** The token staked in the governance pool. */
+  get token (): Promise<Snip20>  { return this.tge.token }
+  /** The RPT contract which needs to be reconfigured when we upgrade
+    * the staking pool, so that the new pool gets rewards budget. */
+  get rpt (): Promise<RPT_TGE> { return this.tge.rpt }
+  /** The auth provider and oracle used by the deployment. */
+  auth = new AuthProviderDeployment(this.names.authGroup, 'v1', this.name, this.state)
+  /** The up-to-date Rewards v4 staking pool with governance support. */
+  pool = this.client(this.Clients.Pool).called(this.names.pool)
+    .expect('Governance staking pool not found.')
+  /** The governance voting contract. */
+  polls = this.client(this.Clients.Polls).called(this.names.polls)
+    .expect('Governance polls contract not found.')
+}
 
 const getNow = () => Math.floor(+new Date() / 1000);
 

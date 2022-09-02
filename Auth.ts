@@ -1,6 +1,38 @@
-import { Permit, Signer, ViewingKey, Client, Address, CodeHash, ContractLink } from "@fadroma/scrt";
+import {
+  Permit, Signer, ViewingKey, Client, Address, CodeHash, ContractLink,
+  VersionedDeployment
+} from "@fadroma/scrt";
 import { IntoLink, linkStruct } from "./ICC";
 import { Pagination } from "./Pagination";
+
+export type AuthProviderVersion = 'v1'
+
+export default class AuthProviderDeployment extends VersionedDeployment<AuthProviderVersion> {
+  constructor (
+    /** Appended to the provider and oracle names. */
+    extraName: string,
+    ...args: ConstructorParameters<typeof VersionedDeployment<'v1'>>
+  ) {
+    super(...args)
+    if (extraName) {
+      this.names.provider += `.${extraName}`
+      this.names.oracle    = `${this.names.provider}.Oracle`
+    }
+  }
+  /** The names under which the provider and oracle are known in the deployment. */
+  names = {
+    provider: `Auth[${this.version}]`,
+    oracle:   `Auth[${this.version}].Oracle`
+  }
+  /** The auth provider contract. */
+  provider = this.client(AuthProvider)
+    .called(this.names.provider)
+    .expect(`Auth provider ${this.names.provider} not found.`)
+  /** The auth provider's RNG oracle. */
+  oracle = this.client()
+    .called(this.names.oracle)
+    .expect(`Oracle ${this.names.oracle} not found.`)
+}
 
 export type AuthStrategy =
   | { type: "permit"; signer: Signer }

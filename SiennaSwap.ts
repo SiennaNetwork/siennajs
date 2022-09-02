@@ -7,6 +7,48 @@ import { create_entropy } from './Core'
 
 export type AMMVersion = "v1"|"v2"
 
+export default class AMMDeployment extends Scrt.VersionedDeployment<AMMVersion> {
+  names = {
+    factory: `AMM[${this.version}].Factory`,
+    router:  `AMM[${this.version}].Router`,
+  }
+
+  factory = this.client(AMMFactory[this.version])
+    .called(this.names.factory)
+    .expect(`AMM Factory ${this.version} not found.`)
+
+  router = this.client(AMMRouter)
+    .called(this.names.router)
+    .expect(`AMM Router for AMM ${this.version} not found.`)
+
+  filters = {
+    isExchange: (name: string) => name.startsWith(`AMM[${this.version}]`) && !name.endsWith(`.LP`),
+    isLPToken:  (name: string) => name.startsWith(`AMM[${this.version}]`) &&  name.endsWith(`.LP`)
+  }
+
+  exchanges = this.clients(AMMExchange as any)
+    .select(this.filters.isExchange)
+
+  lpTokens = this.clients(LPToken)
+    .select(this.filters.isLPToken)
+
+  /** Create a new exchange through the factory. */
+  async createExchange (name: string, factory?: AMMFactory) {
+    factory ??= await this.factory
+    const [ token_0, token_1 ] = await this.parsePair(name)
+    await (await this.factory).createExchange(token_0, token_1)
+    return { name, token_0, token_1 }
+  }
+
+  async parsePair (name: string) {
+    let { token_0, token_1 } = Tokens.TokenPair.fromName(this.context.tokenRegistry.tokens, name)
+    if (token_0 instanceof Tokens.Snip20) token_0 = { custom_token: token_0.custom_token }
+    if (token_1 instanceof Tokens.Snip20) token_1 = { custom_token: token_1.custom_token }
+    return [token_0, token_1]
+  }
+
+}
+
 export type AMMFactoryStatus = "Operational" | "Paused" | "Migrating"
 
 export interface IContractTemplate {

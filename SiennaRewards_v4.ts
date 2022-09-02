@@ -1,7 +1,7 @@
 import * as Fadroma from '@fadroma/scrt'
 import { linkStruct } from './ICC'
 import { AuthClient, AuthMethod } from './Auth'
-import { now, RewardsInitParams } from './SiennaRewards'
+import { Rewards, now, RewardsInitParams } from './SiennaRewards'
 import { Rewards_v3_Account, Rewards_v3_1, Rewards_v3_Total } from './SiennaRewards_v3'
 
 import { Console } from '@hackbg/konzola';
@@ -144,3 +144,4 @@ enum RewardsPermissions {
   Balance = 'balance',
 }
 
+Rewards['v4.1'] = Rewards_v4_1
