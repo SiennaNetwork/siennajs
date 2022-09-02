@@ -351,7 +351,7 @@ export class AMMExchange extends Scrt.Client {
 }
 
 export interface NewAMMExchange extends Scrt.NewClient<AMMExchange> {
-  new (agent?: Scrt.Executor, options?: AMMExchangeOpts): AMMExchange
+  new (agent?: Scrt.Agent, options?: AMMExchangeOpts): AMMExchange
 }
 
 export interface AMMExchangeOpts extends Partial<Scrt.Client> {
