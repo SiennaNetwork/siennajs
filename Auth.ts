@@ -1,19 +1,22 @@
 import {
   Permit, Signer, ViewingKey, Client, Address, CodeHash, ContractLink,
-  VersionedDeployment
+  Deployment, VersionedDeployment
 } from "@fadroma/scrt";
 import { IntoLink, linkStruct } from "./ICC";
 import { Pagination } from "./Pagination";
 
 export type AuthProviderVersion = 'v1'
 
-export default class AuthProviderDeployment extends VersionedDeployment<AuthProviderVersion> {
+export const LatestAuthProviderVersion: AuthProviderVersion = 'v1'
+
+export default class SiennaAuth extends VersionedDeployment<AuthProviderVersion> {
   constructor (
+    options: Partial<VersionedDeployment<AuthProviderVersion>>|Partial<SiennaAuth> = {},
+    public readonly version: AuthProviderVersion = options?.version ?? LatestAuthProviderVersion,
     /** Appended to the provider and oracle names. */
-    extraName: string,
-    ...args: ConstructorParameters<typeof VersionedDeployment<'v1'>>
+    public readonly extraName: string|false      = (options as any)?.extraName ?? false,
   ) {
-    super(...args)
+    super(options)
     if (extraName) {
       this.names.provider += `.${extraName}`
       this.names.oracle    = `${this.names.provider}.Oracle`
@@ -33,6 +36,7 @@ export default class AuthProviderDeployment extends VersionedDeployment<AuthProv
     .called(this.names.oracle)
     .expect(`Oracle ${this.names.oracle} not found.`)
 }
+
 
 export type AuthStrategy =
   | { type: "permit"; signer: Signer }

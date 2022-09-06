@@ -3,32 +3,26 @@ import * as Tokens from '@fadroma/tokens'
 import * as ICC    from './ICC'
 
 /** Connect to an existing TGE. */
-export default class TGEDeployment extends Scrt.Deployment {
+export default class SiennaTGE extends Scrt.Deployment {
   names = { token: 'SIENNA', mgmt: 'SIENNA.MGMT', rpt: 'SIENNA.RPT' }
-
   /** The deployed SIENNA SNIP20 token contract. */
   token = this.client(SiennaSnip20).called(this.names.token).expect('SIENNA not found.')
-
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
   mgmt = this.client(MGMT_TGE).called(this.names.mgmt).expect('SIENNA MGMT not found.')
-
   /** The deployed RPT contract, which claims tokens from MGMT
     * and distributes them to the reward pools.  */
   rpt = this.client(RPT_TGE).called(this.names.rpt).expect('SIENNA RPT not found.')
-
   /** Fetch the current schedule of MGMT. */
   getMgmtSchedule = () => this.mgmt?.then((mgmt: MGMT_TGE)=>mgmt.schedule())
-
   /** Fetch the current schedule of MGMT. */
   getMgmtProgress = (addr: Scrt.Address) => this.mgmt.then((mgmt: MGMT_TGE) => mgmt.progress(addr))
-
   /** Fetch the current status of RPT. */
   getRptStatus = ()=>this.rpt?.then((rpt: RPT_TGE)=>rpt.status())
-
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) { throw 'TODO' }
 }
+
 
 /** Contract address/hash pair as used by MGMT */
 export type LinkTuple = [Scrt.Address, Scrt.CodeHash]
@@ -139,8 +133,6 @@ export abstract class RPT extends Scrt.Client {
   vest() {
     return this.execute({ vest: {} })
   }
-  static legacy: typeof RPT_TGE
-  static vested: typeof RPT_PFR
 }
 
 export type RPTRecipient = string

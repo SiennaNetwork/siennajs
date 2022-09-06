@@ -1,21 +1,21 @@
 import * as Scrt   from '@fadroma/scrt'
 import * as Tokens from '@fadroma/tokens'
-
+import { Deployment } from './Core'
 import { MGMT, RPT } from './SiennaTGE'
 import type { VestingSchedule, VestingAccount } from './SiennaTGE'
-
 import { Rewards } from './SiennaRewards'
-import type { RewardsAPIVersion } from './SiennaRewards'
+import type { RewardsAPIVersion, StakingTokens } from './SiennaRewards'
 
-export default class PFRDeployments<R extends RewardsAPIVersion> extends Scrt.Deployment {
+export default class SiennaPFR<R extends RewardsAPIVersion> extends Deployment {
   constructor (
-    public readonly rewardsVersion: R,
-    ...args: ConstructorParameters<typeof Scrt.Deployment>
+    options: Partial<Deployment>|Partial<SiennaPFR<R>> = {},
+    public rewardsVersion: R|undefined = (options as any)?.rewardsVersion
   ) {
-    super(...args)
+    super(options)
+    if (!this.rewardsVersion) throw new Error(`${this.constructor.name}: specify rewardsVersion`)
   }
   vestings: PFRVesting[] = []
-  tokens = this.vestings.map(async ({ rewards, lp }: PFRVesting)=>({
+  rewardTokens = this.vestings.map(async ({ rewards, lp }: PFRVesting)=>({
     stakedToken: new Tokens.Snip20(this.agent, lp.address, lp.codeHash).populate(),
     rewardToken: new Tokens.Snip20(this.agent, rewards.address, rewards.codeHash).populate()
   }))
@@ -27,7 +27,7 @@ export default class PFRDeployments<R extends RewardsAPIVersion> extends Scrt.De
   }
   mgmts = this.clients(MGMT_PFR)
     .called(this.vestings.map(this.names.mgmts))
-  rewardPools = this.clients(Rewards[this.rewardsVersion] as any)
+  rewardPools = this.clients(Rewards[this.rewardsVersion!] as any)
     .called(this.vestings.map(this.names.rewards))
   rpts = this.clients(RPT_PFR)
     .called(this.vestings.map(this.names.rpts))

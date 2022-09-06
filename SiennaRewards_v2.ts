@@ -3,9 +3,6 @@ import { randomBase64 } from '@hackbg/formati';
 import { now, Rewards, RewardsInitParams } from './SiennaRewards'
 import { LPToken } from './SiennaSwap'
 
-import { Console } from '@hackbg/konzola';
-const console = Console('Sienna Rewards v2');
-
 export class Rewards_v2 extends Rewards {
   /** Create an init message for Sienna Rewards v2 */
   static init = ({
@@ -38,7 +35,7 @@ export class Rewards_v2 extends Rewards {
     const at = Math.floor(+new Date() / 1000);
     const { pool_info } = await this.query({ pool_info: { at } });
     const { address, code_hash } = pool_info.lp_token;
-    return new LPToken(this.agent, { address, codeHash: code_hash });
+    return new LPToken(this.agent, address, code_hash);
   }
   async getRewardToken() {
     throw new Error('not implemented');

@@ -4,9 +4,6 @@ import { now, Rewards, RewardsInitParams } from './SiennaRewards'
 import { LPToken } from './SiennaSwap'
 import { Emigration, Immigration } from './Migration'
 
-import { Console } from '@hackbg/konzola';
-const console = Console('Sienna Rewards v3+');
-
 export class Rewards_v3 extends Rewards {
 
   /** Create an init message for Sienna Rewards v3 */
@@ -28,10 +25,10 @@ export class Rewards_v3 extends Rewards {
   });
 
   get emigration (): Emigration {
-    return new Emigration(this.agent, { address: this.address, codeHash: this.codeHash });
+    return new Emigration(this.agent, this.address, this.codeHash);
   }
   get immigration (): Immigration {
-    return new Immigration(this.agent, { address: this.address, codeHash: this.codeHash });
+    return new Immigration(this.agent, this.address, this.codeHash);
   }
   async getConfig() {
     const result: { rewards: { config: Rewards_v3_Config } } = await this.query({
@@ -42,11 +39,7 @@ export class Rewards_v3 extends Rewards {
   async getStakedToken() {
     const { lp_token } = await this.getConfig();
     if (lp_token) {
-      const opts = {
-        address: lp_token.address,
-        codeHash: lp_token.code_hash,
-      };
-      return this.agent!.getClient(LPToken, opts);
+      return this.agent!.getClient(LPToken, lp_token.address, lp_token.code_hash);
     } else {
       return null;
     }

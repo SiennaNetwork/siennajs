@@ -1,10 +1,12 @@
 import {
   Client, Fee, Address, Decimal256, Uint128, Uint256, ContractLink,
-  Permit, Signer, VersionedDeployment, ViewingKey, ViewingKeyClient
+  Permit, Signer, ViewingKey, ViewingKeyClient
 } from '@fadroma/scrt'
 import { Snip20, TokenInfo } from '@fadroma/tokens'
 import { Pagination, PaginatedResponse } from './Pagination'
 import TGEDeployment from './SiennaTGE'
+import { VersionedDeployment } from './Core'
+import type { AuthStrategy, AuthMethod } from './Auth'
 
 export type LendVersions = 'v1'
 
@@ -35,16 +37,12 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
   get rewardToken (): Promise<Snip20> { return this.tge.token }
 
   /** The TGE containing the token and RPT used by the deployment. */
-  tge = new TGEDeployment(this.name, this.state)
+  tge = new TGEDeployment(this)
 }
 
-export type LendAuthStrategy =
-  | { type: 'permit', signer: Signer }
-  | { type: 'vk', viewing_key: { address: Address, key: ViewingKey } }
+export type LendAuthStrategy = AuthStrategy
 
-export type LendAuthMethod<T> =
-  | { permit: Permit<T>; }
-  | { viewing_key: { address: Address, key: ViewingKey } }
+export type LendAuthMethod<T> = AuthMethod<T>
 
 export interface LendMarketState {
   /** Block height that the interest was last accrued at */
@@ -172,7 +170,9 @@ export class LendMarket extends Client {
     transfer:          new Fee( '80000', 'uscrt'),
   }
 
-  vk = new ViewingKeyClient(this.agent, this)
+  get vk () {
+    return new ViewingKeyClient(this.agent, this.address, this.codeHash)
+  }
 
   /** Convert and burn the specified amount of slToken to the underlying asset
     * based on the current exchange rate and transfer them to the user. */

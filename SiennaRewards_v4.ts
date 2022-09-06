@@ -4,9 +4,6 @@ import { AuthClient, AuthMethod } from './Auth'
 import { Rewards, now, RewardsInitParams } from './SiennaRewards'
 import { Rewards_v3_Account, Rewards_v3_1, Rewards_v3_Total } from './SiennaRewards_v3'
 
-import { Console } from '@hackbg/konzola';
-const console = Console('Sienna Rewards v4');
-
 export class Rewards_v4_1 extends Rewards_v3_1 {
 
   /** Create an init message for Sienna Rewards v4 */
@@ -32,7 +29,7 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
   }
 
   get auth (): AuthClient {
-    return new AuthClient(this.agent, { address: this.address, codeHash: this.codeHash })
+    return new AuthClient(this.agent, this.address, this.codeHash)
   }
 
   async setGovernanceLink<T>(link: Fadroma.ContractLink): Promise<T> {

@@ -1,4 +1,5 @@
 import * as Scrt from '@fadroma/scrt'
+import { TokenRegistry } from '@fadroma/tokens'
 import { SecureRandom, Base64 } from '@hackbg/formati'
 
 export const { b64encode, b64decode, b64fromBuffer } = Base64
@@ -45,4 +46,12 @@ export function create_base64_msg(msg: object): string {
 
 export function create_entropy (bytes = 32): string {
   return SecureRandom.randomBuffer(bytes).toString('base64')
+}
+
+export class Deployment extends Scrt.Deployment {
+  tokens = new TokenRegistry(this)
+}
+
+export class VersionedDeployment<V> extends Scrt.VersionedDeployment<V> {
+  tokens = new TokenRegistry(this)
 }

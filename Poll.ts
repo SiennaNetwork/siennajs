@@ -24,14 +24,14 @@ export default class GovernanceDeployment extends VersionedDeployment<'v1'> {
     Polls: Polls
   }
   /** The TGE containing the token and RPT used by the deployment. */
-  tge = new TGEDeployment(this.name, this.state)
+  tge = new TGEDeployment(this)
   /** The token staked in the governance pool. */
   get token (): Promise<Snip20>  { return this.tge.token }
   /** The RPT contract which needs to be reconfigured when we upgrade
     * the staking pool, so that the new pool gets rewards budget. */
   get rpt (): Promise<RPT_TGE> { return this.tge.rpt }
   /** The auth provider and oracle used by the deployment. */
-  auth = new AuthProviderDeployment(this.names.authGroup, 'v1', this.name, this.state)
+  auth = new AuthProviderDeployment(this, 'v1', this.names.authGroup)
   /** The up-to-date Rewards v4 staking pool with governance support. */
   pool = this.client(this.Clients.Pool).called(this.names.pool)
     .expect('Governance staking pool not found.')

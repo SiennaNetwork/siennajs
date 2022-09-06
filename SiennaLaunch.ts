@@ -1,8 +1,6 @@
-import {
-  ViewingKeyClient, Address, ContractLink, Uint128,
-  VersionedDeployment
-} from '@fadroma/scrt';
+import { ViewingKeyClient, Address, ContractLink, Uint128 } from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens';
+import { VersionedDeployment } from './Core';
 import AuthProviderDeployment, { AuthClient, AuthMethod } from './Auth';
 import TGEDeployment, { RPT_TGE } from './SiennaTGE';
 import sha256 from 'crypto-js/sha256';
@@ -10,13 +8,15 @@ import MerkleTree from 'merkletreejs';
 
 export default class LaunchpadDeployment extends VersionedDeployment<'v1'> {
   /** The TGE containing the token and RPT used by the deployment. */
-  tge = new TGEDeployment(this.name, this.state)
+  tge = new TGEDeployment(this)
   /** The token staked in the launchpad pool. */
   get token (): Promise<Snip20>  { return this.tge.token }
   /** TODO: What does launchpad use RPT for? */
   get rpt   (): Promise<RPT_TGE> { return this.tge.rpt   }
   /** The auth provider and oracle used by the deployment. */
-  auth = new AuthProviderDeployment('Rewards_and_Launchpad', 'v1', this.name, this.state)
+  auth = new AuthProviderDeployment(this, 'v1', 'Rewards_and_Launchpad',)
+  /** Name of group in auth provider that authorizes the rewards and launchpad contracts. */
+  authGroupName = 'Rewards_and_Launchpad'
   /** The name of the launchpad contract. */
   launchpadName = `Launchpad[${this.version}]`
   /** The launchpad contract. */

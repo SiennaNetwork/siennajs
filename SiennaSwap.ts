@@ -1,19 +1,20 @@
 import * as Scrt   from '@fadroma/scrt'
 import * as Tokens from '@fadroma/tokens'
-import { Console } from '@hackbg/konzola'
-const console = Console('Sienna Swap')
+import { CustomConsole } from '@hackbg/konzola'
+import { create_entropy, VersionedDeployment } from './Core'
 
-import { create_entropy } from './Core'
+const log = new CustomConsole(console, 'Sienna Swap')
 
 export type AMMVersion = "v1"|"v2"
 
-export default class AMMDeployment extends Scrt.VersionedDeployment<AMMVersion> {
+export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
+
   names = {
     factory: `AMM[${this.version}].Factory`,
     router:  `AMM[${this.version}].Router`,
   }
 
-  factory = this.client(AMMFactory[this.version])
+  factory = this.client(AMMFactory[this.version!])
     .called(this.names.factory)
     .expect(`AMM Factory ${this.version} not found.`)
 
@@ -21,30 +22,18 @@ export default class AMMDeployment extends Scrt.VersionedDeployment<AMMVersion> 
     .called(this.names.router)
     .expect(`AMM Router for AMM ${this.version} not found.`)
 
-  filters = {
-    isExchange: (name: string) => name.startsWith(`AMM[${this.version}]`) && !name.endsWith(`.LP`),
-    isLPToken:  (name: string) => name.startsWith(`AMM[${this.version}]`) &&  name.endsWith(`.LP`)
-  }
-
   exchanges = this.clients(AMMExchange as any)
-    .select(this.filters.isExchange)
+    .select((name: string) => name.startsWith(`AMM[${this.version}]`) && !name.endsWith(`.LP`))
 
   lpTokens = this.clients(LPToken)
-    .select(this.filters.isLPToken)
+    .select((name: string) => name.startsWith(`AMM[${this.version}]`) &&  name.endsWith(`.LP`))
 
   /** Create a new exchange through the factory. */
   async createExchange (name: string, factory?: AMMFactory) {
     factory ??= await this.factory
-    const [ token_0, token_1 ] = await this.parsePair(name)
+    const { token_0, token_1 } = await this.tokens.getPair(name)
     await (await this.factory).createExchange(token_0, token_1)
     return { name, token_0, token_1 }
-  }
-
-  async parsePair (name: string) {
-    let { token_0, token_1 } = Tokens.TokenPair.fromName(this.context.tokenRegistry.tokens, name)
-    if (token_0 instanceof Tokens.Snip20) token_0 = { custom_token: token_0.custom_token }
-    if (token_1 instanceof Tokens.Snip20) token_1 = { custom_token: token_1.custom_token }
-    return [token_0, token_1]
   }
 
 }
@@ -89,7 +78,7 @@ export abstract class AMMFactory extends Scrt.Client {
     // TODO: check for existing pairs and remove them from input
     // warn if passed zero pairs
     if (pairs.length === 0) {
-      console.warn('Creating 0 exchanges.')
+      log.warn('Creating 0 exchanges.')
       return []
     }
     // conform pairs
@@ -185,14 +174,14 @@ AMMFactory.v1 = AMMFactory_v1
 AMMFactory.v2 = AMMFactory_v2
 
 export interface AMMFactoryInventory {
-  pair_contract:       Scrt.TemplateInfo
-  lp_token_contract:   Scrt.TemplateInfo
+  pair_contract:       Scrt.ContractInfo
+  lp_token_contract:   Scrt.ContractInfo
   // unused, required by v1:
-  snip20_contract?:    Scrt.TemplateInfo
-  ido_contract?:       Scrt.TemplateInfo
-  launchpad_contract?: Scrt.TemplateInfo
+  snip20_contract?:    Scrt.ContractInfo
+  ido_contract?:       Scrt.ContractInfo
+  launchpad_contract?: Scrt.ContractInfo
   // maybe needed?
-  router_contract?:    Scrt.TemplateInfo
+  router_contract?:    Scrt.ContractInfo
 }
 
 export interface AMMCreateExchangeRequest {
@@ -260,7 +249,7 @@ export class AMMExchange extends Scrt.Client {
   }
 
   constructor (agent: Scrt.Agent, options: AMMExchangeOpts) {
-    super(agent, options)
+    super(agent, options.address, options.codeHash, options.deployment, options.name)
     if (options.token_0)  this.token_0 = options.token_0
     if (options.token_1)  this.token_1 = options.token_1
     if (options.lpToken)  this.lpToken = options.lpToken
@@ -281,26 +270,22 @@ export class AMMExchange extends Scrt.Client {
   pairInfo?: AMMPairInfo
 
   async populate () {
-    await super.populate()
-
+    await super.fetchCodeHash()
     this.pairInfo = await this.getPairInfo()
-
     let { pair: { token_0, token_1 }, liquidity_token } = await this.getPairInfo()
-
     if (Tokens.isCustomToken(token_0)) token_0 = await this.agent!
       .getClient(Tokens.Snip20, token_0?.custom_token?.contract_addr)
       .populate()
     if (Tokens.isCustomToken(token_1)) token_1 = await this.agent!
       .getClient(Tokens.Snip20, token_1?.custom_token?.contract_addr)
       .populate()
-
     if (this.token_0 instanceof Tokens.Snip20 && this.token_1 instanceof Tokens.Snip20) {
       this.name = `${this.token_0.symbol}-${this.token_1.symbol}`
     }
-
     this.token_0 = token_0
     this.token_1 = token_1
-    this.lpToken = this.agent!.getClient(LPToken, liquidity_token)
+    const { address, code_hash } = liquidity_token
+    this.lpToken = this.agent!.getClient(LPToken, address, code_hash)
     return this
   }
 
@@ -346,7 +331,7 @@ export class AMMExchange extends Scrt.Client {
     recipient:        Scrt.Address|undefined = this.agent?.address,
   ) {
     if (!recipient) {
-      console.log('AMMExchange#swap: specify recipient')
+      log.log('AMMExchange#swap: specify recipient')
     }
     if (Tokens.getTokenKind(amount.token) == Tokens.TokenKind.Native) {
       const msg = { swap: { offer: amount, to: recipient, expected_return } }
@@ -473,7 +458,7 @@ export class AMMRouter extends Scrt.Client {
     return result
   }
   async populate () {
-    await super.populate()
+    await this.fetchCodeHash()
     this.supportedTokens = await this.getSupportedTokens()
     return this
   }

@@ -10,8 +10,6 @@ import type { Rewards_v2 } from './SiennaRewards_v2'
 import type { Rewards_v3, Rewards_v3_1 } from './SiennaRewards_v3'
 import type { Rewards_v4_1 } from './SiennaRewards_v4'
 import type { Emigration, Immigration } from './Migration'
-import { Console } from '@hackbg/konzola';
-const console = Console('Sienna Rewards');
 
 /** Maybe change this to 'v2'|'v3'|'v4' and simplify the classes below? */
 export type RewardsAPIVersion = 'v2' | 'v3' | 'v3.1' | 'v4.1';
@@ -26,11 +24,10 @@ export default class RewardsDeployment extends Scrt.VersionedDeployment<RewardsA
     .called('SIENNA')
     .expect('Deploy SIENNA first.')
 
-  rewards = this.clients(Rewards[this.version] as any)
+  rewards = this.clients(Rewards[this.version!] as any)
     .select((name: string)=>name.includes('Rewards'))
 
 }
-
 
 /** Which version of AMM corresponds to which version of rewards. */
 export const RewardsToAMMVersion: Record<RewardsAPIVersion, AMMVersion> = {
@@ -57,6 +54,8 @@ export interface RewardsInitParams {
 
 /** A reward pool. */
 export abstract class Rewards extends Scrt.Client {
+
+  log = new Scrt.Console(console, this.constructor.name)
 
   /** Rewards v1/v2 with the buggy algo. Counts time in blocks. */
   static 'v2':   typeof Rewards_v2;
@@ -99,4 +98,9 @@ export abstract class Rewards extends Scrt.Client {
 export interface RewardsCtor extends Scrt.NewClient<Rewards> {
   /** Generate the correct format of Rewards init message for the given version */
   init(params: RewardsInitParams): Scrt.Message;
+}
+
+export interface StakingTokens {
+  stakedToken: Snip20
+  rewardToken: Snip20
 }

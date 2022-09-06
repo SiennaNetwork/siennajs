@@ -11,7 +11,7 @@ export class ContractInstantiationInfo {
 }
 
 /** `{ id, codeHash }` -> `{ id, code_hash }`; nothing else */
-export const templateStruct = (template: Scrt.Template) => ({
+export const templateStruct = (template: Scrt.Contract<any>) => ({
   id:        Number(template.codeId),
   code_hash: validatedCodeHashOf(template)
 })
