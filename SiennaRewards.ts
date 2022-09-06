@@ -1,7 +1,7 @@
 import * as Scrt from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens'
 import { randomBase64, SecureRandom } from '@hackbg/formati';
-import { linkStruct, linkTuple } from './ICC';
+import { linkStruct } from './ICC';
 import { AuthClient, AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
 import { RPT_TGE } from './SiennaTGE';
