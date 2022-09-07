@@ -1,6 +1,6 @@
 import * as Scrt   from '@fadroma/scrt'
 import * as Tokens from '@fadroma/tokens'
-import { CustomConsole } from '@hackbg/konzola'
+import { CustomConsole, bold, colors } from '@hackbg/konzola'
 import { create_entropy, VersionedDeployment } from './Core'
 
 const log = new CustomConsole(console, 'Sienna Swap')
@@ -29,11 +29,74 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     .select((name: string) => name.startsWith(`AMM[${this.version}]`) &&  name.endsWith(`.LP`))
 
   /** Create a new exchange through the factory. */
-  async createExchange (name: string, factory?: AMMFactory) {
+  createExchange = async (name: string, factory?: AMMFactory) => {
     factory ??= await this.factory
     const { token_0, token_1 } = await this.tokens.getPair(name)
     await (await this.factory).createExchange(token_0, token_1)
     return { name, token_0, token_1 }
+  }
+
+  factoryStatus = async () => {
+    const factory = await this.factory
+    this.log.info(`Status of AMMv2 Factory at`, bold(factory.address??''))
+    this.log.log()
+    const exchanges = await factory.listExchangesFull()
+    const fmtDecimal = (s: any, d: any, n: any) => {
+      return bold(String(BigInt(Math.floor(n/(10**d)))).padStart(18) + '.' +
+        String(n%(10**d)).padEnd(18)) + ' ' +
+        bold(s)
+    }
+    if (exchanges.length > 0) {
+      const column1 = 15
+      for (const exchange of exchanges) {
+        this.log.log()
+        this.log.log()
+        this.log.log(bold(exchange?.name?.padEnd(column1)), bold(exchange?.address))
+        const [token0Info, token1Info, lpTokenInfo] = await Promise.all([
+          exchange.token_0?.getTokenInfo(),
+          exchange.token_1?.getTokenInfo(),
+          exchange.lpToken?.getTokenInfo(),
+        ])
+        for (const [name, {address}, {symbol, decimals, total_supply}, balance] of [
+          ["Token 0",  exchange.token_0, token0Info,  exchange.pairInfo?.amount_0],
+          ["Token 1",  exchange.token_1, token1Info,  exchange.pairInfo?.amount_1],
+          ["LP token", exchange.lpToken, lpTokenInfo, null],
+        ]) {
+          this.log.log()
+          this.log.log(name.padStart(column1), bold(address))
+          if (balance) {
+            this.log.log("".padStart(column1), `In pool:     `, fmtDecimal(symbol, decimals, balance))
+          }
+          if (total_supply) {
+            this.log.log("".padStart(column1), `Total supply:`, fmtDecimal(symbol, decimals, total_supply))
+          } else {
+            this.log.log("".padStart(column1), `Total supply:`, bold('unlimited'.padStart(23)))
+          }
+        }
+      }
+    } else {
+      this.log.info('Factory returned no exchanges.')
+    }
+    this.log.log()
+  }
+
+  exchangesStatus = async () => {
+    const exchanges = await this.exchanges as AMMExchange[]
+    if (!exchanges) {
+      this.log.info('No exchanges found.')
+      return
+    }
+    for (const exchange of exchanges) {
+      const { name, address, codeHash, token_0, token_1, lpToken } = exchange
+      const codeId = '??'
+      this.log.info(
+        ' ', bold(colors.inverse(name!)).padEnd(30), // wat
+        `(code id ${bold(String(codeId))})`.padEnd(34), bold(address!)
+      )
+      //await print.token(token_0)
+      //await print.token(token_1)
+      //await print.token(lpToken)
+    }
   }
 
 }

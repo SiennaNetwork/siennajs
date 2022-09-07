@@ -1,24 +1,90 @@
 import * as Scrt   from '@fadroma/scrt'
 import * as Tokens from '@fadroma/tokens'
 import * as ICC    from './ICC'
+import * as YAML   from 'js-yaml'
+
+import { bold } from '@hackbg/konzola'
 
 /** Connect to an existing TGE. */
 export default class SiennaTGE extends Scrt.Deployment {
   names = { token: 'SIENNA', mgmt: 'SIENNA.MGMT', rpt: 'SIENNA.RPT' }
   /** The deployed SIENNA SNIP20 token contract. */
-  token = this.client(SiennaSnip20).called(this.names.token).expect('SIENNA not found.')
+  token = this.client(SiennaSnip20)
+    .called(this.names.token)
+    .expect('SIENNA not found.')
+  /** Get the balance of an address in the vested token. */
+  getBalance = (addr: Scrt.Address, vk: Scrt.ViewingKey) =>
+    this.token.then(token=>token.getBalance(addr, vk))
+  /** Print the result of getBalance. */
+  showBalance = async (addr: Scrt.Address, vk: Scrt.ViewingKey) => {
+    const token = await this.token
+    try {
+      const balance = await this.getBalance(addr, vk)
+      this.log.info(`Balance of ${bold(addr)}: ${balance}`)
+    } catch (e) {
+      if (this.isMainnet) {
+        this.log.error('Mainnet: no VK')
+        return
+      }
+      this.log.info('Setting vk...')
+      const VK = await token.vk.set(vk)
+      const balance = await token.getBalance(addr, vk)
+      this.log.info(`Balance of ${bold(addr)}: ${balance}`)
+    }
+  }
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
   mgmt = this.client(MGMT_TGE).called(this.names.mgmt).expect('SIENNA MGMT not found.')
+  /** Fetch the current schedule of MGMT. */
+  getMgmtSchedule = () => this.mgmt.then((mgmt: MGMT_TGE)=>mgmt.schedule())
+  /** Fetch the current schedule of MGMT. */
+  getMgmtStatus   = () => this.mgmt.then((mgmt: MGMT_TGE)=>mgmt.status())
+  showMgmtStatus = async () => {
+    try {
+      const {address} = await this.mgmt
+      const status    = await this.getMgmtStatus()
+      this.log.debug(bold(`MGMT status`), `of`, bold(address!), status)
+    } catch (e) {
+      this.log.error((e as Error).message)
+    }
+  }
+  /** Fetch the current schedule of MGMT. */
+  getMgmtProgress = (addr: Scrt.Address) => this.mgmt.then((mgmt: MGMT_TGE) => mgmt.progress(addr))
+  showMgmtProgress = async (user: Scrt.Address) => {
+    try {
+      const {address} = await this.mgmt
+      const progress  = await this.getMgmtProgress(user)
+      this.log.info(bold(`MGMT progress`), 'of', bold(user), 'in', bold(address!))
+      for (const [k,v] of Object.entries(progress)) this.log.info(' ', bold(k), v)
+    } catch (e) {
+      this.log.error((e as Error).message)
+    }
+  }
   /** The deployed RPT contract, which claims tokens from MGMT
     * and distributes them to the reward pools.  */
   rpt = this.client(RPT_TGE).called(this.names.rpt).expect('SIENNA RPT not found.')
-  /** Fetch the current schedule of MGMT. */
-  getMgmtSchedule = () => this.mgmt?.then((mgmt: MGMT_TGE)=>mgmt.schedule())
-  /** Fetch the current schedule of MGMT. */
-  getMgmtProgress = (addr: Scrt.Address) => this.mgmt.then((mgmt: MGMT_TGE) => mgmt.progress(addr))
   /** Fetch the current status of RPT. */
-  getRptStatus = ()=>this.rpt?.then((rpt: RPT_TGE)=>rpt.status())
+  getRptStatus = () => this.rpt.then((rpt: RPT_TGE)=>rpt.status())
+  showRptStatus = async () => {
+    const rpt = await this.rpt
+    const status = await rpt.status() as { config: any[] }
+    this.log.info(`RPT contract:`)
+    this.log.info(` `, JSON.stringify(rpt.asLink))
+    this.log.info(`RPT contract config:`)
+    YAML.dump(status).trim().split('\n').forEach(line=>this.log.info(' ', line))
+    this.log.info(`RPT contract recipients:`)
+    const instances = (await Promise.all(status.config.map(
+      async ([address])=>({
+        address,
+        label:    await this.agent?.getLabel(address),
+        codeHash: await this.agent?.getHash(address)
+      })
+    )))
+    const max = instances.reduce((x,y)=>Math.max(x, y.label?.length??0), 0)
+    instances.forEach(({ label, address, codeHash })=>{
+      this.log.info(` `, (label??'').padEnd(max), JSON.stringify({ address, codeHash }))
+    })
+  }
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) { throw 'TODO' }
 }

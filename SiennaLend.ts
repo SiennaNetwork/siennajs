@@ -38,6 +38,36 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
 
   /** The TGE containing the token and RPT used by the deployment. */
   tge = new TGEDeployment(this)
+
+  whitelist = async () => {
+    const MARKET_INITIAL_EXCHANGE_RATE = "0.2";
+    const MARKET_RESERVE_FACTOR = "1";
+    const MARKET_SEIZE_FACTOR = "0.9";
+    const MARKET_LTV_RATIO = "0.7";
+    const MARKET_TOKEN_SYMBOL = "SSCRT";
+    const overseer      = await this.overseer
+    const interestModel = await this.interestModel
+    await overseer.execute({
+      whitelist: {
+        config: {
+          entropy:   Scrt.randomBase64(36),
+          prng_seed: Scrt.randomBase64(36),
+          interest_model_contract: interestModel.asLink,
+          ltv_ratio:    MARKET_LTV_RATIO,
+          token_symbol: MARKET_TOKEN_SYMBOL,
+          config: {
+            initial_exchange_rate: MARKET_INITIAL_EXCHANGE_RATE,
+            reserve_factor:        MARKET_RESERVE_FACTOR,
+            seize_factor:          MARKET_SEIZE_FACTOR,
+          },
+          underlying_asset: {
+            address:   "",
+            code_hash: "",
+          },
+        },
+      },
+    })
+  }
 }
 
 export type LendAuthStrategy = AuthStrategy

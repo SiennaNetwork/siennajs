@@ -1,6 +1,7 @@
 import * as Scrt from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens'
 import { randomBase64, SecureRandom } from '@hackbg/formati';
+import { colors, bold } from '@hackbg/fadroma';
 import { linkStruct } from './ICC';
 import { AuthClient, AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
@@ -26,6 +27,24 @@ export default class RewardsDeployment extends Scrt.VersionedDeployment<RewardsA
 
   rewards = this.clients(Rewards[this.version!] as any)
     .select((name: string)=>name.includes('Rewards'))
+
+  showStatus = async () => {
+    if (this.chain) {
+      const {name, state} = this
+      const isRewardPool     = (x: string) => x.startsWith('SiennaRewards_')
+      const rewardsContracts = Object.keys(state).filter(isRewardPool)
+      if (rewardsContracts.length > 0) {
+        console.log(`\nRewards contracts in ${bold(name)}:`)
+        for (const name of rewardsContracts) {
+          console.log(`  ${colors.green('✓')}  ${name}`)
+        }
+      } else {
+        console.log(`\nNo rewards contracts.`)
+      }
+    } else {
+      console.log(`\nSelect a deployment to pick a reward contract.`)
+    }
+  }
 
 }
 
@@ -55,7 +74,7 @@ export interface RewardsInitParams {
 /** A reward pool. */
 export abstract class Rewards extends Scrt.Client {
 
-  log = new Scrt.Console(console, this.constructor.name)
+  log = new Scrt.ClientConsole(console, this.constructor.name)
 
   /** Rewards v1/v2 with the buggy algo. Counts time in blocks. */
   static 'v2':   typeof Rewards_v2;

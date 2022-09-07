@@ -78,7 +78,7 @@ export class AuthProvider extends Client {
   }
 
   async addMembers(groupId: number, members: ContractLink[]) {
-    return this.execute({ create_group: { name, members } });
+    return this.execute({ add_members: { groupId, members } });
   }
 
   async removeMembers(

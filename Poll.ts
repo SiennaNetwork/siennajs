@@ -6,6 +6,7 @@ import AuthProviderDeployment, { Auth, AuthClient } from './Auth';
 import TGEDeployment, { RPT_TGE } from './SiennaTGE';
 import { Rewards_v4_1 } from './SiennaRewards_v4'
 import { Snip20 } from '@fadroma/tokens'
+import * as YAML from 'js-yaml'
 
 export default class GovernanceDeployment extends VersionedDeployment<'v1'> {
   names = {
@@ -33,11 +34,42 @@ export default class GovernanceDeployment extends VersionedDeployment<'v1'> {
   /** The auth provider and oracle used by the deployment. */
   auth = new AuthProviderDeployment(this, 'v1', this.names.authGroup)
   /** The up-to-date Rewards v4 staking pool with governance support. */
-  pool = this.client(this.Clients.Pool).called(this.names.pool)
+  pool = this.client(this.Clients.Pool)
+    .called(this.names.pool)
     .expect('Governance staking pool not found.')
   /** The governance voting contract. */
-  polls = this.client(this.Clients.Polls).called(this.names.polls)
+  polls = this.client(this.Clients.Polls)
+    .called(this.names.polls)
     .expect('Governance polls contract not found.')
+
+  /** Print the status of the governance system. */
+  status = async () => {
+    const pool = await this.pool
+    this.log.info('Governance-enabled staking pool:')
+    this.log.info(' ', JSON.stringify(pool.asLink))
+    this.log.info('Staked token:')
+    const stakedToken      = await pool.getStakedToken()
+    const stakedTokenLabel = (await stakedToken?.fetchLabel()).label
+    const stakedTokenLink  = JSON.stringify(stakedToken?.asLink)
+    this.log.info(`  ${stakedTokenLabel} ${stakedTokenLink}`)
+    this.log.info('Epoch:')
+    this.log.info(' ', await pool.getEpoch())
+    this.log.info('Pool config:')
+    const config = YAML.dump(await pool.getConfig()).trim()
+    config.split('\n').forEach(line=>this.log.info(' ', line))
+
+    const polls = await this.polls
+    this.log.info('')
+    this.log.info('Governance contract:')
+    this.log.info(' ', JSON.stringify(polls.asLink))
+    this.log.info('Auth provider:')
+    this.log.info(' ', JSON.stringify(await polls.auth.getProvider()))
+    this.log.info('Poll config:')
+    this.log.info(' ', await polls.getPollConfig())
+    this.log.info('Active polls:')
+    this.log.info(' ', await polls.getPolls(+ new Date() / 1000, 0, 10, 0))
+    this.log.info('')
+  }
 }
 
 const getNow = () => Math.floor(+new Date() / 1000);

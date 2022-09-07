@@ -33,7 +33,9 @@
     "@fadroma/tokens": "^3.0.3",
     "@hackbg/formati": "^3.0.1",
     "@hackbg/konzola": "^2",
+    "@types/js-yaml": "^4.0.5",
     "crypto-js": "^4.1.1",
+    "js-yaml": "^4.1.0",
     "merkletreejs": "^0.2.32"
   },
   "devDependencies": {

@@ -24,6 +24,19 @@ export default class LaunchpadDeployment extends VersionedDeployment<'v1'> {
     .expect(`Launchpad ${this.version} not found.`)
   /** The known IDOs, matched by name */
   idos = this.clients(IDO).select((name: string) => name.startsWith(`${this.launchpadName}.IDO[`))
+
+  /** Print the status of the Launchpad/IDO system. */
+  status = async () => {
+    const launchpad = await this.launchpad
+    console.info('Auth provider:')
+    console.info(' ', JSON.stringify(await launchpad.auth.getProvider()))
+    console.info('Sale constraints:')
+    console.info(' ', await launchpad.saleConstraints())
+    console.info('Latest IDOs:')
+    for (const ido of (await launchpad.getIdos()).entries) {
+      console.info(' -', JSON.stringify(ido))
+    }
+  }
 }
 
 export class Launchpad extends ViewingKeyClient {
@@ -134,6 +147,7 @@ export class Launchpad extends ViewingKeyClient {
         var mask = Math.pow(2, bits_needed) - 1;
         // Create byte array and fill with N random numbers
         var byteArray = new Uint8Array(bytes_needed);
+        //@ts-ignore
         window.crypto.getRandomValues(byteArray);
 
         var p = (bytes_needed - 1) * 8;
