@@ -45,8 +45,9 @@ export default class SiennaTGE extends Scrt.Deployment {
   showMgmtStatus = async () => {
     try {
       const {address} = await this.mgmt
-      const status    = await this.getMgmtStatus()
+      const status = await this.getMgmtStatus()
       log.mgmtStatus(status)
+      return status
     } catch (e) {
       log.error((e as Error).message)
     }
@@ -58,7 +59,9 @@ export default class SiennaTGE extends Scrt.Deployment {
   showMgmtProgress = async (user: Scrt.Address) => {
     try {
       const {address} = await this.mgmt
-      log.mgmtProgress(user, address, await this.getMgmtProgress(user))
+      const progress = await this.getMgmtProgress(user)
+      log.mgmtProgress(user, address, progress)
+      return progress
     } catch (e) {
       log.error((e as Error).message)
     }
@@ -84,6 +87,7 @@ export default class SiennaTGE extends Scrt.Deployment {
         codeHash: await this.agent?.getHash(address)
       })
     ))))
+    return status
   }
 }
 
@@ -252,7 +256,7 @@ export class MGMT_TGE extends MGMT {
   })
 
   /** Query contract status */
-  status() {
+  status(): Promise<{ status: { launched: boolean } }> {
     return this.query({ status: {} })
   }
 

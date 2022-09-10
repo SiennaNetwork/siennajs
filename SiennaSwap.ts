@@ -41,7 +41,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   createExchange = async (name: string) => {
     log.creatingExchange(name)
     const factory = await this.factory
-    const { token_0, token_1 } = await this.tokens.getPair(name)
+    const { token_0, token_1 } = await this.tokens.pair(name)
     await factory.createExchange(token_0, token_1)
     log.createdExchange(name)
     return { name, token_0, token_1 }
@@ -52,7 +52,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     const result = this.agent!.bundle().wrap(async bundle => {
       const factory = (await this.factory).as(bundle)
       for (const name of names) {
-        const { token_0, token_1 } = await this.tokens.getPair(name)
+        const { token_0, token_1 } = await this.tokens.pair(name)
         await factory.createExchange(token_0, token_1)
       }
     })
