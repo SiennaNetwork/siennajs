@@ -2,93 +2,122 @@ import * as Scrt   from '@fadroma/scrt'
 import * as Tokens from '@fadroma/tokens'
 import * as ICC    from './ICC'
 import * as YAML   from 'js-yaml'
-
-import { bold } from '@hackbg/konzola'
+import { CustomConsole, bold, colors } from '@hackbg/konzola'
 
 /** Connect to an existing TGE. */
 export default class SiennaTGE extends Scrt.Deployment {
   names = { token: 'SIENNA', mgmt: 'SIENNA.MGMT', rpt: 'SIENNA.RPT' }
   /** The deployed SIENNA SNIP20 token contract. */
-  token = this.client(SiennaSnip20)
-    .called(this.names.token)
-    .expect('SIENNA not found.')
+  token = this.contract({ name: this.names.token, client: Tokens.Snip20 })
   /** Get the balance of an address in the vested token. */
-  getBalance = (addr: Scrt.Address, vk: Scrt.ViewingKey) =>
-    this.token.then(token=>token.getBalance(addr, vk))
+  getBalance = async (addr: Scrt.Address, vk: Scrt.ViewingKey) => {
+    this.log.info(`Querying balance of ${addr}...`)
+    return await (await this.token).getBalance(addr, vk)
+  }
+  /** Set the VK of the calling address in the vested token. */
+  setVK = async (vk: Scrt.ViewingKey) => {
+    this.log.info('Setting VK...')
+    return await (await this.token).vk.set(vk)
+  }
   /** Print the result of getBalance. */
   showBalance = async (addr: Scrt.Address, vk: Scrt.ViewingKey) => {
-    const token = await this.token
     try {
-      const balance = await this.getBalance(addr, vk)
-      this.log.info(`Balance of ${bold(addr)}: ${balance}`)
+      log.balance(addr, await this.getBalance(addr, vk))
     } catch (e) {
       if (this.isMainnet) {
-        this.log.error('Mainnet: no VK')
+        this.log.error('Mainnet: no VK?')
         return
       }
-      this.log.info('Setting vk...')
-      const VK = await token.vk.set(vk)
-      const balance = await token.getBalance(addr, vk)
-      this.log.info(`Balance of ${bold(addr)}: ${balance}`)
+      const VK = await this.setVK(vk)
+      log.balance(addr, await this.getBalance(addr, vk))
     }
   }
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt = this.client(MGMT_TGE).called(this.names.mgmt).expect('SIENNA MGMT not found.')
+  mgmt = this.contract({ name: this.names.mgmt, client: MGMT_TGE })
   /** Fetch the current schedule of MGMT. */
-  getMgmtSchedule = () => this.mgmt.then((mgmt: MGMT_TGE)=>mgmt.schedule())
+  getMgmtSchedule = () =>
+    this.mgmt.then(mgmt=>mgmt.schedule())
   /** Fetch the current schedule of MGMT. */
-  getMgmtStatus   = () => this.mgmt.then((mgmt: MGMT_TGE)=>mgmt.status())
+  getMgmtStatus = () =>
+    this.mgmt.then(mgmt=>mgmt.status())
+  /** Show the current status of the MGMT */
   showMgmtStatus = async () => {
     try {
       const {address} = await this.mgmt
       const status    = await this.getMgmtStatus()
-      this.log.debug(bold(`MGMT status`), `of`, bold(address!), status)
+      log.mgmtStatus(status)
     } catch (e) {
-      this.log.error((e as Error).message)
+      log.error((e as Error).message)
     }
   }
-  /** Fetch the current schedule of MGMT. */
-  getMgmtProgress = (addr: Scrt.Address) => this.mgmt.then((mgmt: MGMT_TGE) => mgmt.progress(addr))
+  /** Fetch the current progress of the vesting. */
+  getMgmtProgress = (addr: Scrt.Address) =>
+    this.mgmt.then(mgmt=>mgmt.progress(addr))
+  /** Show the current progress of the vesting. */
   showMgmtProgress = async (user: Scrt.Address) => {
     try {
       const {address} = await this.mgmt
-      const progress  = await this.getMgmtProgress(user)
-      this.log.info(bold(`MGMT progress`), 'of', bold(user), 'in', bold(address!))
-      for (const [k,v] of Object.entries(progress)) this.log.info(' ', bold(k), v)
+      log.mgmtProgress(user, address, await this.getMgmtProgress(user))
     } catch (e) {
-      this.log.error((e as Error).message)
+      log.error((e as Error).message)
     }
   }
   /** The deployed RPT contract, which claims tokens from MGMT
     * and distributes them to the reward pools.  */
-  rpt = this.client(RPT_TGE).called(this.names.rpt).expect('SIENNA RPT not found.')
+  rpt = this.contract({ name: this.names.rpt, client: RPT_TGE })
+  /** Update the RPT configuration. */
+  setRptConfig (config: RPTConfig) {
+    throw 'TODO'
+  }
   /** Fetch the current status of RPT. */
-  getRptStatus = () => this.rpt.then((rpt: RPT_TGE)=>rpt.status())
+  getRptStatus = () =>
+    this.rpt.then(rpt=>rpt.status())
+  /** Show the current status of the RPT. */
   showRptStatus = async () => {
-    const rpt = await this.rpt
-    const status = await rpt.status() as { config: any[] }
-    this.log.info(`RPT contract:`)
-    this.log.info(` `, JSON.stringify(rpt.asLink))
-    this.log.info(`RPT contract config:`)
-    YAML.dump(status).trim().split('\n').forEach(line=>this.log.info(' ', line))
-    this.log.info(`RPT contract recipients:`)
-    const instances = (await Promise.all(status.config.map(
+    const status = await (await this.rpt).status() as { config: any[] }
+    log.rptStatus(this.rpt, status)
+    log.rptRecipients((await Promise.all(status.config.map(
       async ([address])=>({
         address,
         label:    await this.agent?.getLabel(address),
         codeHash: await this.agent?.getHash(address)
       })
-    )))
-    const max = instances.reduce((x,y)=>Math.max(x, y.label?.length??0), 0)
-    instances.forEach(({ label, address, codeHash })=>{
-      this.log.info(` `, (label??'').padEnd(max), JSON.stringify({ address, codeHash }))
-    })
+    ))))
   }
-  /** Update the RPT configuration. */
-  setRptConfig (config: RPTConfig) { throw 'TODO' }
 }
 
+const log = new class SiennaVestingConsole extends CustomConsole {
+
+  balance (addr: any, balance: any) {
+    this.info(`Balance of ${bold(addr)}: ${balance}`)
+  }
+
+  mgmtStatus (status: any) {
+    this.debug(bold(`MGMT status`), status)
+  }
+
+  mgmtProgress (user: any, address: any, progress: any) {
+    this.info(bold(`MGMT progress`), 'of', bold(user), 'in', bold(address!))
+    for (const [k,v] of Object.entries(progress)) this.info(' ', bold(k), v)
+  }
+
+  rptStatus (rpt: any, status: any) {
+    this.info(`RPT contract:`)
+    this.info(` `, JSON.stringify(rpt.asLink))
+    this.info(`RPT contract config:`)
+    YAML.dump(status).trim().split('\n').forEach(line=>this.info(' ', line))
+  }
+
+  rptRecipients (instances: any) {
+    this.info(`RPT contract recipients:`)
+    const max = instances.reduce((x: any,y: any)=>Math.max(x, y.label?.length??0), 0)
+    instances.forEach(({ label, address, codeHash }: any)=>{
+      this.info(` `, (label??'').padEnd(max), JSON.stringify({ address, codeHash }))
+    })
+  }
+
+}(console, 'Sienna Vesting')
 
 /** Contract address/hash pair as used by MGMT */
 export type LinkTuple = [Scrt.Address, Scrt.CodeHash]

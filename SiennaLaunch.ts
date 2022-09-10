@@ -1,3 +1,4 @@
+import { CustomConsole, bold, colors } from '@hackbg/konzola'
 import { ViewingKeyClient, Address, ContractLink, Uint128 } from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens';
 import { VersionedDeployment } from './Core';
@@ -7,37 +8,53 @@ import sha256 from 'crypto-js/sha256';
 import MerkleTree from 'merkletreejs';
 
 export default class LaunchpadDeployment extends VersionedDeployment<'v1'> {
+  names = {
+    /** The name of the launchpad contract. */
+    launchpad: `Launchpad[${this.version}]`,
+    /** Name of group in auth provider that authorizes the rewards and launchpad contracts. */
+    authGroup: 'Rewards_and_Launchpad',
+    /** Matches IDOs */
+    ido: (name: string) => name.startsWith(`${this.names.launchpad}.IDO[`)
+  }
   /** The TGE containing the token and RPT used by the deployment. */
   tge = new TGEDeployment(this)
   /** The token staked in the launchpad pool. */
-  get token (): Promise<Snip20>  { return this.tge.token }
+  get token () { return this.tge.token }
   /** TODO: What does launchpad use RPT for? */
-  get rpt   (): Promise<RPT_TGE> { return this.tge.rpt   }
+  get rpt   () { return this.tge.rpt }
   /** The auth provider and oracle used by the deployment. */
-  auth = new AuthProviderDeployment(this, 'v1', 'Rewards_and_Launchpad',)
-  /** Name of group in auth provider that authorizes the rewards and launchpad contracts. */
-  authGroupName = 'Rewards_and_Launchpad'
-  /** The name of the launchpad contract. */
-  launchpadName = `Launchpad[${this.version}]`
+  auth = new AuthProviderDeployment(this, 'v1', this.names.authGroup)
   /** The launchpad contract. */
-  launchpad = this.client(Launchpad).called(this.launchpadName)
-    .expect(`Launchpad ${this.version} not found.`)
+  launchpad = this.contract({ name: this.names.launchpad, client: Launchpad })
   /** The known IDOs, matched by name */
-  idos = this.clients(IDO).select((name: string) => name.startsWith(`${this.launchpadName}.IDO[`))
-
+  idos = this.filter(this.names.ido).map(receipt=>this.contract({ ...receipt, client: IDO }))
   /** Print the status of the Launchpad/IDO system. */
   status = async () => {
     const launchpad = await this.launchpad
+    log.authProvider(await launchpad.auth.getProvider())
+    log.saleConstraints(await launchpad.saleConstraints())
+    log.latestIdos(await launchpad.getIdos())
     console.info('Auth provider:')
     console.info(' ', JSON.stringify(await launchpad.auth.getProvider()))
-    console.info('Sale constraints:')
-    console.info(' ', await launchpad.saleConstraints())
     console.info('Latest IDOs:')
-    for (const ido of (await launchpad.getIdos()).entries) {
+  }
+}
+
+const log = new class SiennaLaunchConsole extends CustomConsole {
+  authProvider (x: any) {
+    this.info('Auth provider:')
+    this.info(' ', JSON.stringify(x))
+  }
+  saleConstraints (x: any) {
+    console.info('Sale constraints:')
+    console.info(' ', x)
+  }
+  latestIdos (x: any) {
+    for (const ido of x.entries) {
       console.info(' -', JSON.stringify(ido))
     }
   }
-}
+}(console, 'Sienna Launch')
 
 export class Launchpad extends ViewingKeyClient {
 

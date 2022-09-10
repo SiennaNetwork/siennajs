@@ -20,13 +20,13 @@ export default class Sienna extends Deployment {
   tge = new SiennaTGE(this)
 
   /** The Sienna Swap AMM. */
-  amm: Record<AMMVersion, SiennaSwap> = {
+  amm = {
     v1: new SiennaSwap(this, 'v1'),
     v2: new SiennaSwap(this, 'v2')
   }
 
   /** The Sienna Rewards staking system. */
-  rewards: Record<RewardsAPIVersion, SiennaRewards> = {
+  rewards = {
     'v2':   new SiennaRewards(this, 'v2'),
     'v3':   new SiennaRewards(this, 'v3'),
     'v3.1': new SiennaRewards(this, 'v3.1'),

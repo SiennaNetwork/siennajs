@@ -9,7 +9,7 @@ import type { RewardsAPIVersion, StakingTokens } from './SiennaRewards'
 export default class SiennaPFR<R extends RewardsAPIVersion> extends Deployment {
 
   constructor (
-    options: Partial<Deployment>|Partial<SiennaPFR<R>> = {},
+    options: object = {},
     public rewardsVersion: R|undefined = (options as any)?.rewardsVersion
   ) {
     super(options)
@@ -30,14 +30,14 @@ export default class SiennaPFR<R extends RewardsAPIVersion> extends Deployment {
     rpts:    ({ name }: { name: string }) => `${name}.RPT[v2]`
   }
 
-  mgmts = this.clients(MGMT_PFR)
-    .called(this.vestings.map(this.names.mgmts))
+  mgmts = this.vestings.map(this.names.mgmts)
+    .map(name=>this.contract({ name, client: MGMT_PFR }))
 
-  rewardPools = this.clients(Rewards[this.rewardsVersion!] as any)
-    .called(this.vestings.map(this.names.rewards))
+  rewardPools = this.vestings.map(this.names.rewards)
+    .map(name=>this.contract({ name, client: Rewards[this.rewardsVersion!] as any }))
 
-  rpts = this.clients(RPT_PFR)
-    .called(this.vestings.map(this.names.rpts))
+  rpts = this.vestings.map(this.names.rpts)
+    .map(name=>this.contract({ name, client: RPT_PFR }))
 
 }
 

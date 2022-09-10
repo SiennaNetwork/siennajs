@@ -1,8 +1,27 @@
-import * as Fadroma from '@fadroma/scrt'
-import { linkStruct } from './ICC'
-import { AuthClient, AuthMethod } from './Auth'
-import { Rewards, now, RewardsInitParams } from './SiennaRewards'
-import { Rewards_v3_Account, Rewards_v3_1, Rewards_v3_Total } from './SiennaRewards_v3'
+import {
+  Address,
+  ContractLink,
+  Duration,
+  Message,
+  Uint128
+} from '@fadroma/scrt'
+import {
+  linkStruct
+} from './ICC'
+import {
+  AuthClient,
+  AuthMethod
+} from './Auth'
+import {
+  now,
+  Rewards,
+  RewardsInitParams
+} from './SiennaRewards'
+import {
+  Rewards_v3_Account,
+  Rewards_v3_1,
+  Rewards_v3_Total
+} from './SiennaRewards_v3'
 
 export class Rewards_v4_1 extends Rewards_v3_1 {
 
@@ -13,7 +32,7 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
     stakedToken,
     bonding   = 86400,
     unbonding = 86400
-  }: RewardsInitParams): Fadroma.Message {
+  }: RewardsInitParams): Message {
     if (!authProvider) {
       throw new Error('Pass authProvider')
     }
@@ -32,7 +51,7 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
     return new AuthClient(this.agent, this.address, this.codeHash)
   }
 
-  async setGovernanceLink<T>(link: Fadroma.ContractLink): Promise<T> {
+  async setGovernanceLink<T>(link: ContractLink): Promise<T> {
     return (await this.execute({ rewards: { configure: { governance: link } } })) as T;
   }
 
@@ -65,7 +84,7 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
     at      = now()
   ) {
     const result: {
-      rewards: { balance: { amount: Fadroma.Uint128 } }
+      rewards: { balance: { amount: Uint128 } }
     } = await this.query({
       rewards: { balance: { address, auth_method } },
     });
@@ -81,7 +100,7 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
     return result.rewards.all_balances;
   }
 
-  unbond(amount: Fadroma.Uint128) {
+  unbond(amount: Uint128) {
     return this.execute({
       rewards: { unbond: { amount } },
     });
@@ -89,14 +108,14 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
 }
 /** Reward pool configuration */
 export interface Rewards_v4_Config {
-  lp_token?: Fadroma.ContractLink;
-  reward_token?: Fadroma.ContractLink;
+  lp_token?: ContractLink;
+  reward_token?: ContractLink;
   reward_vk?: string;
   claim_throttle?: number;
-  timekeeper?: Fadroma.Address;
+  timekeeper?: Address;
   bonding_period?: number;
   unbonding_period?: number;
-  governance?: Fadroma.ContractLink;
+  governance?: ContractLink;
   rewards_toggle: RewardsToggle;
 }
 export interface RewardsToggle {
@@ -105,26 +124,26 @@ export interface RewardsToggle {
 }
 export interface Rewards_v4_Account extends Rewards_v3_Account {
   /** How much total liquidity does this user provide. */
-  balance: Fadroma.Uint128;
+  balance: Uint128;
   /** The part of the user's stake that is counted for rewards. */
-  staked:  Fadroma.Uint128;
+  staked:  Uint128;
   /** How many units of time (seconds) remain until the user can claim?
     * Replaces "bonding" in v3, bonding is now something else. */
-  claim_countdown: Fadroma.Duration;
+  claim_countdown: Duration;
 }
 export interface Rewards_v4_BondingBalances {
   /** How much is deposited by the user */
-  balance:   Fadroma.Uint128;
+  balance:   Uint128;
   /** How much the user has staked which is valid for rewards */
-  staked:    Fadroma.Uint128;
+  staked:    Uint128;
   /** How much is currently bonding for the user */
-  bonding:   Fadroma.Uint128;
+  bonding:   Uint128;
   /** How much is currently bonded for the user */
-  bonded:    Fadroma.Uint128;
+  bonded:    Uint128;
   /** How much is the process of being unbonded, total */
-  unbonding: Fadroma.Uint128;
+  unbonding: Uint128;
   /** How much has been unbonded and is ready for withdrawing  */
-  unbonded:  Fadroma.Uint128;
+  unbonded:  Uint128;
   /** All of the entries for bonding and unbonding */
   history:   Rewards_v4_HistoryEntry[];
 }
@@ -134,7 +153,7 @@ export interface Rewards_v4_HistoryEntry {
   // When it started
   timestamp: number;
   // How many tokens
-  amount: Fadroma.Uint128;
+  amount: Uint128;
 }
 enum RewardsPermissions {
   UserInfo = 'user_info',

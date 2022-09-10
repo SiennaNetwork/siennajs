@@ -3,6 +3,7 @@ import {
   Permit, Signer, ViewingKey, ViewingKeyClient
 } from '@fadroma/scrt'
 import { Snip20, TokenInfo } from '@fadroma/tokens'
+import { randomBase64 } from '@hackbg/formati'
 import { Pagination, PaginatedResponse } from './Pagination'
 import TGEDeployment from './SiennaTGE'
 import { VersionedDeployment } from './Core'
@@ -11,6 +12,7 @@ import type { AuthStrategy, AuthMethod } from './Auth'
 export type LendVersions = 'v1'
 
 export default class LendDeployment extends VersionedDeployment<LendVersions> {
+  /** The names of contract in a Lend group. */
   names = {
     interestModel: `Lend[${this.version}].InterestModel`,
     oracle:        `Lend[${this.version}].Oracle`,
@@ -18,27 +20,11 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
     overseer:      `Lend[${this.version}].Overseer`,
     rewardToken:   `Lend[${this.version}].Placeholder.SIENNA`,
   }
-
-  interestModel = this.client(LendInterestModel)
-    .called(this.names.interestModel)
-    .expect('Lend interest model not found.')
-
-  overseer = this.client(LendOverseer)
-    .called(this.names.overseer)
-    .expect('Lend overseer not found.')
-
-  markets:     LendMarket[] = [] // TODO populate
-
-  oracle?:     LendOracle // TODO populate
-
-  mockOracle?: MockOracle // TODO populate
-
-  /** The reward token for Lend. Defaults to SIENNA. */
-  get rewardToken (): Promise<Snip20> { return this.tge.token }
-
-  /** The TGE containing the token and RPT used by the deployment. */
-  tge = new TGEDeployment(this)
-
+  /** The lend interest model contract. */
+  interestModel = this.contract({ name: this.names.interestModel, client: LendInterestModel })
+  /** The lend overseer factory. */
+  overseer = this.contract({ name: this.names.overseer, client: LendOverseer })
+  /** Configure the overseer whitelist. */
   whitelist = async () => {
     const MARKET_INITIAL_EXCHANGE_RATE = "0.2";
     const MARKET_RESERVE_FACTOR = "1";
@@ -50,8 +36,8 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
     await overseer.execute({
       whitelist: {
         config: {
-          entropy:   Scrt.randomBase64(36),
-          prng_seed: Scrt.randomBase64(36),
+          entropy:   randomBase64(36),
+          prng_seed: randomBase64(36),
           interest_model_contract: interestModel.asLink,
           ltv_ratio:    MARKET_LTV_RATIO,
           token_symbol: MARKET_TOKEN_SYMBOL,
@@ -68,6 +54,16 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
       },
     })
   }
+  /** The known lend markets. */
+  markets:     LendMarket[] = [] // TODO populate
+  /** The lend oracle. */
+  oracle?:     LendOracle // TODO populate
+  /** The lend mock oracle. */
+  mockOracle?: MockOracle // TODO populate
+  /** The reward token for Lend. Defaults to SIENNA. */
+  get rewardToken () { return this.tge.token }
+  /** The TGE containing the token and RPT used by the deployment. */
+  tge = new TGEDeployment(this)
 }
 
 export type LendAuthStrategy = AuthStrategy

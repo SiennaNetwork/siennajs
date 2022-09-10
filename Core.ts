@@ -49,9 +49,9 @@ export function create_entropy (bytes = 32): string {
 }
 
 export class Deployment extends Scrt.Deployment {
-  tokens = new TokenRegistry(this)
+  tokens: TokenRegistry = new TokenRegistry(this)
 }
 
 export class VersionedDeployment<V> extends Scrt.VersionedDeployment<V> {
-  tokens = new TokenRegistry(this)
+  tokens: TokenRegistry = new TokenRegistry(this)
 }

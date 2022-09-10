@@ -3,50 +3,19 @@ import { Snip20 } from '@fadroma/tokens'
 import { randomBase64, SecureRandom } from '@hackbg/formati';
 import { colors, bold } from '@hackbg/fadroma';
 import { linkStruct } from './ICC';
+import { VersionedDeployment } from './Core';
 import { AuthClient, AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
-import { RPT_TGE } from './SiennaTGE';
+import SiennaTGE from './SiennaTGE';
 import type { AMMVersion } from './SiennaSwap';
 import type { Rewards_v2 } from './SiennaRewards_v2'
 import type { Rewards_v3, Rewards_v3_1 } from './SiennaRewards_v3'
 import type { Rewards_v4_1 } from './SiennaRewards_v4'
 import type { Emigration, Immigration } from './Migration'
+import { CustomConsole } from '@hackbg/konzola'
 
 /** Maybe change this to 'v2'|'v3'|'v4' and simplify the classes below? */
 export type RewardsAPIVersion = 'v2' | 'v3' | 'v3.1' | 'v4.1';
-
-export default class RewardsDeployment extends Scrt.VersionedDeployment<RewardsAPIVersion> {
-
-  rpt = this.client(RPT_TGE)
-    .called('SIENNA.RPT')
-    .expect('Deploy RPT first')
-
-  rewardToken = this.client(Snip20)
-    .called('SIENNA')
-    .expect('Deploy SIENNA first.')
-
-  rewards = this.clients(Rewards[this.version!] as any)
-    .select((name: string)=>name.includes('Rewards'))
-
-  showStatus = async () => {
-    if (this.chain) {
-      const {name, state} = this
-      const isRewardPool     = (x: string) => x.startsWith('SiennaRewards_')
-      const rewardsContracts = Object.keys(state).filter(isRewardPool)
-      if (rewardsContracts.length > 0) {
-        console.log(`\nRewards contracts in ${bold(name)}:`)
-        for (const name of rewardsContracts) {
-          console.log(`  ${colors.green('✓')}  ${name}`)
-        }
-      } else {
-        console.log(`\nNo rewards contracts.`)
-      }
-    } else {
-      console.log(`\nSelect a deployment to pick a reward contract.`)
-    }
-  }
-
-}
 
 /** Which version of AMM corresponds to which version of rewards. */
 export const RewardsToAMMVersion: Record<RewardsAPIVersion, AMMVersion> = {
@@ -55,6 +24,19 @@ export const RewardsToAMMVersion: Record<RewardsAPIVersion, AMMVersion> = {
   'v3.1': 'v2',
   'v4.1': 'v2',
 };
+
+export default class SiennaRewards extends VersionedDeployment<RewardsAPIVersion> {
+
+  tge = new SiennaTGE(this)
+
+  rewardPools = Promise.all(
+    this.filter((name: string)=>name.includes('Rewards'))
+        .map((receipt: object)=>this.contract(receipt))
+  )
+
+  showStatus = async () => log.rewardsContracts(this.name, this.state)
+
+}
 
 export const now = () => Math.floor(+new Date() / 1000);
 
@@ -123,3 +105,21 @@ export interface StakingTokens {
   stakedToken: Snip20
   rewardToken: Snip20
 }
+
+const log = new class SiennaRewardsConsole extends CustomConsole {
+
+  rewardsContracts = (name: string, state: Record<string, any>) => {
+    const isRewardPool     = (x: string) => x.startsWith('SiennaRewards_')
+    const rewardsContracts = Object.keys(state).filter(isRewardPool)
+    if (rewardsContracts.length > 0) {
+      this.info(`\nRewards contracts in ${bold(name)}:`)
+      for (const name of rewardsContracts) {
+        this.info(`  ${colors.green('✓')}  ${name}`)
+      }
+    } else {
+      this.info(`\nNo rewards contracts.`)
+    }
+    return rewardsContracts
+  }
+
+}(console, 'Sienna Rewards')

@@ -11,8 +11,8 @@ export const LatestAuthProviderVersion: AuthProviderVersion = 'v1'
 
 export default class SiennaAuth extends VersionedDeployment<AuthProviderVersion> {
   constructor (
-    options: Partial<VersionedDeployment<AuthProviderVersion>>|Partial<SiennaAuth> = {},
-    public readonly version: AuthProviderVersion = options?.version ?? LatestAuthProviderVersion,
+    options: object = {},
+    public readonly version: AuthProviderVersion = (options as any)?.version ?? LatestAuthProviderVersion,
     /** Appended to the provider and oracle names. */
     public readonly extraName: string|false      = (options as any)?.extraName ?? false,
   ) {
@@ -28,15 +28,10 @@ export default class SiennaAuth extends VersionedDeployment<AuthProviderVersion>
     oracle:   `Auth[${this.version}].Oracle`
   }
   /** The auth provider contract. */
-  provider = this.client(AuthProvider)
-    .called(this.names.provider)
-    .expect(`Auth provider ${this.names.provider} not found.`)
+  provider = this.contract({ name: this.names.provider, client: AuthProvider })
   /** The auth provider's RNG oracle. */
-  oracle = this.client()
-    .called(this.names.oracle)
-    .expect(`Oracle ${this.names.oracle} not found.`)
+  oracle = this.contract({ name: this.names.oracle })
 }
-
 
 export type AuthStrategy =
   | { type: "permit"; signer: Signer }

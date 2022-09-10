@@ -1,7 +1,8 @@
 import {
-  Client, Address, Moment, Uint128, Fee, Decimal, ContractLink,
+  Contract, Client, Address, Moment, Uint128, Fee, Decimal, ContractLink,
   VersionedDeployment
 } from '@fadroma/scrt';
+import { CustomConsole, bold, colors } from '@hackbg/konzola'
 import AuthProviderDeployment, { Auth, AuthClient } from './Auth';
 import TGEDeployment, { RPT_TGE } from './SiennaTGE';
 import { Rewards_v4_1 } from './SiennaRewards_v4'
@@ -22,55 +23,74 @@ export default class GovernanceDeployment extends VersionedDeployment<'v1'> {
   Clients = {
     /** The client class used to talk to the governance staking pool. */
     Pool:  Rewards_v4_1,
+    /** The client class used to talk to the governance voting polls. */
     Polls: Polls
   }
   /** The TGE containing the token and RPT used by the deployment. */
   tge = new TGEDeployment(this)
   /** The token staked in the governance pool. */
-  get token (): Promise<Snip20>  { return this.tge.token }
+  get token () { return this.tge.token }
   /** The RPT contract which needs to be reconfigured when we upgrade
     * the staking pool, so that the new pool gets rewards budget. */
-  get rpt (): Promise<RPT_TGE> { return this.tge.rpt }
+  get rpt () { return this.tge.rpt }
   /** The auth provider and oracle used by the deployment. */
   auth = new AuthProviderDeployment(this, 'v1', this.names.authGroup)
   /** The up-to-date Rewards v4 staking pool with governance support. */
-  pool = this.client(this.Clients.Pool)
-    .called(this.names.pool)
-    .expect('Governance staking pool not found.')
+  pool = this.contract({ name: this.names.pool, client: this.Clients.Pool })
   /** The governance voting contract. */
-  polls = this.client(this.Clients.Polls)
-    .called(this.names.polls)
-    .expect('Governance polls contract not found.')
-
+  polls = this.contract({ name: this.names.polls, client: this.Clients.Polls })
   /** Print the status of the governance system. */
   status = async () => {
-    const pool = await this.pool
-    this.log.info('Governance-enabled staking pool:')
-    this.log.info(' ', JSON.stringify(pool.asLink))
-    this.log.info('Staked token:')
-    const stakedToken      = await pool.getStakedToken()
-    const stakedTokenLabel = (await stakedToken?.fetchLabel()).label
-    const stakedTokenLink  = JSON.stringify(stakedToken?.asLink)
-    this.log.info(`  ${stakedTokenLabel} ${stakedTokenLink}`)
-    this.log.info('Epoch:')
-    this.log.info(' ', await pool.getEpoch())
-    this.log.info('Pool config:')
-    const config = YAML.dump(await pool.getConfig()).trim()
-    config.split('\n').forEach(line=>this.log.info(' ', line))
-
-    const polls = await this.polls
-    this.log.info('')
-    this.log.info('Governance contract:')
-    this.log.info(' ', JSON.stringify(polls.asLink))
-    this.log.info('Auth provider:')
-    this.log.info(' ', JSON.stringify(await polls.auth.getProvider()))
-    this.log.info('Poll config:')
-    this.log.info(' ', await polls.getPollConfig())
-    this.log.info('Active polls:')
-    this.log.info(' ', await polls.getPolls(+ new Date() / 1000, 0, 10, 0))
-    this.log.info('')
+    const [pool, polls] = await Promise.all([this.pool, this.polls])
+    log.pool(pool)
+    const stakedToken = await pool.getStakedToken()
+    const label = '(todo)'
+    log.stakedToken(stakedToken, label)
+    log.epoch(await pool.getEpoch())
+    log.config(await pool.getConfig())
+    log.pollsContract(polls)
+    log.pollsAuthProvider(await polls.auth.getProvider())
+    log.pollsConfig(await polls.getPollConfig())
+    log.activePolls(await polls.getPolls(+ new Date() / 1000, 0, 10, 0))
   }
 }
+
+const log = new class SiennaGovernanceConsole extends CustomConsole {
+  pool (pool: any) {
+    this.info('Governance-enabled staking pool:')
+    this.info(' ', JSON.stringify(pool.asLink))
+  }
+  async stakedToken (stakedToken: any, label: any) {
+    const link = JSON.stringify(stakedToken?.asLink)
+    this.info('Staked token:')
+    this.info(`  ${label} ${link}`)
+  }
+  epoch (epoch: any) {
+    this.info('Epoch:')
+    this.info(' ', epoch)
+  }
+  config (config: any) {
+    this.info('Pool config:')
+    YAML.dump(config).trim().split('\n').forEach(line=>this.info(' ', line))
+  }
+  pollsContract (contract: any) {
+    this.info('Governance contract:')
+    this.info(' ', JSON.stringify(contract.asLink))
+  }
+  pollsAuthProvider (provider: any) {
+    this.info('Auth provider:')
+    this.info(' ', JSON.stringify(provider))
+  }
+  pollsConfig (config: any) {
+    this.info('Poll config:')
+    this.info(' ', config)
+  }
+  activePolls (polls: any) {
+    this.info('Active polls:')
+    this.info(' ', polls)
+    this.info('')
+  }
+}(console, 'Sienna Launch')
 
 const getNow = () => Math.floor(+new Date() / 1000);
 
