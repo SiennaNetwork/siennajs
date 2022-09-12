@@ -1,9 +1,25 @@
-import * as Scrt from '@fadroma/scrt';
-import { Snip20 } from '@fadroma/tokens'
-import { randomBase64, SecureRandom } from '@hackbg/formati';
-import { colors, bold } from '@hackbg/fadroma';
-import { linkStruct } from './ICC';
-import { VersionedDeployment } from './Core';
+import {
+  Client,
+  ClientConsole,
+  CustomConsole,
+  VersionedDeployment,
+  ViewingKeyClient,
+  bold,
+  colors,
+  linkStruct,
+  randomBase64,
+} from './Core';
+import type {
+  Address,
+  ContractLink,
+  Emigration,
+  Immigration,
+  IntoLink,
+  Message,
+  NewClient,
+  Snip20,
+  Uint128,
+} from './Core';
 import { AuthClient, AuthMethod } from './Auth';
 import { LPToken } from './SiennaSwap';
 import SiennaTGE from './SiennaTGE';
@@ -11,8 +27,6 @@ import type { AMMVersion } from './SiennaSwap';
 import type { Rewards_v2 } from './SiennaRewards_v2'
 import type { Rewards_v3, Rewards_v3_1 } from './SiennaRewards_v3'
 import type { Rewards_v4_1 } from './SiennaRewards_v4'
-import type { Emigration, Immigration } from './Migration'
-import { CustomConsole } from '@hackbg/konzola'
 
 /** Maybe change this to 'v2'|'v3'|'v4' and simplify the classes below? */
 export type RewardsAPIVersion = 'v2' | 'v3' | 'v3.1' | 'v4.1';
@@ -38,15 +52,13 @@ export default class SiennaRewards extends VersionedDeployment<RewardsAPIVersion
 
 }
 
-export const now = () => Math.floor(+new Date() / 1000);
-
 /** Universal init parameters for all versions of rewards. */
 export interface RewardsInitParams {
-  rewardToken:   Scrt.IntoLink;
-  stakedToken:   Scrt.IntoLink;
-  admin?:        Scrt.Address;
-  timekeeper?:   Scrt.Address;
-  authProvider?: Scrt.IntoLink;
+  rewardToken:   IntoLink;
+  stakedToken:   IntoLink;
+  admin?:        Address;
+  timekeeper?:   Address;
+  authProvider?: IntoLink;
   threshold?:    number;
   cooldown?:     number;
   bonding?:      number;
@@ -54,9 +66,9 @@ export interface RewardsInitParams {
 }
 
 /** A reward pool. */
-export abstract class Rewards extends Scrt.Client {
+export abstract class Rewards extends Client {
 
-  log = new Scrt.ClientConsole(console, this.constructor.name)
+  log = new ClientConsole(console, this.constructor.name)
 
   /** Rewards v1/v2 with the buggy algo. Counts time in blocks. */
   static 'v2':   typeof Rewards_v2;
@@ -70,15 +82,15 @@ export abstract class Rewards extends Scrt.Client {
   /** Get a LPToken interface to the staked token. */
   abstract getStakedToken(): Promise<LPToken | null>;
   /** Deposit some amount of staked token. */
-  abstract deposit(amount: Scrt.Uint128): Promise<unknown>;
+  abstract deposit(amount: Uint128): Promise<unknown>;
   /** Try to withdraw some amount of staked token. */
-  abstract withdraw(amount: Scrt.Uint128): Promise<unknown>;
+  abstract withdraw(amount: Uint128): Promise<unknown>;
   /** Try to claim a reward. */
   abstract claim(): Promise<unknown>;
 
-  get vk (): Scrt.ViewingKeyClient {
+  get vk (): ViewingKeyClient {
     const { address, codeHash } = this
-    return new Scrt.ViewingKeyClient(this.agent, address, codeHash)
+    return new ViewingKeyClient(this.agent, address, codeHash)
   }
   get emigration (): Emigration {
     throw new Error('Migration is only available in Rewards >=3');
@@ -90,15 +102,15 @@ export abstract class Rewards extends Scrt.Client {
     throw new Error('Auth provider is only available in Rewards >=4.1');
   }
   /** Point this pool to the governance contract that will be using it for voting power. */
-  async setGovernanceLink<T>(link: Scrt.ContractLink): Promise<T> {
+  async setGovernanceLink<T>(link: ContractLink): Promise<T> {
     throw new Error('Governance integration is only available in Rewards >=4.1');
   }
 }
 
 /** Constructs a reward pool of some version. */
-export interface RewardsCtor extends Scrt.NewClient<Rewards> {
+export interface RewardsCtor extends NewClient<Rewards> {
   /** Generate the correct format of Rewards init message for the given version */
-  init(params: RewardsInitParams): Scrt.Message;
+  init(params: RewardsInitParams): Message;
 }
 
 export interface StakingTokens {

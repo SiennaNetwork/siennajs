@@ -1,13 +1,24 @@
 import {
-  Client, Fee, Address, Decimal256, Uint128, Uint256, ContractLink,
-  Permit, Signer, ViewingKey, ViewingKeyClient
-} from '@fadroma/scrt'
-import { Snip20, TokenInfo } from '@fadroma/tokens'
-import { randomBase64 } from '@hackbg/formati'
-import { Pagination, PaginatedResponse } from './Pagination'
-import TGEDeployment from './SiennaTGE'
-import { VersionedDeployment } from './Core'
+  Address,
+  Client,
+  ContractLink,
+  Decimal256,
+  Fee,
+  PaginatedResponse,
+  Pagination,
+  Permit,
+  Signer,
+  Snip20,
+  TokenInfo,
+  Uint128,
+  Uint256,
+  VersionedDeployment,
+  ViewingKey,
+  ViewingKeyClient,
+  randomBase64,
+} from './Core'
 import type { AuthStrategy, AuthMethod } from './Auth'
+import TGEDeployment from './SiennaTGE'
 
 export type LendVersions = 'v1'
 

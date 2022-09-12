@@ -3,17 +3,15 @@ import {
   ContractLink,
   Duration,
   Message,
-  Uint128
-} from '@fadroma/scrt'
-import {
-  linkStruct
-} from './ICC'
+  Uint128,
+  linkStruct,
+  now,
+} from './Core'
 import {
   AuthClient,
   AuthMethod
 } from './Auth'
 import {
-  now,
   Rewards,
   RewardsInitParams
 } from './SiennaRewards'

@@ -1,26 +1,37 @@
-import * as Scrt   from '@fadroma/scrt'
-import * as Tokens from '@fadroma/tokens'
-import * as ICC    from './ICC'
-import * as YAML   from 'js-yaml'
-import { CustomConsole, bold, colors } from '@hackbg/konzola'
+import {
+  Address,
+  Client,
+  CodeHash,
+  CustomConsole,
+  Deployment,
+  Duration,
+  IntoLink,
+  Snip20,
+  Uint128,
+  ViewingKey,
+  YAML,
+  bold,
+  validatedAddressOf,
+  validatedCodeHashOf
+} from './Core'
 
 /** Connect to an existing TGE. */
-export default class SiennaTGE extends Scrt.Deployment {
+export default class SiennaTGE extends Deployment {
   names = { token: 'SIENNA', mgmt: 'SIENNA.MGMT', rpt: 'SIENNA.RPT' }
   /** The deployed SIENNA SNIP20 token contract. */
-  token = this.contract({ name: this.names.token, client: Tokens.Snip20 }).get()
+  token = this.contract({ name: this.names.token, client: Snip20 }).get()
   /** Get the balance of an address in the vested token. */
-  getBalance = async (addr: Scrt.Address, vk: Scrt.ViewingKey) => {
+  getBalance = async (addr: Address, vk: ViewingKey) => {
     this.log.info(`Querying balance of ${addr}...`)
     return await (await this.token).getBalance(addr, vk)
   }
   /** Set the VK of the calling address in the vested token. */
-  setVK = async (vk: Scrt.ViewingKey) => {
+  setVK = async (vk: ViewingKey) => {
     this.log.info('Setting VK...')
     return await (await this.token).vk.set(vk)
   }
   /** Print the result of getBalance. */
-  showBalance = async (addr: Scrt.Address, vk: Scrt.ViewingKey) => {
+  showBalance = async (addr: Address, vk: ViewingKey) => {
     try {
       log.balance(addr, await this.getBalance(addr, vk))
     } catch (e) {
@@ -53,10 +64,10 @@ export default class SiennaTGE extends Scrt.Deployment {
     }
   }
   /** Fetch the current progress of the vesting. */
-  getMgmtProgress = (addr: Scrt.Address) =>
+  getMgmtProgress = (addr: Address) =>
     this.mgmt.then(mgmt=>mgmt.progress(addr))
   /** Show the current progress of the vesting. */
-  showMgmtProgress = async (user: Scrt.Address) => {
+  showMgmtProgress = async (user: Address) => {
     try {
       const {address} = await this.mgmt
       const progress = await this.getMgmtProgress(user)
@@ -124,18 +135,18 @@ const log = new class SiennaVestingConsole extends CustomConsole {
 }(console, 'Sienna Vesting')
 
 /** Contract address/hash pair as used by MGMT */
-export type LinkTuple = [Scrt.Address, Scrt.CodeHash]
+export type LinkTuple = [Address, CodeHash]
 
 /** Convert Fadroma.Instance to address/hash pair as used by MGMT */
-export const linkTuple = (instance: ICC.IntoLink) => (
-  [ ICC.validatedAddressOf(instance), ICC.validatedCodeHashOf(instance) ]
+export const linkTuple = (instance: IntoLink) => (
+  [ validatedAddressOf(instance), validatedCodeHashOf(instance) ]
 )
 
 /** The SIENNA SNIP20 token. */
-export class SiennaSnip20 extends Tokens.Snip20 {}
+export class SiennaSnip20 extends Snip20 {}
 
 /** A MGMT vesting contract of either version. */
-export abstract class MGMT extends Scrt.Client {
+export abstract class MGMT extends Client {
 
   static MINTING_POOL = "MintingPool"
 
@@ -143,7 +154,7 @@ export abstract class MGMT extends Scrt.Client {
 
   static RPT = "RPT"
 
-  static emptySchedule = (address: Scrt.Address) => ({
+  static emptySchedule = (address: Address) => ({
     total: "0",
     pools: [ { 
       name: MGMT.MINTING_POOL, total: "0", partial: false, accounts: [
@@ -178,13 +189,13 @@ export abstract class MGMT extends Scrt.Client {
     return this.execute({ claim: {} })
   }
   /** take over a SNIP20 token */
-  async acquire (token: Tokens.Snip20) {
+  async acquire (token: Snip20) {
     const tx1 = await token.setMinters([this.address!])
     const tx2 = await token.changeAdmin(this.address!)
     return [tx1, tx2]
   }
   /** Check how much is claimable by someone at a certain time */
-  async progress (address: Scrt.Address, time = +new Date()): Promise<VestingProgress> {
+  async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
     time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
     const { progress } = await this.query({ progress: { address, time } })
     return progress
@@ -193,27 +204,27 @@ export abstract class MGMT extends Scrt.Client {
 
 /** A MGMT schedule. */
 export interface VestingSchedule {
-  total: Scrt.Uint128
+  total: Uint128
   pools: Array<VestingPool>
 }
 
 export interface VestingPool {
   name:     string
-  total:    Scrt.Uint128
+  total:    Uint128
   partial:  boolean
   accounts: Array<VestingAccount>
 }
 
 export interface VestingAccount {
   name:         string
-  amount:       Scrt.Uint128
-  address:      Scrt.Address
-  start_at:     Scrt.Duration
-  interval:     Scrt.Duration
-  duration:     Scrt.Duration
-  cliff:        Scrt.Uint128
-  portion_size: Scrt.Uint128
-  remainder:    Scrt.Uint128
+  amount:       Uint128
+  address:      Address
+  start_at:     Duration
+  interval:     Duration
+  duration:     Duration
+  cliff:        Uint128
+  portion_size: Uint128
+  remainder:    Uint128
 }
 
 export interface VestingProgress {
@@ -225,7 +236,7 @@ export interface VestingProgress {
 }
 
 /** A RPT (redistribution) contract of each version. */
-export abstract class RPT extends Scrt.Client {
+export abstract class RPT extends Client {
   /** Claim from mgmt and distribute to recipients. Anyone can call this method as:
     * - the recipients can only be changed by the admin
     * - the amount is determined by MGMT */
@@ -246,8 +257,8 @@ export class MGMT_TGE extends MGMT {
 
   /** Generate an init message for Origina MGMT */
   static init = (
-    admin:    Scrt.Address,
-    token:    Scrt.IntoLink,
+    admin:    Address,
+    token:    IntoLink,
     schedule: VestingSchedule
   ) => ({
     admin,
@@ -276,11 +287,11 @@ export class RPT_TGE extends RPT {
 
   /** Generate an init message for original RPT */
   static init = (
-    admin:    Scrt.Address,
+    admin:    Address,
     portion:  RPTAmount,
     config:   RPTConfig,
-    token:    Scrt.IntoLink,
-    mgmt:     Scrt.IntoLink
+    token:    IntoLink,
+    mgmt:     IntoLink
   ) => ({
     admin,
     portion,
@@ -301,7 +312,7 @@ export class RPT_TGE extends RPT {
   }
 
   /** change the admin */
-  setOwner (new_admin: Scrt.Address) {
+  setOwner (new_admin: Address) {
     return this.execute({ set_owner: { new_admin } })
   }
 

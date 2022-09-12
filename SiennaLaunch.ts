@@ -1,13 +1,20 @@
-import { CustomConsole, bold, colors } from '@hackbg/konzola'
-import { ViewingKeyClient, Address, ContractLink, Uint128 } from '@fadroma/scrt';
-import { Snip20 } from '@fadroma/tokens';
-import { VersionedDeployment } from './Core';
+import {
+  ViewingKeyClient,
+  Address,
+  ContractLink,
+  Uint128,
+  Snip20,
+  Deployment,
+  CustomConsole,
+  bold,
+} from './Core';
 import Auth, { AuthClient, AuthMethod } from './Auth';
 import TGE, { RPT_TGE } from './SiennaTGE';
 import sha256 from 'crypto-js/sha256';
 import MerkleTree from 'merkletreejs';
 
-export default class LaunchpadDeployment extends VersionedDeployment<'v1'> {
+export default class LaunchpadDeployment extends Deployment {
+  version = 'v1'
   names = {
     /** The name of the launchpad contract. */
     launchpad: `Launchpad[${this.version}]`,

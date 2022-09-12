@@ -1,7 +1,34 @@
-import * as Scrt   from '@fadroma/scrt'
-import * as Tokens from '@fadroma/tokens'
-import { CustomConsole, bold, colors } from '@hackbg/konzola'
-import { create_entropy, VersionedDeployment } from './Core'
+import {
+  Client,
+  CustomConsole,
+  CustomToken,
+  Fee,
+  Snip20,
+  TokenPair,
+  TokenPairAmount,
+  VersionedDeployment,
+  bold,
+  colors,
+  create_entropy,
+  getTokenId,
+  getTokenKind,
+  isCustomToken,
+  isNativeToken
+} from './Core'
+import type {
+  Address,
+  Agent, 
+  CodeHash,
+  ContractInfo,
+  ContractLink,
+  Decimal,
+  ExecOpts,
+  NewClient,
+  Token,
+  TokenAmount,
+  TokenInfo,
+  Uint128,
+} from './Core'
 
 export type AMMVersion = "v1"|"v2"
 
@@ -26,8 +53,8 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
       if (!exchange) continue
       log.exchangeHeader(exchange, column1)
       log.exchangeDetail(exchange, column1, ...await Promise.all([
-        (exchange.token_0 instanceof Tokens.Snip20) ? exchange.token_0?.getTokenInfo() : {},
-        (exchange.token_1 instanceof Tokens.Snip20) ? exchange.token_1?.getTokenInfo() : {},
+        (exchange.token_0 instanceof Snip20) ? exchange.token_0?.getTokenInfo() : {},
+        (exchange.token_1 instanceof Snip20) ? exchange.token_1?.getTokenInfo() : {},
         exchange.lpToken?.getTokenInfo(),
       ]))
     }
@@ -69,10 +96,10 @@ export type AMMFactoryStatus = "Operational" | "Paused" | "Migrating"
 
 export interface IContractTemplate {
   id:        number,
-  code_hash: Scrt.CodeHash,
+  code_hash: CodeHash,
 }
 
-export abstract class AMMFactory extends Scrt.Client {
+export abstract class AMMFactory extends Client {
 
   abstract readonly version: AMMVersion
 
@@ -81,13 +108,13 @@ export abstract class AMMFactory extends Scrt.Client {
   static "v2": typeof AMMFactory_v2
 
   /** Pause or terminate the factory. */
-  async setStatus (level: AMMFactoryStatus, new_address?: Scrt.Address, reason = "") {
+  async setStatus (level: AMMFactoryStatus, new_address?: Address, reason = "") {
     const set_status = { level, new_address, reason }
     return await this.execute({ set_status })
   }
 
   /** Create a liquidity pool, i.e. an instance of the AMMExchange contract */
-  async createExchange (token_0: Tokens.Token, token_1: Tokens.Token) {
+  async createExchange (token_0: Token, token_1: Token) {
     const pair    = { token_0, token_1 }
     const entropy = create_entropy()
     const message = { create_exchange: { pair, entropy } }
@@ -106,9 +133,9 @@ export abstract class AMMFactory extends Scrt.Client {
       return []
     }
     // conform pairs
-    const tokenPairs: [Tokens.Token, Tokens.Token][] = pairs.map(({ pair: { token_0, token_1 } })=>{
-      if (token_0 instanceof Tokens.Snip20) token_0 = token_0.asDescriptor
-      if (token_1 instanceof Tokens.Snip20) token_1 = token_1.asDescriptor
+    const tokenPairs: [Token, Token][] = pairs.map(({ pair: { token_0, token_1 } })=>{
+      if (token_0 instanceof Snip20) token_0 = token_0.asDescriptor
+      if (token_1 instanceof Snip20) token_1 = token_1.asDescriptor
       return [token_0, token_1]
     })
     const newPairs: AMMCreateExchangesResults = []
@@ -124,19 +151,19 @@ export abstract class AMMFactory extends Scrt.Client {
   /** Get an AMMExchange instance corresponding to
     * the exchange contract between two tokens. */
   async getExchange (
-    token_0: Tokens.Token,
-    token_1: Tokens.Token
+    token_0: Token,
+    token_1: Token
   ): Promise<AMMExchange> {
     const msg = { get_exchange_address: { pair: { token_0, token_1 } } }
     const result = await this.query(msg)
-    const {get_exchange_address:{address}} = <{get_exchange_address:{address: Scrt.Address}}>result
+    const {get_exchange_address:{address}} = <{get_exchange_address:{address: Address}}>result
     return await AMMExchange.fromAddressAndTokens(this.agent!, address, token_0, token_1)
   }
 
   /** Get multiple AMMExchange instances corresponding to
     * the passed token pairs. */
   async getExchanges (
-    pairs: [Tokens.Token, Tokens.Token][]
+    pairs: [Token, Token][]
   ): Promise<AMMExchange[]> {
     return await Promise.all(pairs.map(([token_0, token_1])=>this.getExchange(token_0, token_1)))
   }
@@ -198,21 +225,21 @@ AMMFactory.v1 = AMMFactory_v1
 AMMFactory.v2 = AMMFactory_v2
 
 export interface AMMFactoryInventory {
-  pair_contract:       Scrt.ContractInfo
-  lp_token_contract:   Scrt.ContractInfo
+  pair_contract:       ContractInfo
+  lp_token_contract:   ContractInfo
   // unused, required by v1:
-  snip20_contract?:    Scrt.ContractInfo
-  ido_contract?:       Scrt.ContractInfo
-  launchpad_contract?: Scrt.ContractInfo
+  snip20_contract?:    ContractInfo
+  ido_contract?:       ContractInfo
+  launchpad_contract?: ContractInfo
   // maybe needed?
-  router_contract?:    Scrt.ContractInfo
+  router_contract?:    ContractInfo
 }
 
 export interface AMMCreateExchangeRequest {
   name?: string,
   pair: {
-    token_0: Tokens.Snip20|Tokens.Token,
-    token_1: Tokens.Snip20|Tokens.Token
+    token_0: Snip20|Token,
+    token_1: Snip20|Token
   }
 }
 
@@ -222,8 +249,8 @@ export interface AMMCreateExchangesRequest {
 
 export interface AMMCreateExchangesResult  {
   name?:   string
-  token_0: Tokens.Snip20|Tokens.Token
-  token_1: Tokens.Snip20|Tokens.Token
+  token_0: Snip20|Token
+  token_1: Snip20|Token
 }
 
 export type AMMCreateExchangesResults = Array<AMMCreateExchangesResult>
@@ -231,8 +258,8 @@ export type AMMCreateExchangesResults = Array<AMMCreateExchangesResult>
 export interface AMMFactoryExchangeInfo {
   address: string,
   pair: {
-    token_0: Tokens.Token,
-    token_1: Tokens.Token
+    token_0: Token,
+    token_1: Token
   }
 }
 
@@ -240,11 +267,11 @@ type TokenPairStr = string
 
 export type AMMExchanges = Record<TokenPairStr, AMMExchange>
 
-export class AMMExchange extends Scrt.Client {
+export class AMMExchange extends Client {
 
   static fromAddress = async function getExchangeByAddress (
-    agent:   Scrt.Agent,
-    address: Scrt.Address
+    agent:   Agent,
+    address: Address
   ): Promise<AMMExchange> {
     const Self: NewAMMExchange = AMMExchange as unknown as NewAMMExchange
     const self: AMMExchange    = agent.getClient(Self, address) as unknown as AMMExchange
@@ -254,15 +281,15 @@ export class AMMExchange extends Scrt.Client {
 
   /** Get the exchange and its related contracts by querying the factory. */
   static fromAddressAndTokens = async function getExchangeInfo (
-    agent:   Scrt.Agent,
-    address: Scrt.Address,
-    token_0: Tokens.Snip20|Tokens.Token,
-    token_1: Tokens.Snip20|Tokens.Token,
+    agent:   Agent,
+    address: Address,
+    token_0: Snip20|Token,
+    token_1: Snip20|Token,
   ): Promise<AMMExchange> {
     const self = await AMMExchange.fromAddress(agent, address)
     // <dumb>
-    const snip20_0 = await Tokens.Snip20.fromDescriptor(agent, token_0 as Tokens.CustomToken).populate()
-    const snip20_1 = await Tokens.Snip20.fromDescriptor(agent, token_1 as Tokens.CustomToken).populate()
+    const snip20_0 = await Snip20.fromDescriptor(agent, token_0 as CustomToken).populate()
+    const snip20_1 = await Snip20.fromDescriptor(agent, token_1 as CustomToken).populate()
     const name     = `${snip20_0.symbol}-${snip20_1.symbol}`
     const pairInfo = await self.getPairInfo()
     const { liquidity_token } = pairInfo
@@ -272,7 +299,7 @@ export class AMMExchange extends Scrt.Client {
     // </dumb>
   }
 
-  constructor (agent: Scrt.Agent, options: AMMExchangeOpts) {
+  constructor (agent: Agent, options: AMMExchangeOpts) {
     super(agent, options.address, options.codeHash, options.deployment, options.name)
     if (options.token_0)  this.token_0 = options.token_0
     if (options.token_1)  this.token_1 = options.token_1
@@ -281,15 +308,15 @@ export class AMMExchange extends Scrt.Client {
   }
 
   fees = {
-    add_liquidity:    new Scrt.Fee('100000', 'uscrt'),
-    remove_liquidity: new Scrt.Fee('110000', 'uscrt'),
-    swap_native:      new Scrt.Fee( '55000', 'uscrt'),
-    swap_snip20:      new Scrt.Fee('100000', 'uscrt'),
+    add_liquidity:    new Fee('100000', 'uscrt'),
+    remove_liquidity: new Fee('110000', 'uscrt'),
+    swap_native:      new Fee( '55000', 'uscrt'),
+    swap_snip20:      new Fee('100000', 'uscrt'),
   }
 
   name?:     string
-  token_0?:  Tokens.Token
-  token_1?:  Tokens.Token
+  token_0?:  Token
+  token_1?:  Token
   lpToken?:  LPToken
   pairInfo?: AMMPairInfo
 
@@ -297,13 +324,13 @@ export class AMMExchange extends Scrt.Client {
     await super.fetchCodeHash()
     this.pairInfo = await this.getPairInfo()
     let { pair: { token_0, token_1 }, liquidity_token } = await this.getPairInfo()
-    if (Tokens.isCustomToken(token_0)) token_0 = await this.agent!
-      .getClient(Tokens.Snip20, token_0?.custom_token?.contract_addr)
+    if (isCustomToken(token_0)) token_0 = await this.agent!
+      .getClient(Snip20, token_0?.custom_token?.contract_addr)
       .populate()
-    if (Tokens.isCustomToken(token_1)) token_1 = await this.agent!
-      .getClient(Tokens.Snip20, token_1?.custom_token?.contract_addr)
+    if (isCustomToken(token_1)) token_1 = await this.agent!
+      .getClient(Snip20, token_1?.custom_token?.contract_addr)
       .populate()
-    if (this.token_0 instanceof Tokens.Snip20 && this.token_1 instanceof Tokens.Snip20) {
+    if (this.token_0 instanceof Snip20 && this.token_1 instanceof Snip20) {
       this.name = `${this.token_0.symbol}-${this.token_1.symbol}`
     }
     this.token_0 = token_0
@@ -314,14 +341,14 @@ export class AMMExchange extends Scrt.Client {
   }
 
   async addLiquidityWithAllowance (
-    amount_0:            Scrt.Uint128,
-    snip20_0:            Tokens.Snip20,
-    amount_1:            Scrt.Uint128,
-    snip20_1:            Tokens.Snip20,
-    slippage_tolerance?: Scrt.Decimal
+    amount_0:            Uint128,
+    snip20_0:            Snip20,
+    amount_1:            Uint128,
+    snip20_1:            Snip20,
+    slippage_tolerance?: Decimal
   ) {
-    const pair    = new Tokens.TokenPair(snip20_0.asDescriptor, snip20_1.asDescriptor)
-    const deposit = new Tokens.TokenPairAmount(pair, amount_0, amount_1)
+    const pair    = new TokenPair(snip20_0.asDescriptor, snip20_1.asDescriptor)
+    const deposit = new TokenPairAmount(pair, amount_0, amount_1)
     return await this.agent!.bundle().wrap(async bundle=>{
       await snip20_0.as(bundle).increaseAllowance(amount_0, this.address!)
       await snip20_1.as(bundle).increaseAllowance(amount_1, this.address!)
@@ -330,42 +357,42 @@ export class AMMExchange extends Scrt.Client {
   }
 
   async addLiquidity (
-    deposit:             Tokens.TokenPairAmount,
-    slippage_tolerance?: Scrt.Decimal
+    deposit:             TokenPairAmount,
+    slippage_tolerance?: Decimal
   ) {
     const msg = { add_liquidity: { deposit, slippage_tolerance } }
-    const opts: Scrt.ExecOpts = { send: deposit.asNativeBalance }
+    const opts: ExecOpts = { send: deposit.asNativeBalance }
     return await this.execute(msg, opts)
   }
 
   async removeLiquidity (
-    amount:    Scrt.Uint128,
-    recipient: Scrt.Address
+    amount:    Uint128,
+    recipient: Address
   ) {
     const info = await this.getPairInfo()
     return this.agent!
-      .getClient(Tokens.Snip20, info.liquidity_token.address)
+      .getClient(Snip20, info.liquidity_token.address)
       .withFee(this.getFee('remove_liquidity'))
       .send(amount, this.address!, { remove_liquidity: { recipient } })
   }
 
   async swap (
-    amount:           Tokens.TokenAmount,
-    expected_return?: Scrt.Decimal,
-    recipient:        Scrt.Address|undefined = this.agent?.address,
+    amount:           TokenAmount,
+    expected_return?: Decimal,
+    recipient:        Address|undefined = this.agent?.address,
   ) {
     if (!recipient) {
       log.log('AMMExchange#swap: specify recipient')
     }
-    if (Tokens.getTokenKind(amount.token) == Tokens.TokenKind.Native) {
+    if (isNativeToken(amount.token)) {
       const msg = { swap: { offer: amount, to: recipient, expected_return } }
       const opt = { fee: this.getFee('swap_native'), send: amount.asNativeBalance }
       return this.execute(msg, opt)
     } else {
       const msg = { swap: { to: recipient, expected_return } }
-      const tokenAddr = (amount.token as Tokens.CustomToken).custom_token.contract_addr
+      const tokenAddr = (amount.token as CustomToken).custom_token.contract_addr
       return this.agent!
-        .getClient(Tokens.Snip20, tokenAddr)
+        .getClient(Snip20, tokenAddr)
         .send(amount.amount, this.address!, msg);
     }
   }
@@ -375,11 +402,11 @@ export class AMMExchange extends Scrt.Client {
     return pair_info
   }
 
-  async simulateSwap (amount: Tokens.TokenAmount): Promise<AMMSimulationForward> {
+  async simulateSwap (amount: TokenAmount): Promise<AMMSimulationForward> {
     return this.query({ swap_simulation: { offer: amount } })
   }
 
-  async simulateSwapReverse (ask_asset: Tokens.TokenAmount): Promise<AMMSimulationReverse> {
+  async simulateSwapReverse (ask_asset: TokenAmount): Promise<AMMSimulationReverse> {
     return this.query({ reverse_simulation: { ask_asset } })
   }
 
@@ -401,28 +428,28 @@ export class AMMExchange extends Scrt.Client {
 
 }
 
-export interface NewAMMExchange extends Scrt.NewClient<AMMExchange> {
-  new (agent?: Scrt.Agent, options?: AMMExchangeOpts): AMMExchange
+export interface NewAMMExchange extends NewClient<AMMExchange> {
+  new (agent?: Agent, options?: AMMExchangeOpts): AMMExchange
 }
 
-export interface AMMExchangeOpts extends Partial<Scrt.Client> {
-  token_0?:  Tokens.Token,
-  token_1?:  Tokens.Token,
+export interface AMMExchangeOpts extends Partial<Client> {
+  token_0?:  Token,
+  token_1?:  Token,
   lpToken?:  LPToken,
   pairInfo?: AMMPairInfo
 }
 
 export interface AMMSimulation {
-  spread_amount:     Scrt.Uint128,
-  commission_amount: Scrt.Uint128
+  spread_amount:     Uint128,
+  commission_amount: Uint128
 }
 
 export interface AMMSimulationForward extends AMMSimulation {
-  return_amount: Scrt.Uint128
+  return_amount: Uint128
 }
 
 export interface AMMSimulationReverse extends AMMSimulation {
-  offer_amount:  Scrt.Uint128
+  offer_amount:  Uint128
 }
 
 /** An exchange is an interaction between 4 contracts. */
@@ -430,9 +457,9 @@ export interface AMMExchangeInfo {
   /** Shorthand to refer to the whole group. */
   name?:     string
   /** One token of the pair. */
-  token_0:   Tokens.Snip20|string,
+  token_0:   Snip20|string,
   /** The other token of the pair. */
-  token_1:   Tokens.Snip20|string,
+  token_1:   Snip20|string,
   /** The automated market maker/liquidity pool for the token pair. */
   exchange:  AMMExchange,
   /** The liquidity provision token, which is minted to stakers of the 2 tokens. */
@@ -444,24 +471,24 @@ export interface AMMExchangeInfo {
 }
 
 export interface AMMPairInfo {
-  amount_0:         Scrt.Uint128
-  amount_1:         Scrt.Uint128
-  factory:          Scrt.ContractLink
-  liquidity_token:  Scrt.ContractLink
-  pair:             Tokens.TokenPair
-  total_liquidity:  Scrt.Uint128
+  amount_0:         Uint128
+  amount_1:         Uint128
+  factory:          ContractLink
+  liquidity_token:  ContractLink
+  pair:             TokenPair
+  total_liquidity:  Uint128
   contract_version: number
 }
 
-export class AMMSnip20 extends Tokens.Snip20 {}
+export class AMMSnip20 extends Snip20 {}
 
-export class LPToken extends Tokens.Snip20 {
+export class LPToken extends Snip20 {
   async getPairName (): Promise<string> {
     const { name } = await this.getTokenInfo()
     const fragments = name.split(' ')
     const [t0addr, t1addr] = fragments[fragments.length-1].split('-')
-    const t0 = this.agent!.getClient(Tokens.Snip20, t0addr)
-    const t1 = this.agent!.getClient(Tokens.Snip20, t1addr)
+    const t0 = this.agent!.getClient(Snip20, t0addr)
+    const t1 = this.agent!.getClient(Snip20, t1addr)
     const [t0info, t1info] = await Promise.all([t0.getTokenInfo(), t1.getTokenInfo()])
     return `${t0info.symbol}-${t1info.symbol}`
   }
@@ -469,14 +496,14 @@ export class LPToken extends Tokens.Snip20 {
 
 /// # ROUTER //////////////////////////////////////////////////////////////////////////////////////
 
-export class AMMRouter extends Scrt.Client {
+export class AMMRouter extends Client {
   static E00 = () => new Error("AMMRouter#assemble: no token pairs provided")
   static E01 = () => new Error("AMMRouter#assemble: can't swap token with itself")
   static E02 = () => new Error("AMMRouter#assemble: could not find route for given pair")
-  supportedTokens: Tokens.Token[]|null = null
+  supportedTokens: Token[]|null = null
   /** Register one or more supported tokens to router contract. */
-  async register (...tokens: (Tokens.Snip20|Tokens.Token)[]) {
-    tokens = tokens.map(token=>(token instanceof Tokens.Snip20) ? token.asDescriptor : token)
+  async register (...tokens: (Snip20|Token)[]) {
+    tokens = tokens.map(token=>(token instanceof Snip20) ? token.asDescriptor : token)
     const result = await this.execute({ register_tokens: { tokens } })
     this.supportedTokens = await this.getSupportedTokens()
     return result
@@ -486,8 +513,8 @@ export class AMMRouter extends Scrt.Client {
     this.supportedTokens = await this.getSupportedTokens()
     return this
   }
-  async getSupportedTokens (): Promise<Tokens.Token[]> {
-    const tokens = await this.query({ supported_tokens: {} }) as Scrt.Address[]
+  async getSupportedTokens (): Promise<Token[]> {
+    const tokens = await this.query({ supported_tokens: {} }) as Address[]
     return await Promise.all(tokens.map(async address=>{
       const token = this.agent!.getClient(AMMSnip20, address)
       await token.populate()
@@ -496,14 +523,14 @@ export class AMMRouter extends Scrt.Client {
   }
   assemble (
     known_pairs: AMMRouterPair[],
-    from_token:  Tokens.Token,
-    into_token:  Tokens.Token,
+    from_token:  Token,
+    into_token:  Token,
   ): AMMRouterHop[] {
     // Make sure there are pairs to pick from
     if ((known_pairs.length === 0 || !from_token || !into_token)) throw AMMRouter.E00()
     // Make sure we're not routing from and into the same token
-    const from_token_id = Tokens.getTokenId(from_token)
-    const into_token_id = Tokens.getTokenId(into_token)
+    const from_token_id = getTokenId(from_token)
+    const into_token_id = getTokenId(into_token)
     if (from_token_id === into_token_id) throw AMMRouter.E01()
     // Add reversed pairs
     const pairs = known_pairs.reduce((pairs: AMMRouterPair[], pair: AMMRouterPair)=>{
@@ -557,22 +584,22 @@ export class AMMRouter extends Scrt.Client {
     }
   }
   /* TODO */
-  async swap (route: AMMRouterHop[], amount: Scrt.Uint128) {}
+  async swap (route: AMMRouterHop[], amount: Uint128) {}
 }
 
 /** Represents a single step of the exchange */
 export class AMMRouterPair {
 
   constructor(
-    readonly from_token:     Tokens.Token,
-    readonly into_token:     Tokens.Token,
-    readonly pair_address:   Scrt.Address,
+    readonly from_token:     Token,
+    readonly into_token:     Token,
+    readonly pair_address:   Address,
     readonly pair_code_hash: string
   ) { }
 
-  get from_token_id (): string { return Tokens.getTokenId(this.from_token) }
+  get from_token_id (): string { return getTokenId(this.from_token) }
 
-  get into_token_id (): string { return Tokens.getTokenId(this.into_token) }
+  get into_token_id (): string { return getTokenId(this.into_token) }
 
   eq (other: AMMRouterPair): boolean {
     return this.from_token_id === other.from_token_id
@@ -602,9 +629,9 @@ export class AMMRouterPair {
   * it is not a SNIP20 token and does not support the `Send`
   * callbacks that the router depends on for its operation. */
 export interface AMMRouterHop {
-  from_token:     Tokens.Token
-  pair_address:   Scrt.Address,
-  pair_code_hash: Scrt.CodeHash
+  from_token:     Token
+  pair_address:   Address,
+  pair_code_hash: CodeHash
 }
 
 const log = new class SiennaSwapConsole extends CustomConsole {
@@ -615,7 +642,7 @@ const log = new class SiennaSwapConsole extends CustomConsole {
   creatingExchanges = (names: string[]) => {}
   createdExchanges  = (names: number)   => {}
 
-  factoryStatus = (address: Scrt.Address) => {
+  factoryStatus = (address: Address) => {
     this.info(`Status of AMMv2 Factory at`, bold(address??''))
     this.info()
   }
@@ -641,7 +668,7 @@ const log = new class SiennaSwapConsole extends CustomConsole {
       ["Token 0",  exchange.token_0, token0Info,  exchange.pairInfo?.amount_0],
       ["Token 1",  exchange.token_1, token1Info,  exchange.pairInfo?.amount_1],
       ["LP token", exchange.lpToken, lpTokenInfo, null],
-    ] as [string, Tokens.Snip20, Tokens.TokenInfo, any][] ) {
+    ] as [string, Snip20, TokenInfo, any][] ) {
       this.info()
       this.info(name?.padStart(column1), bold(address||''))
       if (balance) {

@@ -1,9 +1,17 @@
 import {
-  Permit, Signer, ViewingKey, Client, Address, CodeHash, ContractLink,
-  Deployment, VersionedDeployment
-} from "@fadroma/scrt";
-import { IntoLink, linkStruct } from "./ICC";
-import { Pagination } from "./Pagination";
+  Address,
+  Client,
+  CodeHash,
+  ContractLink,
+  Deployment,
+  IntoLink,
+  Pagination,
+  Permit,
+  Signer,
+  VersionedDeployment,
+  ViewingKey,
+  linkStruct,
+} from "./Core";
 
 export type AuthProviderVersion = 'v1'
 
@@ -16,7 +24,7 @@ export default class SiennaAuth extends VersionedDeployment<AuthProviderVersion>
     /** Appended to the provider and oracle names. */
     public readonly extraName: string|false      = (options as any)?.extraName ?? false,
   ) {
-    super(options)
+    super(options, version)
     if (extraName) {
       this.names.provider += `.${extraName}`
       this.names.oracle    = `${this.names.provider}.Oracle`

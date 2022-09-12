@@ -1,16 +1,14 @@
-import * as Scrt   from '@fadroma/scrt'
-import * as Tokens from '@fadroma/tokens'
-import { Deployment } from './Core'
+import { Address, CodeHash, Deployment, Snip20 } from './Core'
 import SiennaTGE, { MGMT, RPT } from './SiennaTGE'
 import type { VestingSchedule, VestingAccount } from './SiennaTGE'
 import { Rewards } from './SiennaRewards'
 import type { RewardsAPIVersion, StakingTokens } from './SiennaRewards'
 
-export default class SiennaPFR<R extends RewardsAPIVersion> extends Deployment {
+export default class SiennaPFR extends Deployment {
 
   constructor (
     options: object = {},
-    public rewardsVersion: R|undefined = (options as any)?.rewardsVersion
+    public rewardsVersion: RewardsAPIVersion|undefined = (options as any)?.rewardsVersion
   ) {
     super(options)
     if (!this.rewardsVersion) throw new Error(`${this.constructor.name}: specify rewardsVersion`)
@@ -20,8 +18,8 @@ export default class SiennaPFR<R extends RewardsAPIVersion> extends Deployment {
 
   tokenPairs: Promise<StakingTokens[]> = Promise.all(
     this.vestings.map(async ({ rewards, lp }: PFRVesting)=>({
-      stakedToken: await new Tokens.Snip20(this.agent, lp.address, lp.codeHash).populate(),
-      rewardToken: await new Tokens.Snip20(this.agent, rewards.address, rewards.codeHash).populate()
+      stakedToken: await new Snip20(this.agent, lp.address, lp.codeHash).populate(),
+      rewardToken: await new Snip20(this.agent, rewards.address, rewards.codeHash).populate()
     })))
 
   names = {
@@ -53,15 +51,15 @@ export interface PFRVesting {
   name:         string
   rewards: {
     name:       string
-    address:    Scrt.Address
-    codeHash:   Scrt.Address
+    address:    Address
+    codeHash:   Address
     decimals:   number
-    timekeeper: Scrt.Address
+    timekeeper: Address
   }
   lp: {
     name:       string
-    address:    Scrt.Address
-    codeHash:   Scrt.CodeHash
+    address:    Address
+    codeHash:   CodeHash
   }
   schedule:     VestingSchedule
   account:      VestingAccount

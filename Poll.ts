@@ -1,15 +1,24 @@
 import {
-  Contract, Client, Address, Moment, Uint128, Fee, Decimal, ContractLink,
-  VersionedDeployment
-} from '@fadroma/scrt';
-import { CustomConsole, bold, colors } from '@hackbg/konzola'
+  Address,
+  Client,
+  Contract,
+  ContractLink,
+  CustomConsole,
+  Decimal,
+  Deployment,
+  Fee,
+  Moment,
+  Snip20,
+  Uint128,
+  YAML,
+  bold,
+} from './Core';
 import AuthProviderDeployment, { Auth, AuthClient } from './Auth';
 import TGEDeployment, { RPT_TGE } from './SiennaTGE';
 import { Rewards_v4_1 } from './SiennaRewards_v4'
-import { Snip20 } from '@fadroma/tokens'
-import * as YAML from 'js-yaml'
 
-export default class GovernanceDeployment extends VersionedDeployment<'v1'> {
+export default class GovernanceDeployment extends Deployment {
+  version = 'v1'
   names = {
     /** The name of the auth group that gives the voting contract
       * access to the balances in the staking contract, which it

@@ -40,10 +40,10 @@ export default class Sienna extends Deployment {
   pfr = new SiennaPFR(this, 'v3.1')
 
   /** Sienna Governance system. */
-  governance = new SiennaGovernance(this, 'v1')
+  governance = new SiennaGovernance(this)
 
   /** Sienna Launch: Launchpad/IDO system. */
-  launchpad = new SiennaLaunch(this, 'v1')
+  launchpad = new SiennaLaunch(this)
 
   static Auth       = SiennaAuth
   static TGE        = SiennaTGE
@@ -57,7 +57,6 @@ export default class Sienna extends Deployment {
 
 export * from './Core'
 export * from './Auth'
-export * from './Pagination'
 export * from './Multicall'
 export * from './SiennaTGE'
 export * from './SiennaSwap'
