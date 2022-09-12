@@ -120,6 +120,8 @@ export interface StakingTokens {
 
 const log = new class SiennaRewardsConsole extends CustomConsole {
 
+  name = 'Sienna Rewards'
+
   rewardsContracts = (name: string, state: Record<string, any>) => {
     const isRewardPool     = (x: string) => x.startsWith('SiennaRewards_')
     const rewardsContracts = Object.keys(state).filter(isRewardPool)
@@ -134,4 +136,4 @@ const log = new class SiennaRewardsConsole extends CustomConsole {
     return rewardsContracts
   }
 
-}(console, 'Sienna Rewards')
+}

@@ -48,6 +48,9 @@ export default class LaunchpadDeployment extends Deployment {
 }
 
 const log = new class SiennaLaunchConsole extends CustomConsole {
+
+  name = 'Sienna Launch'
+
   authProvider (x: any) {
     this.info('Auth provider:')
     this.info(' ', JSON.stringify(x))
@@ -61,7 +64,7 @@ const log = new class SiennaLaunchConsole extends CustomConsole {
       console.info(' -', JSON.stringify(ido))
     }
   }
-}(console, 'Sienna Launch')
+}
 
 export class Launchpad extends ViewingKeyClient {
 

@@ -24,7 +24,6 @@ import type {
   Decimal,
   ExecOpts,
   NewClient,
-  Fee,
   Uint128,
 } from "@fadroma/scrt";
 import {
@@ -802,6 +801,8 @@ export interface AMMRouterHop {
 
 const log = new class SiennaSwapConsole extends CustomConsole {
 
+  name = 'Sienna Swap'
+
   creatingExchange = (name: string) => {}
   createdExchange  = (name: string) => {}
 
@@ -870,4 +871,4 @@ const log = new class SiennaSwapConsole extends CustomConsole {
     }
   }
 
-}(console, 'Sienna Swap')
+}

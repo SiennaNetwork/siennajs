@@ -104,6 +104,8 @@ export default class SiennaTGE extends Deployment {
 
 const log = new class SiennaVestingConsole extends CustomConsole {
 
+  name = 'Sienna Vesting'
+
   balance (addr: any, balance: any) {
     this.info(`Balance of ${bold(addr)}: ${balance}`)
   }
@@ -132,7 +134,7 @@ const log = new class SiennaVestingConsole extends CustomConsole {
     })
   }
 
-}(console, 'Sienna Vesting')
+}
 
 /** Contract address/hash pair as used by MGMT */
 export type LinkTuple = [Address, CodeHash]

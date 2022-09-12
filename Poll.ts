@@ -65,6 +65,9 @@ export default class GovernanceDeployment extends Deployment {
 }
 
 const log = new class SiennaGovernanceConsole extends CustomConsole {
+
+  name = 'Sienna Governance'
+
   pool (pool: any) {
     this.info('Governance-enabled staking pool:')
     this.info(' ', JSON.stringify(pool.asLink))
@@ -99,7 +102,7 @@ const log = new class SiennaGovernanceConsole extends CustomConsole {
     this.info(' ', polls)
     this.info('')
   }
-}(console, 'Sienna Launch')
+}
 
 const getNow = () => Math.floor(+new Date() / 1000);
 
