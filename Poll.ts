@@ -36,9 +36,9 @@ export default class GovernanceDeployment extends VersionedDeployment<'v1'> {
   /** The auth provider and oracle used by the deployment. */
   auth = new AuthProviderDeployment(this, 'v1', this.names.authGroup)
   /** The up-to-date Rewards v4 staking pool with governance support. */
-  pool = this.contract({ name: this.names.pool, client: this.Clients.Pool })
+  pool = this.contract({ name: this.names.pool, client: this.Clients.Pool }).get()
   /** The governance voting contract. */
-  polls = this.contract({ name: this.names.polls, client: this.Clients.Polls })
+  polls = this.contract({ name: this.names.polls, client: this.Clients.Polls }).get()
   /** Print the status of the governance system. */
   status = async () => {
     const [pool, polls] = await Promise.all([this.pool, this.polls])

@@ -21,9 +21,15 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
     rewardToken:   `Lend[${this.version}].Placeholder.SIENNA`,
   }
   /** The lend interest model contract. */
-  interestModel = this.contract({ name: this.names.interestModel, client: LendInterestModel })
+  interestModel = this.contract({
+    name:   this.names.interestModel,
+    client: LendInterestModel
+  }).get()
   /** The lend overseer factory. */
-  overseer = this.contract({ name: this.names.overseer, client: LendOverseer })
+  overseer = this.contract({
+    name:   this.names.overseer,
+    client: LendOverseer
+  }).get()
   /** Configure the overseer whitelist. */
   whitelist = async () => {
     const MARKET_INITIAL_EXCHANGE_RATE = "0.2";
@@ -55,15 +61,15 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
     })
   }
   /** The known lend markets. */
-  markets:     LendMarket[] = [] // TODO populate
+  markets:     Promise<LendMarket[]> = Promise.reject('TODO')
   /** The lend oracle. */
-  oracle?:     LendOracle // TODO populate
+  oracle?:     Promise<LendOracle>   = Promise.reject('TODO')
   /** The lend mock oracle. */
-  mockOracle?: MockOracle // TODO populate
-  /** The reward token for Lend. Defaults to SIENNA. */
-  get rewardToken () { return this.tge.token }
+  mockOracle?: Promise<MockOracle>   = Promise.reject('TODO')
   /** The TGE containing the token and RPT used by the deployment. */
   tge = new TGEDeployment(this)
+  /** The reward token for Lend. Defaults to SIENNA. */
+  get rewardToken () { return this.tge.token }
 }
 
 export type LendAuthStrategy = AuthStrategy

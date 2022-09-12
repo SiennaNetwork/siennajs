@@ -13,7 +13,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     lpTokens:  (name: string) => name.startsWith(`AMM[${this.version}]`) &&  name.endsWith(`.LP`)
   }
   /** The AMM factory. */
-  factory = this.contract({ name: this.names.factory, client: AMMFactory[this.version!] })
+  factory = this.contract({ name: this.names.factory, client: AMMFactory[this.version!] }).get()
   /** Display the status of the factory and exchanges. */
   showFactoryStatus = async () => {
     const factory = await this.factory
@@ -36,7 +36,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   /** The AMM exchanges. */
   exchanges = this.contracts(this.names.exchanges, AMMExchange as any)
   /** Show the status of the exchanges. */
-  showExchangesStatus = () => log.exchanges(this.exchanges)
+  showExchangesStatus = () => this.exchanges.then(log.exchanges)
   /** Create a new exchange through the factory. */
   createExchange = async (name: string) => {
     log.creatingExchange(name)
@@ -62,7 +62,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   /** The LP tokens. */
   lpTokens = this.contracts(this.names.lpTokens, LPToken)
   /** The AMM router. */
-  router = this.contract({ name: this.names.router, client: AMMRouter })
+  router = this.contract({ name: this.names.router, client: AMMRouter }).get()
 }
 
 export type AMMFactoryStatus = "Operational" | "Paused" | "Migrating"

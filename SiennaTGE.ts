@@ -8,7 +8,7 @@ import { CustomConsole, bold, colors } from '@hackbg/konzola'
 export default class SiennaTGE extends Scrt.Deployment {
   names = { token: 'SIENNA', mgmt: 'SIENNA.MGMT', rpt: 'SIENNA.RPT' }
   /** The deployed SIENNA SNIP20 token contract. */
-  token = this.contract({ name: this.names.token, client: Tokens.Snip20 })
+  token = this.contract({ name: this.names.token, client: Tokens.Snip20 }).get()
   /** Get the balance of an address in the vested token. */
   getBalance = async (addr: Scrt.Address, vk: Scrt.ViewingKey) => {
     this.log.info(`Querying balance of ${addr}...`)
@@ -34,7 +34,7 @@ export default class SiennaTGE extends Scrt.Deployment {
   }
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt = this.contract({ name: this.names.mgmt, client: MGMT_TGE })
+  mgmt = this.contract({ name: this.names.mgmt, client: MGMT_TGE }).get()
   /** Fetch the current schedule of MGMT. */
   getMgmtSchedule = () =>
     this.mgmt.then(mgmt=>mgmt.schedule())
@@ -68,7 +68,7 @@ export default class SiennaTGE extends Scrt.Deployment {
   }
   /** The deployed RPT contract, which claims tokens from MGMT
     * and distributes them to the reward pools.  */
-  rpt = this.contract({ name: this.names.rpt, client: RPT_TGE })
+  rpt = this.contract({ name: this.names.rpt, client: RPT_TGE }).get()
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) {
     throw 'TODO'

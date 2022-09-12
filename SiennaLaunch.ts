@@ -2,8 +2,8 @@ import { CustomConsole, bold, colors } from '@hackbg/konzola'
 import { ViewingKeyClient, Address, ContractLink, Uint128 } from '@fadroma/scrt';
 import { Snip20 } from '@fadroma/tokens';
 import { VersionedDeployment } from './Core';
-import AuthProviderDeployment, { AuthClient, AuthMethod } from './Auth';
-import TGEDeployment, { RPT_TGE } from './SiennaTGE';
+import Auth, { AuthClient, AuthMethod } from './Auth';
+import TGE, { RPT_TGE } from './SiennaTGE';
 import sha256 from 'crypto-js/sha256';
 import MerkleTree from 'merkletreejs';
 
@@ -17,15 +17,15 @@ export default class LaunchpadDeployment extends VersionedDeployment<'v1'> {
     ido: (name: string) => name.startsWith(`${this.names.launchpad}.IDO[`)
   }
   /** The TGE containing the token and RPT used by the deployment. */
-  tge = new TGEDeployment(this)
+  tge = new TGE(this)
   /** The token staked in the launchpad pool. */
   get token () { return this.tge.token }
   /** TODO: What does launchpad use RPT for? */
   get rpt   () { return this.tge.rpt }
   /** The auth provider and oracle used by the deployment. */
-  auth = new AuthProviderDeployment(this, 'v1', this.names.authGroup)
+  auth = new Auth(this, 'v1', this.names.authGroup)
   /** The launchpad contract. */
-  launchpad = this.contract({ name: this.names.launchpad, client: Launchpad })
+  launchpad = this.contract({ name: this.names.launchpad, client: Launchpad }).get()
   /** The known IDOs, matched by name */
   idos = this.filter(this.names.ido).map(receipt=>this.contract({ ...receipt, client: IDO }))
   /** Print the status of the Launchpad/IDO system. */

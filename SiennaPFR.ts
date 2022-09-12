@@ -18,10 +18,11 @@ export default class SiennaPFR<R extends RewardsAPIVersion> extends Deployment {
 
   vestings: PFRVesting[] = []
 
-  rewardTokens = this.vestings.map(async ({ rewards, lp }: PFRVesting)=>({
-    stakedToken: new Tokens.Snip20(this.agent, lp.address, lp.codeHash).populate(),
-    rewardToken: new Tokens.Snip20(this.agent, rewards.address, rewards.codeHash).populate()
-  }))
+  tokenPairs: Promise<StakingTokens[]> = Promise.all(
+    this.vestings.map(async ({ rewards, lp }: PFRVesting)=>({
+      stakedToken: await new Tokens.Snip20(this.agent, lp.address, lp.codeHash).populate(),
+      rewardToken: await new Tokens.Snip20(this.agent, rewards.address, rewards.codeHash).populate()
+    })))
 
   names = {
     tokens:  ({ name }: { name: string }) => `${name}.MockToken`,
@@ -30,14 +31,14 @@ export default class SiennaPFR<R extends RewardsAPIVersion> extends Deployment {
     rpts:    ({ name }: { name: string }) => `${name}.RPT[v2]`
   }
 
-  mgmts = this.vestings.map(this.names.mgmts)
-    .map(name=>this.contract({ name, client: MGMT_PFR }))
+  mgmts = Promise.all(this.vestings.map(this.names.mgmts)
+    .map(name=>this.contract(name).intoClient(MGMT_PFR)))
 
-  rewardPools = this.vestings.map(this.names.rewards)
-    .map(name=>this.contract({ name, client: Rewards[this.rewardsVersion!] as any }))
+  rewardPools = Promise.all(this.vestings.map(this.names.rewards)
+    .map(name=>this.contract(name).intoClient(Rewards[this.rewardsVersion!])))
 
-  rpts = this.vestings.map(this.names.rpts)
-    .map(name=>this.contract({ name, client: RPT_PFR }))
+  rpts = Promise.all(this.vestings.map(this.names.rpts)
+    .map(name=>this.contract(name).intoClient(RPT_PFR)))
 
 }
 

@@ -28,9 +28,9 @@ export default class SiennaAuth extends VersionedDeployment<AuthProviderVersion>
     oracle:   `Auth[${this.version}].Oracle`
   }
   /** The auth provider contract. */
-  provider = this.contract({ name: this.names.provider, client: AuthProvider })
+  provider = this.contract({ name: this.names.provider, client: AuthProvider }).get()
   /** The auth provider's RNG oracle. */
-  oracle = this.contract({ name: this.names.oracle })
+  oracle = this.contract({ name: this.names.oracle }).get()
 }
 
 export type AuthStrategy =
