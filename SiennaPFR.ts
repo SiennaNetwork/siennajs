@@ -30,13 +30,13 @@ export default class SiennaPFR extends Deployment {
   }
 
   mgmts = Promise.all(this.vestings.map(this.names.mgmts)
-    .map(name=>this.contract(name).intoClient(MGMT_PFR)))
+    .map(name=>this.contract(name).getClient(MGMT_PFR)))
 
   rewardPools = Promise.all(this.vestings.map(this.names.rewards)
-    .map(name=>this.contract(name).intoClient(Rewards[this.rewardsVersion!])))
+    .map(name=>this.contract(name).getClient(Rewards[this.rewardsVersion!])))
 
   rpts = Promise.all(this.vestings.map(this.names.rpts)
-    .map(name=>this.contract(name).intoClient(RPT_PFR)))
+    .map(name=>this.contract(name).getClient(RPT_PFR)))
 
 }
 
