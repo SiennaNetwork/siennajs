@@ -24,11 +24,14 @@ jobs:
       - name: Install deps
         run:  pnpm i
 
+      - name: Run tests
+        run:  npm test
+
       - name: Check types
         run:  npm run check
 
       - name: Build for packaging
-        run:  npm run release:ci
+        run:  npm run ubik fix
 
       - name: Fix TypeScript/ESM insanity
         #see: https://github.com/beenotung/fix-esm-import-path/issues/3

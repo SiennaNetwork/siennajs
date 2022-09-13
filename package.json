@@ -24,8 +24,7 @@
     "clean": "rm -rf dist *.dist.*; git checkout package.json",
     "check": "tsc --noEmit",
     "prepublishOnly": "npm run build",
-    "release": "ubik",
-    "release:ci": "ubik fix",
+    "ubik": "ubik",
     "test": "jest"
   },
   "dependencies": {
@@ -41,7 +40,7 @@
     "merkletreejs": "^0.2.32"
   },
   "devDependencies": {
-    "@hackbg/ubik": "^1.0.1",
+    "@hackbg/ubik": "^1.1",
     "@types/crypto-js": "^4.1.1",
     "@types/jest": "^28.1.7",
     "@types/node": "^17.0.45",
