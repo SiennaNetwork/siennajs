@@ -11,6 +11,7 @@ import {
 } from './Core';
 import type {
   Address,
+  Contract,
   ContractLink,
   Emigration,
   Immigration,
@@ -43,10 +44,9 @@ export default class SiennaRewards extends VersionedDeployment<RewardsAPIVersion
 
   tge = new SiennaTGE(this)
 
-  rewardPools = Promise.all(
-    this.filter((name: string)=>name.includes('Rewards'))
-        .map((receipt: object)=>this.contract(receipt))
-  )
+  rewardPools: Promise<Contract<Rewards>[]> = Promise.all(this
+    .filter((name: string)=>name.includes('Rewards'))
+    .map((receipt: object)=>this.contract(receipt)))
 
   showStatus = async () => log.rewardsContracts(this.name, this.state)
 
@@ -68,7 +68,7 @@ export interface RewardsInitParams {
 /** A reward pool. */
 export abstract class Rewards extends Client {
 
-  log = new ClientConsole(console, this.constructor.name)
+  log = new ClientConsole(this.constructor.name)
 
   /** Rewards v1/v2 with the buggy algo. Counts time in blocks. */
   static 'v2':   typeof Rewards_v2;

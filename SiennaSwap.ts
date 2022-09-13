@@ -222,7 +222,7 @@ export abstract class AMMFactory extends Client {
    * (`{ id, code_hash }` structs) that the factory
    * uses to instantiate contracts. */
   async getTemplates(): Promise<AMMFactoryInventory> {
-    const { config } = await this.query({ get_config: {} });
+    const { config } = await this.query({ get_config: {} }) as { config: AMMFactoryInventory };
     return {
       snip20_contract: config.snip20_contract,
       pair_contract: config.pair_contract,
@@ -320,7 +320,7 @@ export class AMMExchange extends Client {
   }
 
   constructor (agent: Agent, options: AMMExchangeOpts) {
-    super(agent, options.address, options.codeHash, options.deployment, options.name)
+    super(agent, options.address, options.codeHash)
     if (options.token_0)  this.token_0 = options.token_0
     if (options.token_1)  this.token_1 = options.token_1
     if (options.lpToken)  this.lpToken = options.lpToken
@@ -418,7 +418,7 @@ export class AMMExchange extends Client {
   }
 
   async getPairInfo (): Promise<AMMPairInfo> {
-    const { pair_info } = await this.query("pair_info")
+    const { pair_info } = await this.query("pair_info") as { pair_info: AMMPairInfo }
     return pair_info
   }
 

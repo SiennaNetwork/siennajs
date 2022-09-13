@@ -1,4 +1,4 @@
-import { Address, CodeHash, Deployment, Snip20 } from './Core'
+import { Address, CodeHash, Contract, Deployment, Snip20 } from './Core'
 import SiennaTGE, { MGMT, RPT } from './SiennaTGE'
 import type { VestingSchedule, VestingAccount } from './SiennaTGE'
 import { Rewards } from './SiennaRewards'
@@ -29,14 +29,14 @@ export default class SiennaPFR extends Deployment {
     rpts:    ({ name }: { name: string }) => `${name}.RPT[v2]`
   }
 
-  mgmts = Promise.all(this.vestings.map(this.names.mgmts)
-    .map(name=>this.contract(name).getClient(MGMT_PFR)))
+  mgmts: Promise<MGMT_PFR[]> = Promise.all(this.vestings.map(this.names.mgmts)
+    .map(name=>this.contract(name).getClient(MGMT_PFR) as Promise<MGMT_PFR>))
 
-  rewardPools = Promise.all(this.vestings.map(this.names.rewards)
-    .map(name=>this.contract(name).getClient(Rewards[this.rewardsVersion!])))
+  rpts: Promise<RPT_PFR[]> = Promise.all(this.vestings.map(this.names.rpts)
+    .map(name=>this.contract(name).getClient(RPT_PFR) as Promise<RPT_PFR>))
 
-  rpts = Promise.all(this.vestings.map(this.names.rpts)
-    .map(name=>this.contract(name).getClient(RPT_PFR)))
+  rewardPools: Promise<Rewards[]> = Promise.all(this.vestings.map(this.names.rewards)
+    .map(name=>this.contract(name).getClient(Rewards[this.rewardsVersion!]) as Promise<Rewards>))
 
 }
 

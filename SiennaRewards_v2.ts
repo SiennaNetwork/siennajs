@@ -44,8 +44,7 @@ export class Rewards_v2 extends Rewards {
   }
   async getStakedToken(): Promise<LPToken> {
     const at = Math.floor(+new Date() / 1000);
-    const { pool_info } = await this.query({ pool_info: { at } });
-    const { address, code_hash } = pool_info.lp_token;
+    const { lp_token: { address, code_hash } } = await this.getPoolInfo();
     return new LPToken(this.agent, address, code_hash);
   }
   async getRewardToken() {

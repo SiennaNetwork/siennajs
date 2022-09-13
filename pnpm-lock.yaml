@@ -4,12 +4,13 @@ importers:
 
   .:
     specifiers:
+      '@fadroma/client': ^5.0.0
       '@fadroma/scrt': ^2.0.0
       '@fadroma/scrt-amino': ^2.0.0
       '@fadroma/tokens': ^4
       '@hackbg/formati': ^3.0.1
-      '@hackbg/izomorf': ^4.2.3
       '@hackbg/konzola': ^2
+      '@hackbg/ubik': ^1.0.1
       '@types/crypto-js': ^4.1.1
       '@types/jest': ^28.1.7
       '@types/js-yaml': ^4.0.5
@@ -22,6 +23,7 @@ importers:
       ts-jest: ^28.0.8
       typescript: ^4.7.4
     dependencies:
+      '@fadroma/client': 5.0.0
       '@fadroma/scrt': 2.0.0
       '@fadroma/scrt-amino': 2.0.0
       '@fadroma/tokens': 4.0.0
@@ -32,7 +34,7 @@ importers:
       js-yaml: 4.1.0
       merkletreejs: 0.2.32
     devDependencies:
-      '@hackbg/izomorf': 4.2.9
+      '@hackbg/ubik': 1.0.1
       '@types/crypto-js': 4.1.1
       '@types/jest': 28.1.8
       '@types/node': 17.0.45
@@ -489,19 +491,6 @@ packages:
       secure-random: 1.1.2
     dev: false
 
-  /@hackbg/izomorf/4.2.9:
-    resolution: {integrity: sha512-vpDU0/iBAFD09xOEwFs1wHsqlCoYO8+NZy6uvr1ZlfrynMRxEkI37jPI1IaK261MLf77aVuWPErJQoMVDIBO/g==}
-    hasBin: true
-    dependencies:
-      boxen: 7.0.0
-      concurrently: 7.2.2
-      node-fetch: 2.6.7
-      recast: 0.21.2
-      rimraf: 3.0.2
-    transitivePeerDependencies:
-      - encoding
-    dev: true
-
   /@hackbg/komandi/5.0.1:
     resolution: {integrity: sha512-LvNFR6mjaKjWK4eFk/jO4DjjcT+ODk+7Yuea+x+pmkfLkIIFv2i5b2oiy/WArSXQJohmksNQwL5WGboWIlVd7Q==}
     hasBin: true
@@ -529,6 +518,19 @@ packages:
       prompts: 2.4.2
       table: 6.8.0
     dev: false
+
+  /@hackbg/ubik/1.0.1:
+    resolution: {integrity: sha512-IuBQZZAPuoEOvMUVGgiwjh6/U44Qhx+qhIZfqeJnZ0nk1LX4MI/79BDHVC/hsEsDgkUOPGRE3FvYiAGw/gqZNQ==}
+    hasBin: true
+    dependencies:
+      boxen: 7.0.0
+      concurrently: 7.2.2
+      node-fetch: 2.6.7
+      recast: 0.21.2
+      rimraf: 3.0.2
+    transitivePeerDependencies:
+      - encoding
+    dev: true
 
   /@improbable-eng/grpc-web-node-http-transport/0.15.0_fng5pv4qmdetiqq66m6yjkaacu:
     resolution: {integrity: sha512-HLgJfVolGGpjc9DWPhmMmXJx8YGzkek7jcCFO1YYkSOoO81MWRZentPOd/JiKiZuU08wtc4BG+WNuGzsQB5jZA==}

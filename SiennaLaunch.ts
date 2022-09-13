@@ -1,11 +1,12 @@
 import {
-  ViewingKeyClient,
   Address,
+  Contract,
   ContractLink,
-  Uint128,
-  Snip20,
-  Deployment,
   CustomConsole,
+  Deployment,
+  Snip20,
+  Uint128,
+  ViewingKeyClient,
   bold,
 } from './Core';
 import Auth, { AuthClient, AuthMethod } from './Auth';
@@ -34,7 +35,8 @@ export default class LaunchpadDeployment extends Deployment {
   /** The launchpad contract. */
   launchpad = this.contract({ name: this.names.launchpad, client: Launchpad }).get()
   /** The known IDOs, matched by name */
-  idos = this.filter(this.names.ido).map(receipt=>this.contract({ ...receipt, client: IDO }))
+  idos: Contract<IDO>[] = this.filter(this.names.ido)
+    .map(receipt=>this.contract({ ...receipt, client: IDO }))
   /** Print the status of the Launchpad/IDO system. */
   status = async () => {
     const launchpad = await this.launchpad

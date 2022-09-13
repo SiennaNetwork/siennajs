@@ -24,11 +24,12 @@
     "clean": "rm -rf dist *.dist.*; git checkout package.json",
     "check": "tsc --noEmit",
     "prepublishOnly": "npm run build",
-    "release": "izomorf",
-    "release:ci": "izomorf fix",
+    "release": "ubik",
+    "release:ci": "ubik fix",
     "test": "jest"
   },
   "dependencies": {
+    "@fadroma/client": "^5.0.0",
     "@fadroma/scrt": "^2.0.0",
     "@fadroma/scrt-amino": "^2.0.0",
     "@fadroma/tokens": "^4",
@@ -40,7 +41,7 @@
     "merkletreejs": "^0.2.32"
   },
   "devDependencies": {
-    "@hackbg/izomorf": "^4.2.3",
+    "@hackbg/ubik": "^1.0.1",
     "@types/crypto-js": "^4.1.1",
     "@types/jest": "^28.1.7",
     "@types/node": "^17.0.45",

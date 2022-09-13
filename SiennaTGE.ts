@@ -199,7 +199,8 @@ export abstract class MGMT extends Client {
   /** Check how much is claimable by someone at a certain time */
   async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
     time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
-    const { progress } = await this.query({ progress: { address, time } })
+    const { progress }: { progress: VestingProgress } =
+      await this.query({ progress: { address, time } }) 
     return progress
   }
 }
