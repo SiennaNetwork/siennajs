@@ -508,7 +508,7 @@ export interface IdoCollection {
 }
 
 export interface Project {
-    token_coonfig: TokenConfig;
+    token_config: TokenConfig;
     sale_config: SaleConfig;
     schedule?: SaleSchedule;
 }
