@@ -233,15 +233,6 @@ export abstract class AMMFactory extends Client {
   }
 
 }
-<<<<<<< HEAD
-
-export class AMMFactory_v1 extends AMMFactory { readonly version = "v1" as AMMVersion }
-
-export class AMMFactory_v2 extends AMMFactory { readonly version = "v2" as AMMVersion }
-
-AMMFactory.v1 = AMMFactory_v1
-
-AMMFactory.v2 = AMMFactory_v2
 
 export interface AMMFactoryInventory {
   pair_contract:       ContractInfo
@@ -255,12 +246,15 @@ export interface AMMFactoryInventory {
 }
 
 export interface AMMCreateExchangeRequest {
-  name?: string,
-  pair: {
-    token_0: Snip20|Token,
-    token_1: Snip20|Token
-  }
+  name?: string, pair: { token_0: Snip20|Token, token_1: Snip20|Token }
 }
+export interface AMMCreateExchangesRequest {
+  pairs: Array<AMMCreateExchangeRequest>;
+}
+export interface AMMCreateExchangesResult  {
+  name?: string, token_0: Snip20|Token, token_1: Snip20|Token
+}
+export type AMMCreateExchangesResults = Array<AMMCreateExchangesResult>
 
 export class AMMFactory_v1 extends AMMFactory {
   readonly version = "v1" as AMMVersion;
@@ -271,35 +265,8 @@ export class AMMFactory_v2 extends AMMFactory {
 }
 
 AMMFactory.v1 = AMMFactory_v1;
+
 AMMFactory.v2 = AMMFactory_v2;
-
-export interface AMMFactoryInventory {
-  pair_contract: IContractTemplate;
-  lp_token_contract: IContractTemplate;
-  // unused, required by v1:
-  snip20_contract?: IContractTemplate;
-  ido_contract?: IContractTemplate;
-  launchpad_contract?: IContractTemplate;
-  // ???
-  router_contract?: IContractTemplate;
-}
-
-export interface AMMCreateExchangeRequest {
-  name?: string;
-  pair: { token_0: Snip20 | Token; token_1: Snip20 | Token };
-}
-
-export interface AMMCreateExchangesRequest {
-  pairs: Array<AMMCreateExchangeRequest>;
-}
-
-export interface AMMCreateExchangesResult  {
-  name?:   string
-  token_0: Snip20|Token
-  token_1: Snip20|Token
-}
-
-export type AMMCreateExchangesResults = Array<AMMCreateExchangesResult>
 
 export interface AMMFactoryExchangeInfo {
   address: string,
@@ -307,12 +274,6 @@ export interface AMMFactoryExchangeInfo {
     token_0: Token,
     token_1: Token
   }
-}
-
-export interface AMMCreateExchangesResult {
-  name?: string;
-  token_0: Snip20 | Token;
-  token_1: Snip20 | Token;
 }
 
 type TokenPairStr = string;
