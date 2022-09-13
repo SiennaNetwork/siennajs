@@ -11,7 +11,7 @@ import {
 } from './Core';
 import Auth, { AuthClient, AuthMethod } from './Auth';
 import TGE, { RPT_TGE } from './SiennaTGE';
-import sha256 from 'crypto-js/sha256';
+import CryptoJS from 'crypto-js';
 import MerkleTree from 'merkletreejs';
 
 export default class LaunchpadDeployment extends Deployment {
@@ -197,8 +197,8 @@ export class Launchpad extends ViewingKeyClient {
     }
 
     createMerkleTree(addresses: Address[]): MerkleTreeInfo {
-        const leaves = addresses.map((addr) => sha256(addr));
-        const tree = new MerkleTree(leaves, sha256);
+        const leaves = addresses.map((addr) => CryptoJS.SHA256(addr));
+        const tree = new MerkleTree(leaves, CryptoJS.SHA256);
 
         const root = tree.getRoot().toString('hex');
 
