@@ -4,9 +4,9 @@ importers:
 
   .:
     specifiers:
-      '@fadroma/scrt': ^1.2.0
-      '@fadroma/scrt-amino': ^1.1.0
-      '@fadroma/tokens': ^3.0.3
+      '@fadroma/scrt': ^2.0.0
+      '@fadroma/scrt-amino': ^2.0.0
+      '@fadroma/tokens': ^4
       '@hackbg/formati': ^3.0.1
       '@hackbg/izomorf': ^4.2.3
       '@hackbg/konzola': ^2
@@ -22,9 +22,9 @@ importers:
       ts-jest: ^28.0.8
       typescript: ^4.7.4
     dependencies:
-      '@fadroma/scrt': 1.3.0
-      '@fadroma/scrt-amino': 1.1.0
-      '@fadroma/tokens': 3.0.3
+      '@fadroma/scrt': 2.0.0
+      '@fadroma/scrt-amino': 2.0.0
+      '@fadroma/tokens': 4.0.0
       '@hackbg/formati': 3.0.1
       '@hackbg/konzola': 2.0.0
       '@types/js-yaml': 4.0.5
@@ -429,63 +429,53 @@ packages:
     resolution: {integrity: sha512-xl9YnIrAAaBd6nFffwFbyrnKjqjD9zKGP8OBKxzyglxamHfqAS+PcJPEiaEpt+oUt7HAIOyhL3KK75Dh52hGvA==}
     dev: false
 
-  /@fadroma/client/4.2.1:
-    resolution: {integrity: sha512-TKBT08I5vhc63NaGJ9eABMDVgZyFMDryAakIpOsjD6k8bfPO3URUbeemacF2GIfQwJI8TMUv42w/4QsgD77WLA==}
+  /@fadroma/client/5.0.0:
+    resolution: {integrity: sha512-uuji39FZMDIzYOq0JHkAp7wrhufr0bjirE/a4HNllvJHz+8oSsxZGV2dNn2yZEwwQrpHo4SClIFiucbORsSeWA==}
+    dependencies:
+      '@hackbg/komandi': 5.0.1
+      '@hackbg/konzola': 2.0.0
+    transitivePeerDependencies:
+      - dotenv
     dev: false
 
-  /@fadroma/scrt-amino/1.1.0:
-    resolution: {integrity: sha512-UAUYnRSz7OXMAiu5md/QMCWfE6x5vVRF9eFQF4BawJRaCLiEx5SJFOuUmbE+pmpnja2+Y6/7587SkX76urKFBQ==}
+  /@fadroma/scrt-amino/2.0.0:
+    resolution: {integrity: sha512-Yg5p8IxpYJ5DdfXeIyLoToccH2V9eaLzGf0OcpS88yke9hXSTg9APJFv4adu936o4sFDcNWDx/qgfytgruYeug==}
     dependencies:
-      '@fadroma/scrt': 1.3.0
-      '@hackbg/formati': 1.2.0
-      '@hackbg/konfizi': 1.0.5
+      '@fadroma/scrt': 2.0.0
+      '@hackbg/formati': 3.0.1
       axios: 0.26.0
       exponential-backoff: 3.1.0
       secretjs: 0.17.5
     transitivePeerDependencies:
       - debug
+      - dotenv
       - google-protobuf
     dev: false
 
-  /@fadroma/scrt/1.3.0:
-    resolution: {integrity: sha512-rmvr2/IqTN3giJ8kNBMQqOhqNfamAt/gnPZvLb7853RLShNMHyVn5qTW7ZpefNg2AONIYDdmz31w8ZC5Rf0uOw==}
+  /@fadroma/scrt/2.0.0:
+    resolution: {integrity: sha512-1aWS/Zu+17yV5RKaUleptFgtwhmzkhFVNfm/X/Y1BMXrsjp/UjZkPWYUiB8Mr+pUcSZ9EmeASQTDQ0ApnmWkYA==}
     dependencies:
-      '@fadroma/client': 4.2.1
-      '@hackbg/formati': 1.2.0
-      '@hackbg/konfizi': 1.0.5
+      '@fadroma/client': 5.0.0
+      '@hackbg/formati': 3.0.1
+      '@hackbg/konfizi': 2.0.0
+      '@hackbg/konzola': 2.0.0
       '@ungap/structured-clone': 1.0.1
-      secretjs: 1.3.0-beta.25
+      secretjs: 1.4.0-alpha.4
     transitivePeerDependencies:
+      - dotenv
       - google-protobuf
     dev: false
 
-  /@fadroma/tokens/3.0.3:
-    resolution: {integrity: sha512-uFxsGoq1PiwDzXOYNyMXhKcPF2tpgvZCfNupXXHAU+Ow04DQ6NakCQfDKDeE5f1I6F84HLV7nNDAqsoDHszTxw==}
+  /@fadroma/tokens/4.0.0:
+    resolution: {integrity: sha512-xfgNnglKe7WJrkmC9EWd5jlvdDnmSITee5fA5jlo8jINammhQzOPa6N1JMkBsLmuPi28oBpCvjLIuEvZ8Mhr2Q==}
     dependencies:
-      '@fadroma/client': 4.2.1
-      '@fadroma/scrt': 1.3.0
-      '@hackbg/formati': 2.0.1
-      '@hackbg/konzola': 1.2.0
+      '@fadroma/client': 5.0.0
+      '@fadroma/scrt': 2.0.0
+      '@hackbg/formati': 3.0.1
+      '@hackbg/konzola': 2.0.0
     transitivePeerDependencies:
+      - dotenv
       - google-protobuf
-    dev: false
-
-  /@hackbg/formati/1.2.0:
-    resolution: {integrity: sha512-1HMDTKUsdFHF8ymtKVA+4EdCsNfX+1RwXXezyeYR/BLB19EbIX16+msOYzY7XHNkIBLHfb2oUdTNLAMTU28XJg==}
-    dependencies:
-      '@cosmjs/crypto': 0.20.1
-      '@iov/encoding': 2.5.0
-      bech32: 2.0.0
-      secure-random: 1.1.2
-    dev: false
-
-  /@hackbg/formati/2.0.1:
-    resolution: {integrity: sha512-EGXmrk4IVjgxdZ0n5kInoq46jnT+tH+otN1NZetszZB+IJGsAFm1zQJLU7v6RBXfZm5r84Rp1HrlBI+QdFb9rA==}
-    dependencies:
-      '@cosmjs/crypto': 0.20.1
-      '@iov/encoding': 2.5.0
-      bech32: 2.0.0
-      secure-random: 1.1.2
     dev: false
 
   /@hackbg/formati/3.0.1:
@@ -512,19 +502,21 @@ packages:
       - encoding
     dev: true
 
-  /@hackbg/konfizi/1.0.5:
-    resolution: {integrity: sha512-N1dTrLzWCtqnRVc0NYkwcFquCPXIqgdG9ArJVdCSnfOjPVlsXGnCFGJY3bbJhYPl3zNruxP/GExZYs4pFIm/4w==}
+  /@hackbg/komandi/5.0.1:
+    resolution: {integrity: sha512-LvNFR6mjaKjWK4eFk/jO4DjjcT+ODk+7Yuea+x+pmkfLkIIFv2i5b2oiy/WArSXQJohmksNQwL5WGboWIlVd7Q==}
+    hasBin: true
+    peerDependencies:
+      dotenv: ^15.0.1||^16
+    peerDependenciesMeta:
+      dotenv:
+        optional: true
+    dependencies:
+      '@hackbg/konfizi': 2.0.0
+      '@hackbg/konzola': 2.0.0
     dev: false
 
-  /@hackbg/konzola/1.2.0:
-    resolution: {integrity: sha512-dxnh76v5VspdfWwe8CbeyP3nt0WiDNphniUSvBLOP/sPUozYuc7z+Ac/s5JnFlhJ6s5rVe9M8J8IYJiOednPYA==}
-    dependencies:
-      '@types/prettyjson': 0.0.30
-      '@types/prompts': 2.0.14
-      colors: 1.4.0
-      prettyjson: github.com/slavaGanzin/prettyjson/d880b8af2973a1a1b277944c3b573d7d6a93ba8f
-      prompts: 2.4.2
-      table: 6.8.0
+  /@hackbg/konfizi/2.0.0:
+    resolution: {integrity: sha512-rQFUzjsvQe9drMO0XB3oFkvJCJTuTRTM1mMxNAiQkjxoXAKNHo/itnv46QeqBnHyogrvdrwsQL9v/vmTKOFGqQ==}
     dev: false
 
   /@hackbg/konzola/2.0.0:
@@ -3068,8 +3060,8 @@ packages:
       - debug
     dev: false
 
-  /secretjs/1.3.0-beta.25:
-    resolution: {integrity: sha512-fHTMGtHGP7aEVBD1142xTb2k7547misrnCs+EKMZN+CCr+fl1PZdEVX4r3MjC+qRpQIMgwVVXJZr4EUNwN7u3A==}
+  /secretjs/1.4.0-alpha.4:
+    resolution: {integrity: sha512-uCl8g98E8NzuXaS5rcfqwBWy6qp5Nz3LSAOYDk2wS5u380nhH3MUg5Xw9WhdmvJhfNoYqfyYaSmvFprcUqvyDA==}
     dependencies:
       '@cosmjs/encoding': 0.27.1
       '@cosmjs/math': 0.27.1
