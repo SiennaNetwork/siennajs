@@ -32,7 +32,7 @@
     "@fadroma/scrt": "^2.0.0",
     "@fadroma/scrt-amino": "^2.0.0",
     "@fadroma/tokens": "^4",
-    "@hackbg/formati": "^3.0.1",
+    "@hackbg/formati": "^3.0.2",
     "@hackbg/konzola": "^2",
     "@types/js-yaml": "^4.0.5",
     "crypto-js": "^4.1.1",

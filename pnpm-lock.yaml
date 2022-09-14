@@ -8,7 +8,7 @@ importers:
       '@fadroma/scrt': ^2.0.0
       '@fadroma/scrt-amino': ^2.0.0
       '@fadroma/tokens': ^4
-      '@hackbg/formati': ^3.0.1
+      '@hackbg/formati': ^3.0.2
       '@hackbg/konzola': ^2
       '@hackbg/ubik': ^1.1.2
       '@types/crypto-js': ^4.1.1
@@ -27,7 +27,7 @@ importers:
       '@fadroma/scrt': 2.0.0
       '@fadroma/scrt-amino': 2.0.0
       '@fadroma/tokens': 4.0.0
-      '@hackbg/formati': 3.0.1
+      '@hackbg/formati': 3.0.2
       '@hackbg/konzola': 2.0.0
       '@types/js-yaml': 4.0.5
       crypto-js: 4.1.1
@@ -444,7 +444,7 @@ packages:
     resolution: {integrity: sha512-Yg5p8IxpYJ5DdfXeIyLoToccH2V9eaLzGf0OcpS88yke9hXSTg9APJFv4adu936o4sFDcNWDx/qgfytgruYeug==}
     dependencies:
       '@fadroma/scrt': 2.0.0
-      '@hackbg/formati': 3.0.1
+      '@hackbg/formati': 3.0.2
       axios: 0.26.0
       exponential-backoff: 3.1.0
       secretjs: 0.17.5
@@ -458,7 +458,7 @@ packages:
     resolution: {integrity: sha512-1aWS/Zu+17yV5RKaUleptFgtwhmzkhFVNfm/X/Y1BMXrsjp/UjZkPWYUiB8Mr+pUcSZ9EmeASQTDQ0ApnmWkYA==}
     dependencies:
       '@fadroma/client': 5.0.0
-      '@hackbg/formati': 3.0.1
+      '@hackbg/formati': 3.0.2
       '@hackbg/konfizi': 2.0.0
       '@hackbg/konzola': 2.0.0
       '@ungap/structured-clone': 1.0.1
@@ -473,15 +473,15 @@ packages:
     dependencies:
       '@fadroma/client': 5.0.0
       '@fadroma/scrt': 2.0.0
-      '@hackbg/formati': 3.0.1
+      '@hackbg/formati': 3.0.2
       '@hackbg/konzola': 2.0.0
     transitivePeerDependencies:
       - dotenv
       - google-protobuf
     dev: false
 
-  /@hackbg/formati/3.0.1:
-    resolution: {integrity: sha512-Q0HHiWP4cH05SeFu84jP9sfNuJdaQod3KxMGjhWoXj5OXo8luAOymNy68ZvF0H6SoVLcZoFHImecnRuhpZ+2UQ==}
+  /@hackbg/formati/3.0.2:
+    resolution: {integrity: sha512-akc/hQNE7/YEBbUlq597JFWrQTU+5Ad32qoSWZS945Xp7EBz+JT0Ydhv8jOzW6/ffrHD/t6PeZ7iyzQkaxmzfQ==}
     dependencies:
       '@cosmjs/crypto': 0.20.1
       '@iov/encoding': 2.5.0
