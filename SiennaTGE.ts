@@ -82,7 +82,7 @@ export default class SiennaTGE extends Deployment {
   rpt = this.contract({ name: this.names.rpt, client: RPT_TGE }).get()
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) {
-    throw 'TODO'
+    console.warn('SiennaTGE#setRptConfig: TODO')
   }
   /** Fetch the current status of RPT. */
   getRptStatus = () =>

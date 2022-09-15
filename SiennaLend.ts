@@ -44,39 +44,41 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
   /** Configure the overseer whitelist. */
   whitelist = async () => {
     const MARKET_INITIAL_EXCHANGE_RATE = "0.2";
-    const MARKET_RESERVE_FACTOR = "1";
-    const MARKET_SEIZE_FACTOR = "0.9";
-    const MARKET_LTV_RATIO = "0.7";
-    const MARKET_TOKEN_SYMBOL = "SSCRT";
+    const MARKET_RESERVE_FACTOR        = "1";
+    const MARKET_SEIZE_FACTOR          = "0.9";
+    const MARKET_LTV_RATIO             = "0.7";
+    const MARKET_TOKEN_SYMBOL          = "SSCRT";
     const overseer      = await this.overseer
     const interestModel = await this.interestModel
+    const config        = {
+      initial_exchange_rate: MARKET_INITIAL_EXCHANGE_RATE,
+      reserve_factor:        MARKET_RESERVE_FACTOR,
+      seize_factor:          MARKET_SEIZE_FACTOR,
+    }
+    const underlying_asset = {
+      address:   "",
+      code_hash: "",
+    }
     await overseer.execute({
       whitelist: {
         config: {
-          entropy:   randomBase64(36),
-          prng_seed: randomBase64(36),
+          entropy:                 randomBase64(36),
+          prng_seed:               randomBase64(36),
           interest_model_contract: interestModel.asLink,
-          ltv_ratio:    MARKET_LTV_RATIO,
-          token_symbol: MARKET_TOKEN_SYMBOL,
-          config: {
-            initial_exchange_rate: MARKET_INITIAL_EXCHANGE_RATE,
-            reserve_factor:        MARKET_RESERVE_FACTOR,
-            seize_factor:          MARKET_SEIZE_FACTOR,
-          },
-          underlying_asset: {
-            address:   "",
-            code_hash: "",
-          },
+          ltv_ratio:               MARKET_LTV_RATIO,
+          token_symbol:            MARKET_TOKEN_SYMBOL,
+          config,
+          underlying_asset,
         },
       },
     })
   }
   /** The known lend markets. */
-  markets:     Promise<LendMarket[]> = Promise.reject('TODO')
+  markets:     Promise<LendMarket[]> = Promise.resolve([])
   /** The lend oracle. */
-  oracle?:     Promise<LendOracle>   = Promise.reject('TODO')
+  oracle?:     Promise<LendOracle>   = undefined
   /** The lend mock oracle. */
-  mockOracle?: Promise<MockOracle>   = Promise.reject('TODO')
+  mockOracle?: Promise<MockOracle>   = undefined
   /** The TGE containing the token and RPT used by the deployment. */
   tge = new TGEDeployment(this)
   /** The reward token for Lend. Defaults to SIENNA. */
