@@ -27,23 +27,23 @@ export default class Sienna extends Deployment {
 
   /** The Sienna Rewards staking system. */
   rewards = {
-    'v2':   new SiennaRewards(this, 'v2'),
-    'v3':   new SiennaRewards(this, 'v3'),
-    'v3.1': new SiennaRewards(this, 'v3.1'),
-    'v4.1': new SiennaRewards(this, 'v4.1'),
+    v2:   new SiennaRewards(this, 'v2'),
+    v3:   new SiennaRewards(this, 'v3'),
+    v3_1: new SiennaRewards(this, 'v3.1'),
+    v4_1: new SiennaRewards(this, 'v4.1'),
   }
 
   /** The Sienna Lend lending platform. */
-  lend = new SiennaLend(this, 'v1')
+  lend   = new SiennaLend(this, 'v1')
 
   /** Partner-Funded Rewards: vesting of non-SIENNA tokens. */
-  pfr = new SiennaPFR(this, 'v3.1')
+  pfr    = new SiennaPFR(this, 'v3.1')
 
   /** Sienna Governance system. */
-  governance = new SiennaGovernance(this)
+  gov    = new SiennaGovernance(this)
 
   /** Sienna Launch: Launchpad/IDO system. */
-  launchpad = new SiennaLaunch(this)
+  launch = new SiennaLaunch(this)
 
   static Auth       = SiennaAuth
   static TGE        = SiennaTGE
