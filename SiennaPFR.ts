@@ -38,6 +38,8 @@ export default class SiennaPFR extends Deployment {
   rewardPools: Promise<Rewards[]> = Promise.all(this.vestings.map(this.names.rewards)
     .map(name=>this.contract(name).getClient(Rewards[this.rewardsVersion!]) as Promise<Rewards>))
 
+  showStatus = this.command('status', 'display the status of PFR vestings', async () => {})
+
 }
 
 export class SiennaPFRInstance extends SiennaTGE {

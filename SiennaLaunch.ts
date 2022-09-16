@@ -37,16 +37,18 @@ export default class LaunchpadDeployment extends Deployment {
   /** The known IDOs, matched by name */
   idos: Contract<IDO>[] = this.filter(this.names.ido)
     .map(receipt=>this.contract({ ...receipt, client: IDO }))
-  /** Print the status of the Launchpad/IDO system. */
-  status = async () => {
-    const launchpad = await this.launchpad
-    log.authProvider(await launchpad.auth.getProvider())
-    log.saleConstraints(await launchpad.saleConstraints())
-    log.latestIdos(await launchpad.getIdos())
-    console.info('Auth provider:')
-    console.info(' ', JSON.stringify(await launchpad.auth.getProvider()))
-    console.info('Latest IDOs:')
-  }
+
+  /** Display the status of the Launchpad/IDO system. */
+  showStatus = this.command('status', 'display the status of the Launchpad/IDO system.',
+    async () => {
+      const launchpad = await this.launchpad
+      log.authProvider(await launchpad.auth.getProvider())
+      log.saleConstraints(await launchpad.saleConstraints())
+      log.latestIdos(await launchpad.getIdos())
+      console.info('Auth provider:')
+      console.info(' ', JSON.stringify(await launchpad.auth.getProvider()))
+      console.info('Latest IDOs:')
+    })
 }
 
 const log = new class SiennaLaunchConsole extends CustomConsole {

@@ -48,8 +48,9 @@ export default class GovernanceDeployment extends Deployment {
   pool = this.contract({ name: this.names.pool, client: this.Clients.Pool }).get()
   /** The governance voting contract. */
   polls = this.contract({ name: this.names.polls, client: this.Clients.Polls }).get()
-  /** Print the status of the governance system. */
-  status = async () => {
+
+  /** Display the status of the governance system. */
+  showStatus = async () => {
     const [pool, polls] = await Promise.all([this.pool, this.polls])
     log.pool(pool)
     const stakedToken = await pool.getStakedToken()

@@ -17,19 +17,59 @@ import {
 
 /** Connect to an existing TGE. */
 export default class SiennaTGE extends Deployment {
+
   names = { token: 'SIENNA', mgmt: 'SIENNA.MGMT', rpt: 'SIENNA.RPT' }
+
   /** The deployed SIENNA SNIP20 token contract. */
   token = this.contract({ name: this.names.token, client: Snip20 }).get()
+
   /** Get the balance of an address in the vested token. */
   getBalance = async (addr: Address, vk: ViewingKey) => {
     this.log.info(`Querying balance of ${addr}...`)
     return await (await this.token).getBalance(addr, vk)
   }
+
   /** Set the VK of the calling address in the vested token. */
   setVK = async (vk: ViewingKey) => {
     this.log.info('Setting VK...')
     return await (await this.token).vk.set(vk)
   }
+
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  mgmt = this.contract({ name: this.names.mgmt, client: MGMT_TGE }).get()
+
+  /** Fetch the current schedule of MGMT. */
+  getMgmtSchedule = () =>
+    this.mgmt.then(mgmt=>mgmt.schedule())
+
+  /** Fetch the current schedule of MGMT. */
+  getMgmtStatus = () =>
+    this.mgmt.then(mgmt=>mgmt.status())
+
+  /** Fetch the current progress of the vesting. */
+  getMgmtProgress = (addr: Address) =>
+    this.mgmt.then(mgmt=>mgmt.progress(addr))
+
+  /** Show the current progress of the vesting. */
+  /** The deployed RPT contract, which claims tokens from MGMT
+    * and distributes them to the reward pools.  */
+  rpt = this.contract({ name: this.names.rpt, client: RPT_TGE }).get()
+
+  /** Update the RPT configuration. */
+  setRptConfig = (config: RPTConfig) => console.warn('SiennaTGE#setRptConfig: TODO')
+
+  /** Fetch the current status of RPT. */
+  getRptStatus = () => this.rpt.then(rpt=>rpt.status())
+
+  showStatus = this.command('status', 'show the status of this TGE', async (
+    address = this.agent?.address!
+  ) => {
+    await this.showMgmtStatus()
+    await this.showMgmtProgress(address)
+    await this.showRptStatus()
+  })
+
   /** Print the result of getBalance. */
   showBalance = async (addr: Address, vk: ViewingKey) => {
     try {
@@ -43,15 +83,6 @@ export default class SiennaTGE extends Deployment {
       log.balance(addr, await this.getBalance(addr, vk))
     }
   }
-  /** The deployed MGMT contract, which unlocks tokens
-    * for claiming according to a pre-defined schedule.  */
-  mgmt = this.contract({ name: this.names.mgmt, client: MGMT_TGE }).get()
-  /** Fetch the current schedule of MGMT. */
-  getMgmtSchedule = () =>
-    this.mgmt.then(mgmt=>mgmt.schedule())
-  /** Fetch the current schedule of MGMT. */
-  getMgmtStatus = () =>
-    this.mgmt.then(mgmt=>mgmt.status())
   /** Show the current status of the MGMT */
   showMgmtStatus = async () => {
     try {
@@ -63,10 +94,6 @@ export default class SiennaTGE extends Deployment {
       log.error((e as Error).message)
     }
   }
-  /** Fetch the current progress of the vesting. */
-  getMgmtProgress = (addr: Address) =>
-    this.mgmt.then(mgmt=>mgmt.progress(addr))
-  /** Show the current progress of the vesting. */
   showMgmtProgress = async (user: Address) => {
     try {
       const {address} = await this.mgmt
@@ -77,16 +104,6 @@ export default class SiennaTGE extends Deployment {
       log.error((e as Error).message)
     }
   }
-  /** The deployed RPT contract, which claims tokens from MGMT
-    * and distributes them to the reward pools.  */
-  rpt = this.contract({ name: this.names.rpt, client: RPT_TGE }).get()
-  /** Update the RPT configuration. */
-  setRptConfig (config: RPTConfig) {
-    console.warn('SiennaTGE#setRptConfig: TODO')
-  }
-  /** Fetch the current status of RPT. */
-  getRptStatus = () =>
-    this.rpt.then(rpt=>rpt.status())
   /** Show the current status of the RPT. */
   showRptStatus = async () => {
     const status = await (await this.rpt).status() as { config: any[] }

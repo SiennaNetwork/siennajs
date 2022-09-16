@@ -44,29 +44,8 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   }
   /** The AMM factory. */
   factory = this.contract({ name: this.names.factory, client: AMMFactory[this.version!] }).get()
-  /** Display the status of the factory and exchanges. */
-  showFactoryStatus = async () => {
-    const factory = await this.factory
-    log.factoryStatus(factory.address!)
-    const exchanges = await factory.listExchangesFull()
-    if (!(exchanges.length > 0)) return log.noExchanges()
-    const column1 = 15
-    for (const exchange of exchanges) {
-      log.info()
-      if (!exchange) continue
-      log.exchangeHeader(exchange, column1)
-      log.exchangeDetail(exchange, column1, ...await Promise.all([
-        (exchange.token_0 instanceof Snip20) ? exchange.token_0?.getTokenInfo() : {},
-        (exchange.token_1 instanceof Snip20) ? exchange.token_1?.getTokenInfo() : {},
-        exchange.lpToken?.getTokenInfo(),
-      ]))
-    }
-    log.info()
-  }
   /** The AMM exchanges. */
   exchanges = this.contracts(this.names.exchanges, AMMExchange as any)
-  /** Show the status of the exchanges. */
-  showExchangesStatus = () => this.exchanges.then(log.exchanges)
   /** Create a new exchange through the factory. */
   createExchange = async (name: string) => {
     log.creatingExchange(name)
@@ -93,6 +72,35 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   lpTokens = this.contracts(this.names.lpTokens, LPToken)
   /** The AMM router. */
   router = this.contract({ name: this.names.router, client: AMMRouter }).get()
+
+  showStatus = this.command('status', 'Display the status of this AMM', async () => {
+    await this.showFactoryStatus()
+    await this.showExchangesStatus()
+  })
+  /** Display the status of the factory. */
+  showFactoryStatus = async () => {
+    const factory = await this.factory
+    log.factoryStatus(factory.address!)
+  }
+  /** Display the status of the exchanges. */
+  showExchangesStatus = async () => {
+    const factory = await this.factory
+    console.log({factory})
+    const exchanges = await factory.listExchangesFull()
+    if (!(exchanges.length > 0)) return log.noExchanges()
+    const column1 = 15
+    for (const exchange of exchanges) {
+      log.info()
+      if (!exchange) continue
+      log.exchangeHeader(exchange, column1)
+      log.exchangeDetail(exchange, column1, ...await Promise.all([
+        (exchange.token_0 instanceof Snip20) ? exchange.token_0?.getTokenInfo() : {},
+        (exchange.token_1 instanceof Snip20) ? exchange.token_1?.getTokenInfo() : {},
+        exchange.lpToken?.getTokenInfo(),
+      ]))
+    }
+    log.info()
+  }
 }
 
 export type AMMFactoryStatus = "Operational" | "Paused" | "Migrating";

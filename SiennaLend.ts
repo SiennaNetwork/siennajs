@@ -83,6 +83,8 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
   tge = new TGEDeployment(this)
   /** The reward token for Lend. Defaults to SIENNA. */
   get rewardToken () { return this.tge.token }
+
+  showStatus = async () => {}
 }
 
 export type LendAuthStrategy = AuthStrategy
