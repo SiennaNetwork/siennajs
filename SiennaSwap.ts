@@ -295,7 +295,7 @@ export class AMMExchange extends Client {
     address: Address
   ): Promise<AMMExchange> {
     const Self: NewAMMExchange = AMMExchange as unknown as NewAMMExchange
-    const self: AMMExchange    = agent.getClient(Self, address) as unknown as AMMExchange
+    const self: AMMExchange    = new Self(agent, address)
     await self.populate()
     return self
   }
