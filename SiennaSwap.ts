@@ -470,7 +470,7 @@ export class AMMExchange extends Client {
 
 }
 
-export interface NewAMMExchange extends NewClient<AMMExchange> {
+export interface NewAMMExchange {
   new (
     agent?:    Agent,
     address?:  Address,
