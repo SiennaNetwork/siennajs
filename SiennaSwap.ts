@@ -327,8 +327,13 @@ export class AMMExchange extends Client {
     // </dumb>
   }
 
-  constructor (agent: Agent, options: AMMExchangeOpts) {
-    super(agent, options.address, options.codeHash)
+  constructor (
+    agent?:    Agent,
+    address?:  Address,
+    codeHash?: CodeHash,
+    options:   Partial<AMMExchangeOpts> = {}
+  ) {
+    super(agent, address, codeHash)
     if (options.token_0)  this.token_0 = options.token_0
     if (options.token_1)  this.token_1 = options.token_1
     if (options.lpToken)  this.lpToken = options.lpToken
@@ -466,10 +471,15 @@ export class AMMExchange extends Client {
 }
 
 export interface NewAMMExchange extends NewClient<AMMExchange> {
-  new (agent?: Agent, options?: AMMExchangeOpts): AMMExchange
+  new (
+    agent?:    Agent,
+    address?:  Address,
+    codeHash?: CodeHash,
+    options?:  AMMExchangeOpts
+  ): AMMExchange
 }
 
-export interface AMMExchangeOpts extends Partial<Client> {
+export interface AMMExchangeOpts {
   token_0?:  Token,
   token_1?:  Token,
   lpToken?:  LPToken,
