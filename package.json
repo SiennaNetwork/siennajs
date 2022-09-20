@@ -28,10 +28,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "@fadroma/client": "^5.0.0",
-    "@fadroma/scrt": "^2.0.0",
-    "@fadroma/scrt-amino": "^2.0.0",
-    "@fadroma/tokens": "^4",
+    "@fadroma/client":     "^6",
+    "@fadroma/scrt":       "^3",
+    "@fadroma/scrt-amino": "^3",
+    "@fadroma/tokens":     "^5",
     "@hackbg/formati": "^3.0.2",
     "@hackbg/konzola": "^2",
     "@types/js-yaml": "^4.0.5",

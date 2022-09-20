@@ -11,13 +11,13 @@ import {
 } from './Core';
 import type {
   Address,
+  ClientClass,
   Contract,
   ContractLink,
   Emigration,
   Immigration,
   IntoLink,
   Message,
-  NewClient,
   Snip20,
   Uint128,
 } from './Core';
@@ -108,7 +108,7 @@ export abstract class Rewards extends Client {
 }
 
 /** Constructs a reward pool of some version. */
-export interface RewardsCtor extends NewClient<Rewards> {
+export interface RewardsCtor extends ClientClass<Rewards> {
   /** Generate the correct format of Rewards init message for the given version */
   init(params: RewardsInitParams): Message;
 }

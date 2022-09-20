@@ -18,12 +18,12 @@ import {
 import type {
   Address,
   Agent, 
+  ClientClass,
   CodeHash,
   ContractInfo,
   ContractLink,
   Decimal,
   ExecOpts,
-  NewClient,
   Uint128,
 } from "@fadroma/scrt";
 import {

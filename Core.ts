@@ -1,5 +1,5 @@
 import * as Scrt from '@fadroma/scrt'
-import { TokenRegistry } from '@fadroma/tokens'
+import { TokenManager } from '@fadroma/tokens'
 import { SecureRandom, Base64 } from '@hackbg/formati'
 
 export const { b64encode, b64decode, b64fromBuffer } = Base64
@@ -34,7 +34,6 @@ export function create_fee(amount: Scrt.Uint128, gas?: Scrt.Uint128): Scrt.IFee 
   if (gas === undefined) {
     gas = amount
   }
-
   return {
     amount: [{ amount: `${amount}`, denom: "uscrt" }],
     gas: `${gas}`,
@@ -50,11 +49,11 @@ export function create_entropy (bytes = 32): string {
 }
 
 export class Deployment extends Scrt.Deployment {
-  tokens: TokenRegistry = new TokenRegistry(this)
+  tokens: TokenManager = new TokenManager(()=>this as Scrt.Deployment)
 }
 
 export class VersionedDeployment<V> extends Scrt.VersionedDeployment<V> {
-  tokens: TokenRegistry = new TokenRegistry(this)
+  tokens: TokenManager = new TokenManager(()=>this as Scrt.Deployment)
 }
 
 export function validatedAddressOf (instance?: { address?: Scrt.Address }): Scrt.Address {
