@@ -9,30 +9,22 @@
   "license": "MIT",
   "type": "module",
   "main": "./index.ts",
-  "engines": {
-    "node": "^12.16 || >=13.7"
-  },
+  "engines": { "node": "^12.16 || >=13.7" },
   "scripts": {
-    "build": "concurrently 'npm:build:*'",
-    "build:cjs": "tsc",
-    "build:esm": "tsc -p tsconfig.esm.json",
-    "clean": "rm -rf dist *.dist.*; git checkout package.json",
     "check": "tsc --noEmit",
-    "prepublishOnly": "npm run build",
-    "ubik": "ubik",
-    "test": "jest"
+    "ubik":  "npm run check && ubik",
+    "test":  "jest"
   },
   "dependencies": {
     "@fadroma/client":     "^6",
     "@fadroma/scrt":       "^3.0.1",
     "@fadroma/scrt-amino": "^3",
     "@fadroma/tokens":     "^5",
-    "@hackbg/formati": "^3.0.2",
-    "@hackbg/konzola": "^2.1",
-    "@types/js-yaml": "^4.0.5",
-    "crypto-js": "^4.1.1",
-    "js-yaml": "^4.1.0",
-    "merkletreejs": "^0.2.32"
+    "@hackbg/konzola":     "^2.1",
+    "@types/js-yaml":      "^4.0.5",
+    "crypto-js":           "^4.1.1",
+    "js-yaml":             "^4.1.0",
+    "merkletreejs":        "^0.2.32"
   },
   "devDependencies": {
     "@hackbg/ubik": "^1.2",
