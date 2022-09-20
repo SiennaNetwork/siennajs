@@ -29,11 +29,11 @@
   },
   "dependencies": {
     "@fadroma/client":     "^6",
-    "@fadroma/scrt":       "^3",
+    "@fadroma/scrt":       "^3.0.1",
     "@fadroma/scrt-amino": "^3",
     "@fadroma/tokens":     "^5",
     "@hackbg/formati": "^3.0.2",
-    "@hackbg/konzola": "^2",
+    "@hackbg/konzola": "^2.1",
     "@types/js-yaml": "^4.0.5",
     "crypto-js": "^4.1.1",
     "js-yaml": "^4.1.0",
