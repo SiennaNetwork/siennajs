@@ -3,13 +3,8 @@
   "version": "1.0.0",
   "description": "Interact with Sienna Network smart contracts through JS.",
   "homepage": "https://sienna.network",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/SiennaNetwork/sienna/tree/main/frontends/siennajs"
-  },
-  "bugs": {
-    "url": "https://github.com/SiennaNetwork/sienna/issues"
-  },
+  "repository": { "type": "git", "url": "https://github.com/SiennaNetwork/siennajs" },
+  "bugs": { "url": "https://github.com/SiennaNetwork/siennajs/issues" },
   "author": "Sienna Network",
   "license": "MIT",
   "type": "module",
