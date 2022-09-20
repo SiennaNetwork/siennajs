@@ -74,7 +74,7 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
     })
   }
   /** The known lend markets. */
-  markets:     Promise<LendOverseerMarket[]> = Promise.resolve([])
+  markets:     Promise<LendMarket[]> = Promise.resolve([])
   /** The lend oracle. */
   oracle?:     Promise<LendOracle>   = undefined
   /** The lend mock oracle. */
