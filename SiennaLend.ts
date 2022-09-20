@@ -74,7 +74,7 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
     })
   }
   /** The known lend markets. */
-  markets:     Promise<LendMarket[]> = Promise.resolve([])
+  markets:     Promise<LendOverseerMarket[]> = Promise.resolve([])
   /** The lend oracle. */
   oracle?:     Promise<LendOracle>   = undefined
   /** The lend mock oracle. */
@@ -132,10 +132,8 @@ export interface LendMarketBorrower {
   principal_balance: Uint256,
   /** Current borrow balance. */
   actual_balance: Uint256,
-
   liquidity: LendAccountLiquidity,
-
-  markets: LendMarket[]
+  markets: LendOverseerMarket[]
 }
 
 export interface LendSimulatedLiquidation {
@@ -383,7 +381,7 @@ export class LendOverseer extends Client {
   }
 
   /** Max limit per page is `30`. */
-  async getMarkets (pagination: Pagination): Promise<PaginatedResponse<LendMarket>> {
+  async getMarkets (pagination: Pagination): Promise<PaginatedResponse<LendOverseerMarket>> {
     return this.query({ markets: { pagination } })
   }
 
