@@ -17,9 +17,9 @@
   },
   "dependencies": {
     "@fadroma/client":     "^6",
-    "@fadroma/scrt":       "^3.0.1",
-    "@fadroma/scrt-amino": "^3",
-    "@fadroma/tokens":     "^5",
+    "@fadroma/scrt":       "^3.0.2",
+    "@fadroma/scrt-amino": "^3.0.1",
+    "@fadroma/tokens":     "^5.0.1",
     "@hackbg/konzola":     "^2.1",
     "@types/js-yaml":      "^4.0.5",
     "crypto-js":           "^4.1.1",
