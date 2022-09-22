@@ -4,9 +4,8 @@ importers:
 
   .:
     specifiers:
-      '@fadroma/client': ^6
-      '@fadroma/scrt': ^3.0.5
-      '@fadroma/scrt-amino': ^3.0.4
+      '@fadroma/scrt': ^3.0.7
+      '@fadroma/scrt-amino': ^3.0.5
       '@fadroma/tokens': ^5.0.3
       '@hackbg/formati': ^5.1.1
       '@hackbg/konzola': ^2.1
@@ -23,9 +22,8 @@ importers:
       ts-jest: ^28.0.8
       typescript: ^4.7.4
     dependencies:
-      '@fadroma/client': 6.0.0
-      '@fadroma/scrt': 3.0.5
-      '@fadroma/scrt-amino': 3.0.4
+      '@fadroma/scrt': 3.0.7
+      '@fadroma/scrt-amino': 3.0.5
       '@fadroma/tokens': 5.0.3
       '@hackbg/formati': 5.1.1
       '@hackbg/konzola': 2.1.0
@@ -422,10 +420,19 @@ packages:
       - dotenv
     dev: false
 
-  /@fadroma/scrt-amino/3.0.4:
-    resolution: {integrity: sha512-eefmoK040W34tfbc55nTqTXURsBL6Mb/sAF445XgwEmbzeHqkcJy/Gx+kEvRU3vnLo6Fw8SqNu4HpyOk5/Ch/A==}
+  /@fadroma/client/6.0.1:
+    resolution: {integrity: sha512-nsVZlmp7qg+jHV10fdbDBEYRE/4CzF4UOJI+oe5whrLkcwudga7wfJ6qJl4/vAwv7SX8jaAjIMrfjiGgoZF7Sw==}
     dependencies:
-      '@fadroma/scrt': 3.0.5
+      '@hackbg/komandi': 6.1.2
+      '@hackbg/konzola': 2.1.0
+    transitivePeerDependencies:
+      - dotenv
+    dev: false
+
+  /@fadroma/scrt-amino/3.0.5:
+    resolution: {integrity: sha512-44sg5Di2Rrn1/H4M6Z5AkpaWRWiuUEEDrx2nm+M15AjHNKmsohgwTRyQv+jTym8ETwDZ/aW0e45M7HX3aLhHNQ==}
+    dependencies:
+      '@fadroma/scrt': 3.0.7
       '@hackbg/formati': 5.1.1
       axios: 0.26.0
       exponential-backoff: 3.1.0
@@ -436,10 +443,10 @@ packages:
       - google-protobuf
     dev: false
 
-  /@fadroma/scrt/3.0.5:
-    resolution: {integrity: sha512-CTMl7gZx/s7bCcVwcyHKlJo7SPzAgjzeDHAqBMR71DjwkLDuvWr9W/09SGf4O11Q7US2eEFO24uZsu6ylcoU+w==}
+  /@fadroma/scrt/3.0.7:
+    resolution: {integrity: sha512-ehiLztF+QhGoCpiMkO3mvV/6dVhkXjOMI+FzTSOay4uufDJKhPQfL0utxHUajNyRlTKtmzXiREmZjy3xIq9aIw==}
     dependencies:
-      '@fadroma/client': 6.0.0
+      '@fadroma/client': 6.0.1
       '@hackbg/formati': 5.1.1
       '@hackbg/konfizi': 3.0.1
       '@hackbg/konzola': 2.1.0
@@ -454,7 +461,7 @@ packages:
     resolution: {integrity: sha512-YcqQbc+ZI1ml+UO7t9asrh3qNvFnxnqDwasKTa7Ub7qvW8l8JRsw6wUm52pXY4ntcev1IKOlv7QNRAn0Mr2VHw==}
     dependencies:
       '@fadroma/client': 6.0.0
-      '@fadroma/scrt': 3.0.5
+      '@fadroma/scrt': 3.0.7
       '@hackbg/formati': 5.1.1
       '@hackbg/konzola': 2.1.0
     transitivePeerDependencies:
