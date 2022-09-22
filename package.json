@@ -1,6 +1,6 @@
 {
   "name": "siennajs",
-  "version": "1.0.0-rc.27",
+  "version": "1.0.0-rc.28",
   "description": "Sienna Network official API client for JavaScript and TypeScript.",
   "homepage": "https://sienna.network",
   "repository": { "type": "git", "url": "https://github.com/SiennaNetwork/siennajs" },
@@ -16,7 +16,7 @@
     "test":  "jest"
   },
   "dependencies": {
-    "@fadroma/client":     "^6",
+    "@fadroma/client":     "^6.0.1",
     "@fadroma/scrt":       "^3.0.5",
     "@fadroma/scrt-amino": "^3.0.4",
     "@fadroma/tokens":     "^5.0.3",
