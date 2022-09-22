@@ -11,14 +11,13 @@ import {
   colors,
   create_entropy,
   getTokenId,
-  getTokenKind,
   isCustomToken,
   isNativeToken
 } from './Core'
 import type {
   Address,
   Agent, 
-  ClientClass,
+  ContractMetadata,
   CodeHash,
   ContractInfo,
   ContractLink,
@@ -27,7 +26,6 @@ import type {
   Uint128,
 } from "@fadroma/scrt";
 import {
-  TokenKind,
   Token,
   TokenAmount,
   TokenInfo,
@@ -331,9 +329,10 @@ export class AMMExchange extends Client {
     agent?:    Agent,
     address?:  Address,
     codeHash?: CodeHash,
+    metadata?: ContractMetadata,
     options:   Partial<AMMExchangeOpts> = {}
   ) {
-    super(agent, address, codeHash)
+    super(agent, address, codeHash, metadata)
     if (options.token_0)  this.token_0 = options.token_0
     if (options.token_1)  this.token_1 = options.token_1
     if (options.lpToken)  this.lpToken = options.lpToken
