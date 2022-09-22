@@ -5,9 +5,9 @@ importers:
   .:
     specifiers:
       '@fadroma/client': ^6
-      '@fadroma/scrt': ^3.0.2
-      '@fadroma/scrt-amino': ^3.0.1
-      '@fadroma/tokens': ^5.0.1
+      '@fadroma/scrt': ^3.0.3
+      '@fadroma/scrt-amino': ^3.0.2
+      '@fadroma/tokens': ^5.0.2
       '@hackbg/konzola': ^2.1
       '@hackbg/ubik': ^1.2
       '@types/crypto-js': ^4.1.1
@@ -23,9 +23,9 @@ importers:
       typescript: ^4.7.4
     dependencies:
       '@fadroma/client': 6.0.0
-      '@fadroma/scrt': 3.0.2
-      '@fadroma/scrt-amino': 3.0.1
-      '@fadroma/tokens': 5.0.1
+      '@fadroma/scrt': 3.0.3
+      '@fadroma/scrt-amino': 3.0.2
+      '@fadroma/tokens': 5.0.2
       '@hackbg/konzola': 2.1.0
       '@types/js-yaml': 4.0.5
       crypto-js: 4.1.1
@@ -379,18 +379,6 @@ packages:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
 
-  /@cosmjs/crypto/0.29.0:
-    resolution: {integrity: sha512-MPJoebRGh7AcZgbfR25ci7iV+XzJiKwVq4wL8n6M5P2QdrIv7DqqniyFXcBbn9dQjMLMHnOSgT9LRv+VXzUVCA==}
-    dependencies:
-      '@cosmjs/encoding': 0.29.0
-      '@cosmjs/math': 0.29.0
-      '@cosmjs/utils': 0.29.0
-      '@noble/hashes': 1.0.0
-      bn.js: 5.2.1
-      elliptic: 6.5.4
-      libsodium-wrappers: 0.7.10
-    dev: false
-
   /@cosmjs/encoding/0.20.1:
     resolution: {integrity: sha512-aBp153iq2LD4GwDGwodDWZk/eyAUZ8J8bbiqZ1uK8rrylzm9Rdw84aa6JxykezJe+uBPtoI4lx9eH7VQXCGDXw==}
     dependencies:
@@ -401,14 +389,6 @@ packages:
 
   /@cosmjs/encoding/0.27.1:
     resolution: {integrity: sha512-rayLsA0ojHeniaRfWWcqSsrE/T1rl1gl0OXVNtXlPwLJifKBeLEefGbOUiAQaT0wgJ8VNGBazVtAZBpJidfDhw==}
-    dependencies:
-      base64-js: 1.5.1
-      bech32: 1.1.4
-      readonly-date: 1.0.0
-    dev: false
-
-  /@cosmjs/encoding/0.29.0:
-    resolution: {integrity: sha512-6HDBtid/YLbyXapY6PdMMIigAtGKyD1w0dUCLU1dOIkPf1q3y43kqoA7WnLkRw0g0/lZY1VGM2fX+2RWU0wxYg==}
     dependencies:
       base64-js: 1.5.1
       bech32: 1.1.4
@@ -427,18 +407,8 @@ packages:
       bn.js: 5.2.1
     dev: false
 
-  /@cosmjs/math/0.29.0:
-    resolution: {integrity: sha512-ufRRmyDQtJUrH8r1V4N7Q6rTOk9ZX7XIXjJto7cfXP8kcxm7IJXKYk+r0EfDnNHFkxTidYvW/1YXeeNoy8xZYw==}
-    dependencies:
-      bn.js: 5.2.1
-    dev: false
-
   /@cosmjs/utils/0.20.1:
     resolution: {integrity: sha512-xl9YnIrAAaBd6nFffwFbyrnKjqjD9zKGP8OBKxzyglxamHfqAS+PcJPEiaEpt+oUt7HAIOyhL3KK75Dh52hGvA==}
-    dev: false
-
-  /@cosmjs/utils/0.29.0:
-    resolution: {integrity: sha512-NiJk3ISX+FU1cQcTTgmJcY84A8mV/p8L5CRewp/2jc/lUmo8j9lMGbX17U7NxVQ9RX5RmrwgdjYnBASzhRCVmA==}
     dev: false
 
   /@fadroma/client/6.0.0:
@@ -450,11 +420,11 @@ packages:
       - dotenv
     dev: false
 
-  /@fadroma/scrt-amino/3.0.1:
-    resolution: {integrity: sha512-r9e1FsgLXUm3QR1nFWA2TknctBBFG909SYwbk8c0MxoIBuwOEuuMoM0xqS8yXzDABRCrdfagl2QIkiMmwImW8A==}
+  /@fadroma/scrt-amino/3.0.2:
+    resolution: {integrity: sha512-8mBhUFk/7gcARDxvRsPSxRRkIhqfpyhU17CCXatkAFh0c1jyQFesvh6GVF3OulmhklUQ1uGF/g0t0R4KGdb6Hg==}
     dependencies:
-      '@fadroma/scrt': 3.0.2
-      '@hackbg/formati': 3.2.0
+      '@fadroma/scrt': 3.0.3
+      '@hackbg/formati': 5.1.0
       axios: 0.26.0
       exponential-backoff: 3.1.0
       secretjs: 0.17.5
@@ -464,11 +434,11 @@ packages:
       - google-protobuf
     dev: false
 
-  /@fadroma/scrt/3.0.2:
-    resolution: {integrity: sha512-p0NXTipEPPiAo5ffPB80wFX9tHgRjzSg7Qb+yBxlY4vgsuUwf3jwC6oSMM+vTb/VO2vBw+8bGl/XDSvdGWQRPg==}
+  /@fadroma/scrt/3.0.3:
+    resolution: {integrity: sha512-t/tIYZEOwaaxeRqNUlvn21sLF/a1Yl8xHwIZQLb185HO561Yhq+blJriOC+xkBu594k/LWWPeby0YCKfmbc9OA==}
     dependencies:
       '@fadroma/client': 6.0.0
-      '@hackbg/formati': 3.2.0
+      '@hackbg/formati': 5.1.0
       '@hackbg/konfizi': 3.0.1
       '@hackbg/konzola': 2.1.0
       '@ungap/structured-clone': 1.0.1
@@ -478,26 +448,26 @@ packages:
       - google-protobuf
     dev: false
 
-  /@fadroma/tokens/5.0.1:
-    resolution: {integrity: sha512-ezcAtm7ik38UjYkp64wg8+4yyAbYf+SC06qS8L7rUAx/Z4fX6ErM59OXMOT//W1244yYCloYFo8R5Wl7eBAYNA==}
+  /@fadroma/tokens/5.0.2:
+    resolution: {integrity: sha512-lKX4Kfo/0uk+vl1pNkXB0Xfdpli4L9CLu5CInfx1rtIoohsLGd4y/Q84dlxP45Znzo39tr3fNDCzkDty/OrfPg==}
     dependencies:
       '@fadroma/client': 6.0.0
-      '@fadroma/scrt': 3.0.2
-      '@hackbg/formati': 3.2.0
+      '@fadroma/scrt': 3.0.3
+      '@hackbg/formati': 5.1.0
       '@hackbg/konzola': 2.1.0
     transitivePeerDependencies:
       - dotenv
       - google-protobuf
     dev: false
 
-  /@hackbg/formati/3.2.0:
-    resolution: {integrity: sha512-KmcmqEQw0/528Dkk6RR1gAXBAdmw6XytPfD1CL+K0FSh3xxseo0hIG1iD2BaHK9iaz7V5ha1bsrQJ3/MyidzLQ==}
+  /@hackbg/formati/5.1.0:
+    resolution: {integrity: sha512-Vajh6fhqjqkjSZQEUpwcQImdgHX4FvoNJvHJPzO6qmCNeubnTozz39bgFDPKz5m6uK0qZG+O5e/Ipd0haPk+cw==}
     dependencies:
-      '@cosmjs/crypto': 0.29.0
-      '@cosmjs/encoding': 0.29.0
+      '@noble/hashes': 1.1.2
+      '@scure/base': 1.1.1
+      '@scure/bip32': 1.1.0
+      '@scure/bip39': 1.1.0
       '@types/secure-random': 1.1.0
-      '@waiting/base64': 4.2.9
-      bech32: 2.0.0
       secure-random: 1.1.2
     dev: false
 
@@ -868,6 +838,10 @@ packages:
     resolution: {integrity: sha512-DZVbtY62kc3kkBtMHqwCOfXrT/hnoORy5BJ4+HU1IR59X0KWAOqsfzQPcUl/lQLlG7qXbe/fZ3r/emxtAl+sqg==}
     dev: false
 
+  /@noble/hashes/1.1.2:
+    resolution: {integrity: sha512-KYRCASVTv6aeUi1tsF8/vpyR7zpfs3FUzy2Jqm+MU+LmUKhQ0y2FpfwqkCcxSg2ua4GALJd8k2R76WxwZGbQpA==}
+    dev: false
+
   /@noble/secp256k1/1.6.3:
     resolution: {integrity: sha512-T04e4iTurVy7I8Sw4+c5OSN9/RkPlo1uKxAomtxQNLq8j1uPAqnsqG1bqvY3Jv7c13gyr6dui0zmh/I3+f/JaQ==}
     dev: false
@@ -921,6 +895,25 @@ packages:
 
   /@protobufjs/utf8/1.1.0:
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
+    dev: false
+
+  /@scure/base/1.1.1:
+    resolution: {integrity: sha512-ZxOhsSyxYwLJj3pLZCefNitxsj093tb2vq90mp2txoYeBqbcjDjqFhyM8eUjq/uFm6zJ+mUuqxlS2FkuSY1MTA==}
+    dev: false
+
+  /@scure/bip32/1.1.0:
+    resolution: {integrity: sha512-ftTW3kKX54YXLCxH6BB7oEEoJfoE2pIgw7MINKAs5PsS6nqKPuKk1haTF/EuHmYqG330t5GSrdmtRuHaY1a62Q==}
+    dependencies:
+      '@noble/hashes': 1.1.2
+      '@noble/secp256k1': 1.6.3
+      '@scure/base': 1.1.1
+    dev: false
+
+  /@scure/bip39/1.1.0:
+    resolution: {integrity: sha512-pwrPOS16VeTKg98dYXQyIjJEcWfz7/1YJIwxUEPFfQPtc86Ym/1sVgQ2RLoD43AazMk2l/unK4ITySSpW2+82w==}
+    dependencies:
+      '@noble/hashes': 1.1.2
+      '@scure/base': 1.1.1
     dev: false
 
   /@sinclair/typebox/0.24.41:
@@ -1074,11 +1067,6 @@ packages:
 
   /@ungap/structured-clone/1.0.1:
     resolution: {integrity: sha512-zKVyTt6rELvPXYwcVPTJcPFtY0AckN5A7xWuc7owBqR0FdtuDYhE9MZZUi6IY1kZUQFSXV1B3UOOIyLkVHYd2w==}
-    dev: false
-
-  /@waiting/base64/4.2.9:
-    resolution: {integrity: sha512-yzt9ih63oePux/sQM8Df6DTv1IeXGByaHrFiJoPszk0LaJwIGJ3IKhKhT/O6YMo2RignlP2cfxoo1lGmKZPIgQ==}
-    engines: {node: '>=10.4.0'}
     dev: false
 
   /ajv/8.11.0:
