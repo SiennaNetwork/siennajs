@@ -1,7 +1,109 @@
-import { Client, Address, Moment, Uint128, Fee, Decimal } from '@fadroma/scrt';
+import {
+  Address,
+  Client,
+  Contract,
+  ContractLink,
+  CustomConsole,
+  Decimal,
+  Deployment,
+  Fee,
+  Moment,
+  Snip20,
+  Uint128,
+  YAML,
+  bold,
+} from './Core';
+import AuthProviderDeployment, { Auth, AuthClient } from './Auth';
+import TGEDeployment, { RPT_TGE } from './SiennaTGE';
+import { Rewards_v4_1 } from './SiennaRewards_v4'
 
-import { Auth } from './Auth';
-import { ContractInfo } from './Core';
+export default class GovernanceDeployment extends Deployment {
+  version = 'v1'
+  names = {
+    /** The name of the auth group that gives the voting contract
+      * access to the balances in the staking contract, which it
+      * uses to compute voting power. */
+    authGroup: 'Rewards_and_Governance',
+    /** The name of the governance staking pool where voting power is accumulated. */
+    pool:      `SIENNA.Rewards[v4]`,
+    /** The name of the governance contract where users vote on proposals. */
+    polls:     `SIENNA.Rewards[v4].Polls[${this.version}]`
+  }
+  Clients = {
+    /** The client class used to talk to the governance staking pool. */
+    Pool:  Rewards_v4_1,
+    /** The client class used to talk to the governance voting polls. */
+    Polls: Polls
+  }
+  /** The TGE containing the token and RPT used by the deployment. */
+  tge = new TGEDeployment(this)
+  /** The token staked in the governance pool. */
+  get token () { return this.tge.token }
+  /** The RPT contract which needs to be reconfigured when we upgrade
+    * the staking pool, so that the new pool gets rewards budget. */
+  get rpt () { return this.tge.rpt }
+  /** The auth provider and oracle used by the deployment. */
+  auth = new AuthProviderDeployment(this, 'v1', this.names.authGroup)
+  /** The up-to-date Rewards v4 staking pool with governance support. */
+  pool = this.contract({ name: this.names.pool, client: this.Clients.Pool }).get()
+  /** The governance voting contract. */
+  polls = this.contract({ name: this.names.polls, client: this.Clients.Polls }).get()
+
+  /** Display the status of the governance system. */
+  showStatus = async () => {
+    const [pool, polls] = await Promise.all([this.pool, this.polls])
+    log.pool(pool)
+    const stakedToken = await pool.getStakedToken()
+    const label = '(todo)'
+    log.stakedToken(stakedToken, label)
+    log.epoch(await pool.getEpoch())
+    log.config(await pool.getConfig())
+    log.pollsContract(polls)
+    log.pollsAuthProvider(await polls.auth.getProvider())
+    log.pollsConfig(await polls.getPollConfig())
+    log.activePolls(await polls.getPolls(+ new Date() / 1000, 0, 10, 0))
+  }
+}
+
+const log = new class SiennaGovernanceConsole extends CustomConsole {
+
+  name = 'Sienna Governance'
+
+  pool (pool: any) {
+    this.info('Governance-enabled staking pool:')
+    this.info(' ', JSON.stringify(pool.asLink))
+  }
+  async stakedToken (stakedToken: any, label: any) {
+    const link = JSON.stringify(stakedToken?.asLink)
+    this.info('Staked token:')
+    this.info(`  ${label} ${link}`)
+  }
+  epoch (epoch: any) {
+    this.info('Epoch:')
+    this.info(' ', epoch)
+  }
+  config (config: any) {
+    this.info('Pool config:')
+    YAML.dump(config).trim().split('\n').forEach(line=>this.info(' ', line))
+  }
+  pollsContract (contract: any) {
+    this.info('Governance contract:')
+    this.info(' ', JSON.stringify(contract.asLink))
+  }
+  pollsAuthProvider (provider: any) {
+    this.info('Auth provider:')
+    this.info(' ', JSON.stringify(provider))
+  }
+  pollsConfig (config: any) {
+    this.info('Poll config:')
+    this.info(' ', config)
+  }
+  activePolls (polls: any) {
+    this.info('Active polls:')
+    this.info(' ', polls)
+    this.info('')
+  }
+}
 
 const getNow = () => Math.floor(+new Date() / 1000);
 
@@ -46,7 +148,7 @@ export interface PollConfig {
   /** Minimum percentage (0-1) which is needed for a poll to be valid */
   quorum: Decimal;
   /** Link to the rewards contract */
-  rewards: ContractInfo;
+  rewards: ContractLink;
   /** Minimum number of tokens staked to be able to vote */
   voting_threshold: Uint128;
 }
@@ -128,6 +230,8 @@ export class Polls extends Client {
     unvote: new Fee('100000', 'uscrt'),
     change_vote_choice: new Fee('100000', 'uscrt'),
   };
+
+  get auth () { return new AuthClient(this.agent, this.address, this.codeHash) }
 
   async createPoll(meta: PollMetadata) {
     return this.execute({ create_poll: { meta } });

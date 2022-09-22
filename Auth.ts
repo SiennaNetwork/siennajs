@@ -1,5 +1,45 @@
-import { Permit, Signer, ViewingKey, Client, Address, ContractLink } from "@fadroma/scrt";
-import { Pagination } from "./Pagination";
+import {
+  Address,
+  Client,
+  CodeHash,
+  ContractLink,
+  Deployment,
+  IntoLink,
+  Pagination,
+  Permit,
+  Signer,
+  VersionedDeployment,
+  ViewingKey,
+  linkStruct,
+} from "./Core";
+
+export type AuthProviderVersion = 'v1'
+
+export const LatestAuthProviderVersion: AuthProviderVersion = 'v1'
+
+export default class SiennaAuth extends VersionedDeployment<AuthProviderVersion> {
+  constructor (
+    options: object = {},
+    public readonly version: AuthProviderVersion = (options as any)?.version ?? LatestAuthProviderVersion,
+    /** Appended to the provider and oracle names. */
+    public readonly extraName: string|false      = (options as any)?.extraName ?? false,
+  ) {
+    super(options, version)
+    if (extraName) {
+      this.names.provider += `.${extraName}`
+      this.names.oracle    = `${this.names.provider}.Oracle`
+    }
+  }
+  /** The names under which the provider and oracle are known in the deployment. */
+  names = {
+    provider: `Auth[${this.version}]`,
+    oracle:   `Auth[${this.version}].Oracle`
+  }
+  /** The auth provider contract. */
+  provider = this.contract({ name: this.names.provider, client: AuthProvider }).get()
+  /** The auth provider's RNG oracle. */
+  oracle = this.contract({ name: this.names.oracle }).get()
+}
 
 export type AuthStrategy =
   | { type: "permit"; signer: Signer }
@@ -12,6 +52,18 @@ export type AuthMethod<T> =
 export class MockAuthClient extends Client {
   async update(second_contract: any) {
     return this.execute({ update: { second_contract } });
+  }
+}
+
+export class AuthClient extends Client {
+  async setGroupKey (key: string, group_id: number) {
+    return await this.execute({ auth_client: { set_group_key: { key, group_id } } })
+  }
+  async changeProvider (provider: IntoLink) {
+    return await this.execute({ auth_client: { change_provider: { provider: linkStruct(provider) } } })
+  }
+  async getProvider (): Promise<AuthProvider> {
+    return await this.query({ auth_client: { provider: {} } })
   }
 }
 
@@ -29,7 +81,7 @@ export class AuthProvider extends Client {
   }
 
   async addMembers(groupId: number, members: ContractLink[]) {
-    return this.execute({ create_group: { name, members } });
+    return this.execute({ add_members: { groupId, members } });
   }
 
   async removeMembers(

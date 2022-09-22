@@ -2,58 +2,87 @@ name: SiennaJS
 on: [push, pull_request]
 
 jobs:
-
-  rs-publish:
-    name: cargo publish --dry-run
-    runs-on: ubuntu-latest
-    steps:
-      - name: Get the source, no submodules
-        uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile:   minimal
-          toolchain: stable
-          target:    wasm32-unknown-unknown
-          override:  true
-      - name: Unveil Cargo.toml
-        run: cp _Cargo.toml Cargo.toml
-      - name: Run cargo publish --dry-run
-        run: |
-          cargo publish --dry-run -p fadroma-platform-scrt
-          cargo publish --dry-run -p fadroma-proc-auth
-          cargo publish --dry-run -p fadroma-proc-derive
-          cargo publish --dry-run -p fadroma-proc-message
-
-  rs-coverage:
-    name: cargo tarpaulin
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with: { submodules: true }
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile:   minimal
-          toolchain: stable
-          target:    wasm32-unknown-unknown
-          override:  true
-      - uses: Swatinem/rust-cache@v1
-      - name: Unveil Cargo.toml
-        run: cp _Cargo.toml Cargo.toml
-      - uses: actions-rs/tarpaulin@v0.1
-        with:
-          version: '0.18.3'
-          args: '--workspace --ignore-panics --ignore-tests --exclude-files=platforms/* --coveralls ${{secrets.COVERALLS_REPO_TOKEN}} --exclude-files platforms'
-
   js:
-    name: pnpm ts:ci
+    name: check, build, fix, and release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-        with: { submodules: recursive }
-      - uses: pnpm/action-setup@v2.0.1
-        with:
-          version: 7.5.2
-          run_install: |
-            - recursive: true
-      - run: pnpm ts:ci
 
+      - name: Get source
+        uses: actions/checkout@v2
+        with: { submodules: recursive }
+
+      - name: Get Node 16
+        uses: actions/setup-node@v3
+        with: { node-version: 16 }
+
+      - name: Get PNPM
+        run:  npm i -g pnpm@^7.5.2
+
+      - name: Don't compile native modules
+        run:  pnpm config set node-gyp /bin/true
+
+      - name: Install deps
+        run:  pnpm i
+
+      - name: Run tests
+        run:  npm test
+
+      - name: Check types
+        run:  npm run check
+
+      - name: Build for packaging
+        run:  npm run ubik fix
+
+      - name: Package as tarball
+        #see: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
+        run:  echo "::set-output name=file::$(npm pack | tail -n1)" # lol
+        id:   pack
+
+      - name: Check that tarball can be installed
+        run: |
+          export SRC=$(pwd)
+          export TAG=$(printf $GITHUB_REF | cut -c11-)
+          echo $TAG
+          mkdir /tmp/downstream
+          cd /tmp/downstream
+          echo "{}" > package.json
+          npm i --save $SRC/${{ steps.pack.outputs.file }}
+          cat package.json
+          node -e 'import("siennajs").then(console.log)'
+          node -e 'console.log(require("siennajs"))'
+          npm i --save typescript
+          echo 'import * as SiennaJS from "siennajs"' > index.ts
+          npm exec tsc index.ts
+          echo "{\"type\":\"module\",\"dependencies\":{\"siennajs\":\"$URL/$TAG/siennajs-$TAG.tgz\"}}" > package.json
+          node -e 'import("siennajs").then(console.log)'
+          node -e 'console.log(require("siennajs"))'
+          npm exec tsc index.ts
+          cd $SRC
+          rm -rf /tmp/downstream
+
+      - name: Upload release
+        if:   startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ steps.pack.outputs.file }}
+          body:  Automated release by https://github.com/softprops/action-gh-release
+
+      - name: Check that release can be installed
+        if:   startsWith(github.ref, 'refs/tags/')
+        run: |
+          export TAG=$(printf $GITHUB_REF | cut -c11-)
+          export URL=https://github.com/SiennaNetwork/siennajs/releases/download
+          mkdir /tmp/downstream
+          cd /tmp/downstream
+          echo "{\"dependencies\":{\"siennajs\":\"$URL/$TAG/siennajs-$TAG.tgz\"}}" > package.json
+          cat package.json
+          npm i
+          node -e 'import("siennajs").then(console.log)'
+          node -e 'console.log(require("siennajs"))'
+          npm i --save typescript
+          echo 'import * as SiennaJS from "siennajs"' > index.ts
+          npm exec tsc index.ts
+          echo "{\"type\":\"module\",\"dependencies\":{\"siennajs\":\"$URL/$TAG/siennajs-$TAG.tgz\"}}" > package.json
+          node -e 'import("siennajs").then(console.log)'
+          node -e 'console.log(require("siennajs"))'
+          npm exec tsc index.ts

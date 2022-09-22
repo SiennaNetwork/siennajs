@@ -1,10 +1,79 @@
-import { ViewingKeyClient, Address, ContractLink, Uint128 } from '@fadroma/scrt';
-import { Snip20 } from '@fadroma/tokens';
-import { AuthMethod } from './Auth';
-import sha256 from 'crypto-js/sha256';
+import {
+  Address,
+  Contract,
+  ContractLink,
+  CustomConsole,
+  Deployment,
+  Snip20,
+  Uint128,
+  ViewingKeyClient,
+  bold,
+} from './Core';
+import Auth, { AuthClient, AuthMethod } from './Auth';
+import TGE, { RPT_TGE } from './SiennaTGE';
+import CryptoJS from 'crypto-js';
 import MerkleTree from 'merkletreejs';
 
+export default class LaunchpadDeployment extends Deployment {
+  version = 'v1'
+  names = {
+    /** The name of the launchpad contract. */
+    launchpad: `Launchpad[${this.version}]`,
+    /** Name of group in auth provider that authorizes the rewards and launchpad contracts. */
+    authGroup: 'Rewards_and_Launchpad',
+    /** Matches IDOs */
+    ido: (name: string) => name.startsWith(`${this.names.launchpad}.IDO[`)
+  }
+  /** The TGE containing the token and RPT used by the deployment. */
+  tge = new TGE(this)
+  /** The token staked in the launchpad pool. */
+  get token () { return this.tge.token }
+  /** TODO: What does launchpad use RPT for? */
+  get rpt   () { return this.tge.rpt }
+  /** The auth provider and oracle used by the deployment. */
+  auth = new Auth(this, 'v1', this.names.authGroup)
+  /** The launchpad contract. */
+  launchpad = this.contract({ name: this.names.launchpad, client: Launchpad }).get()
+  /** The known IDOs, matched by name */
+  idos: Contract<IDO>[] = this.filter(this.names.ido)
+    .map(receipt=>this.contract({ ...receipt, client: IDO }))
+
+  /** Display the status of the Launchpad/IDO system. */
+  showStatus = this.command('status', 'display the status of the Launchpad/IDO system.',
+    async () => {
+      const launchpad = await this.launchpad
+      log.authProvider(await launchpad.auth.getProvider())
+      log.saleConstraints(await launchpad.saleConstraints())
+      log.latestIdos(await launchpad.getIdos())
+      console.info('Auth provider:')
+      console.info(' ', JSON.stringify(await launchpad.auth.getProvider()))
+      console.info('Latest IDOs:')
+    })
+}
+
+const log = new class SiennaLaunchConsole extends CustomConsole {
+
+  name = 'Sienna Launch'
+
+  authProvider (x: any) {
+    this.info('Auth provider:')
+    this.info(' ', JSON.stringify(x))
+  }
+  saleConstraints (x: any) {
+    console.info('Sale constraints:')
+    console.info(' ', x)
+  }
+  latestIdos (x: any) {
+    for (const ido of x.entries) {
+      console.info(' -', JSON.stringify(ido))
+    }
+  }
+}
+
 export class Launchpad extends ViewingKeyClient {
+
+    get auth () { return new AuthClient(this.agent, this.address, this.codeHash) }
+
     /**
      * Creates a new project
      * @param settings
@@ -18,14 +87,12 @@ export class Launchpad extends ViewingKeyClient {
     /**
      * Admin only transaction to add new creators
      * @param addresses List of users
-     *
      */
     async addCreators(addresses: Address[]) {
         return this.execute({ add_project_owners: { addresses } });
     }
 
     /**
-     *
      * Get the entries for a list of users
      * @param auth Authentication method
      * @param addresses List of HumanAddr's to be checked
@@ -42,7 +109,6 @@ export class Launchpad extends ViewingKeyClient {
 
     /**
      * Fetch the constraints to which every launched project is limited to.
-     *
      * @returns SaleConstraints
      */
     async saleConstraints(): Promise<SaleConstraints> {
@@ -50,7 +116,6 @@ export class Launchpad extends ViewingKeyClient {
     }
     /**
      * Get a paginated list of IDO's stored on the launchpad
-     *
      * @param start Starting page
      * @param limit Items per page
      * @returns IdoCollection
@@ -113,6 +178,7 @@ export class Launchpad extends ViewingKeyClient {
         var mask = Math.pow(2, bits_needed) - 1;
         // Create byte array and fill with N random numbers
         var byteArray = new Uint8Array(bytes_needed);
+        //@ts-ignore
         window.crypto.getRandomValues(byteArray);
 
         var p = (bytes_needed - 1) * 8;
@@ -133,8 +199,8 @@ export class Launchpad extends ViewingKeyClient {
     }
 
     createMerkleTree(addresses: Address[]): MerkleTreeInfo {
-        const leaves = addresses.map((addr) => sha256(addr));
-        const tree = new MerkleTree(leaves, sha256);
+        const leaves = addresses.map((addr) => CryptoJS.SHA256(addr));
+        const tree = new MerkleTree(leaves, CryptoJS.SHA256);
 
         const root = tree.getRoot().toString('hex');
 
@@ -157,7 +223,7 @@ export class IDO extends ViewingKeyClient {
         return this.agent!
             .getClient(Snip20, token)
             .withFee(this.getFee('deposit'))
-            .send(amount, this.address, callback);
+            .send(amount, this.address!, callback);
     }
 
     /**
@@ -444,7 +510,7 @@ export interface IdoCollection {
 }
 
 export interface Project {
-    token_coonfig: TokenConfig;
+    token_config: TokenConfig;
     sale_config: SaleConfig;
     schedule?: SaleSchedule;
 }

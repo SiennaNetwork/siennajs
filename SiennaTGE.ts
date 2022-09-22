@@ -1,42 +1,178 @@
-import { Client, Address, Instance, Uint128, Duration } from '@fadroma/scrt'
-import { Snip20 } from '@fadroma/tokens'
-import { linkTuple } from './Core'
+import {
+  Address,
+  Client,
+  CodeHash,
+  CustomConsole,
+  Deployment,
+  Duration,
+  IntoLink,
+  Snip20,
+  Uint128,
+  ViewingKey,
+  YAML,
+  bold,
+  validatedAddressOf,
+  validatedCodeHashOf
+} from './Core'
 
+/** Connect to an existing TGE. */
+export default class SiennaTGE extends Deployment {
+
+  names = { token: 'SIENNA', mgmt: 'SIENNA.MGMT', rpt: 'SIENNA.RPT' }
+
+  /** The deployed SIENNA SNIP20 token contract. */
+  token = this.contract({ name: this.names.token, client: Snip20 }).get()
+
+  /** Get the balance of an address in the vested token. */
+  getBalance = async (addr: Address, vk: ViewingKey) => {
+    this.log.info(`Querying balance of ${addr}...`)
+    return await (await this.token).getBalance(addr, vk)
+  }
+
+  /** Set the VK of the calling address in the vested token. */
+  setVK = async (vk: ViewingKey) => {
+    this.log.info('Setting VK...')
+    return await (await this.token).vk.set(vk)
+  }
+
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  mgmt = this.contract({ name: this.names.mgmt, client: MGMT_TGE }).get()
+
+  /** Fetch the current schedule of MGMT. */
+  getMgmtSchedule = () =>
+    this.mgmt.then(mgmt=>mgmt.schedule())
+
+  /** Fetch the current schedule of MGMT. */
+  getMgmtStatus = () =>
+    this.mgmt.then(mgmt=>mgmt.status())
+
+  /** Fetch the current progress of the vesting. */
+  getMgmtProgress = (addr: Address) =>
+    this.mgmt.then(mgmt=>mgmt.progress(addr))
+
+  /** Show the current progress of the vesting. */
+  /** The deployed RPT contract, which claims tokens from MGMT
+    * and distributes them to the reward pools.  */
+  rpt = this.contract({ name: this.names.rpt, client: RPT_TGE }).get()
+
+  /** Update the RPT configuration. */
+  setRptConfig = (config: RPTConfig) => console.warn('SiennaTGE#setRptConfig: TODO')
+
+  /** Fetch the current status of RPT. */
+  getRptStatus = () => this.rpt.then(rpt=>rpt.status())
+
+  showStatus = this.command('status', 'show the status of this TGE', async (
+    address = this.agent?.address!
+  ) => {
+    await this.showMgmtStatus()
+    await this.showMgmtProgress(address)
+    await this.showRptStatus()
+  })
+
+  /** Print the result of getBalance. */
+  showBalance = async (addr: Address, vk: ViewingKey) => {
+    try {
+      log.balance(addr, await this.getBalance(addr, vk))
+    } catch (e) {
+      if (this.isMainnet) {
+        this.log.error('Mainnet: no VK?')
+        return
+      }
+      const VK = await this.setVK(vk)
+      log.balance(addr, await this.getBalance(addr, vk))
+    }
+  }
+  /** Show the current status of the MGMT */
+  showMgmtStatus = async () => {
+    try {
+      const {address} = await this.mgmt
+      const status = await this.getMgmtStatus()
+      log.mgmtStatus(status)
+      return status
+    } catch (e) {
+      log.error((e as Error).message)
+    }
+  }
+  showMgmtProgress = async (user: Address) => {
+    try {
+      const {address} = await this.mgmt
+      const progress = await this.getMgmtProgress(user)
+      log.mgmtProgress(user, address, progress)
+      return progress
+    } catch (e) {
+      log.error((e as Error).message)
+    }
+  }
+  /** Show the current status of the RPT. */
+  showRptStatus = async () => {
+    const status = await (await this.rpt).status() as { config: any[] }
+    log.rptStatus(this.rpt, status)
+    log.rptRecipients((await Promise.all(status.config.map(
+      async ([address])=>({
+        address,
+        label:    await this.agent?.getLabel(address),
+        codeHash: await this.agent?.getHash(address)
+      })
+    ))))
+    return status
+  }
+}
+
+const log = new class SiennaVestingConsole extends CustomConsole {
+
+  name = 'Sienna Vesting'
+
+  balance (addr: any, balance: any) {
+    this.info(`Balance of ${bold(addr)}: ${balance}`)
+  }
+
+  mgmtStatus (status: any) {
+    this.debug(bold(`MGMT status`), status)
+  }
+
+  mgmtProgress (user: any, address: any, progress: any) {
+    this.info(bold(`MGMT progress`), 'of', bold(user), 'in', bold(address!))
+    for (const [k,v] of Object.entries(progress)) this.info(' ', bold(k), v)
+  }
+
+  rptStatus (rpt: any, status: any) {
+    this.info(`RPT contract:`)
+    this.info(` `, JSON.stringify(rpt.asLink))
+    this.info(`RPT contract config:`)
+    YAML.dump(status).trim().split('\n').forEach(line=>this.info(' ', line))
+  }
+
+  rptRecipients (instances: any) {
+    this.info(`RPT contract recipients:`)
+    const max = instances.reduce((x: any,y: any)=>Math.max(x, y.label?.length??0), 0)
+    instances.forEach(({ label, address, codeHash }: any)=>{
+      this.info(` `, (label??'').padEnd(max), JSON.stringify({ address, codeHash }))
+    })
+  }
+
+}
+
+/** Contract address/hash pair as used by MGMT */
+export type LinkTuple = [Address, CodeHash]
+
+/** Convert Fadroma.Instance to address/hash pair as used by MGMT */
+export const linkTuple = (instance: IntoLink) => (
+  [ validatedAddressOf(instance), validatedCodeHashOf(instance) ]
+)
+
+/** The SIENNA SNIP20 token. */
 export class SiennaSnip20 extends Snip20 {}
 
-export interface VestingSchedule {
-  total: Uint128
-  pools: Array<VestingPool>
-}
-export interface VestingPool {
-  name:     string
-  total:    Uint128
-  partial:  boolean
-  accounts: Array<VestingAccount>
-}
-export interface VestingAccount {
-  name:         string
-  amount:       Uint128
-  address:      Address
-  start_at:     Duration
-  interval:     Duration
-  duration:     Duration
-  cliff:        Uint128
-  portion_size: Uint128
-  remainder:    Uint128
-}
-export interface VestingProgress {
-  time:     number
-  launcher: number
-  elapsed:  number
-  unlocked: string
-  claimed:  string
-}
-
+/** A MGMT vesting contract of either version. */
 export abstract class MGMT extends Client {
+
   static MINTING_POOL = "MintingPool"
+
   static LPF = "LPF"
+
   static RPT = "RPT"
+
   static emptySchedule = (address: Address) => ({
     total: "0",
     pools: [ { 
@@ -50,6 +186,7 @@ export abstract class MGMT extends Client {
       ]
     } ]
   })
+
   /** See the full schedule */
   schedule  () {
     return this.query({ schedule: {} })
@@ -72,67 +209,53 @@ export abstract class MGMT extends Client {
   }
   /** take over a SNIP20 token */
   async acquire (token: Snip20) {
-    const tx1 = await token.setMinters([this.address])
-    const tx2 = await token.changeAdmin(this.address)
+    const tx1 = await token.setMinters([this.address!])
+    const tx2 = await token.changeAdmin(this.address!)
     return [tx1, tx2]
   }
   /** Check how much is claimable by someone at a certain time */
   async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
     time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
-    const { progress } = await this.query({ progress: { address, time } })
+    const { progress }: { progress: VestingProgress } =
+      await this.query({ progress: { address, time } }) 
     return progress
   }
+}
 
-  static legacy: typeof MGMT_TGE
-  static vested: typeof MGMT_Vested
+/** A MGMT schedule. */
+export interface VestingSchedule {
+  total: Uint128
+  pools: Array<VestingPool>
 }
-export class MGMT_TGE extends MGMT {
-  /** Generate an init message for Origina MGMT */
-  static init = (
-    admin:    Address,
-    token:    Instance,
-    schedule: VestingSchedule
-  ) => ({
-    admin,
-    token: linkTuple(token),
-    schedule
-  })
-  /** Query contract status */
-  status() {
-    return this.query({ status: {} })
-  }
-  /** claim accumulated portions */
-  claim() {
-    return this.execute({ claim: {} })
-  }
-  /** set the admin */
-  setOwner(new_admin: any) {
-    return this.execute({ set_owner: { new_admin } })
-  }
-}
-export class MGMT_Vested extends MGMT {
-  /** Change the admin of the contract, requires the other user to accept */
-  change_admin(new_admin: any) {
-    return this.execute({ auth: { change_admin: { address: new_admin } } })
-  }
-  /** accept becoming an admin */
-  accept_admin() {
-    return this.execute({ auth: { accept_admin: {} } })
-  }
-  history(start: number, limit: number) {
-    return this.query({ history: { start, limit } })
-  }
-  config() {
-    return this.query({ config: {} })
-  }
-}
-MGMT.legacy = MGMT_TGE
-MGMT.vested = MGMT_Vested
 
-export type RPTRecipient = string
-export type RPTAmount = string
-export type RPTConfig = [RPTRecipient, RPTAmount][]
-export type RPTStatus = unknown
+export interface VestingPool {
+  name:     string
+  total:    Uint128
+  partial:  boolean
+  accounts: Array<VestingAccount>
+}
+
+export interface VestingAccount {
+  name:         string
+  amount:       Uint128
+  address:      Address
+  start_at:     Duration
+  interval:     Duration
+  duration:     Duration
+  cliff:        Uint128
+  portion_size: Uint128
+  remainder:    Uint128
+}
+
+export interface VestingProgress {
+  time:     number
+  launcher: number
+  elapsed:  number
+  unlocked: string
+  claimed:  string
+}
+
+/** A RPT (redistribution) contract of each version. */
 export abstract class RPT extends Client {
   /** Claim from mgmt and distribute to recipients. Anyone can call this method as:
     * - the recipients can only be changed by the admin
@@ -140,17 +263,55 @@ export abstract class RPT extends Client {
   vest() {
     return this.execute({ vest: {} })
   }
-  static legacy: typeof RPT_TGE
-  static vested: typeof RPT_Vested
 }
+
+export type RPTRecipient = string
+
+export type RPTAmount    = string
+
+export type RPTConfig    = [RPTRecipient, RPTAmount][]
+
+export type RPTStatus    = unknown
+
+export class MGMT_TGE extends MGMT {
+
+  /** Generate an init message for Origina MGMT */
+  static init = (
+    admin:    Address,
+    token:    IntoLink,
+    schedule: VestingSchedule
+  ) => ({
+    admin,
+    token: linkTuple(token),
+    schedule
+  })
+
+  /** Query contract status */
+  status(): Promise<{ status: { launched: boolean } }> {
+    return this.query({ status: {} })
+  }
+
+  /** claim accumulated portions */
+  claim() {
+    return this.execute({ claim: {} })
+  }
+
+  /** set the admin */
+  setOwner(new_admin: any) {
+    return this.execute({ set_owner: { new_admin } })
+  }
+
+}
+
 export class RPT_TGE extends RPT {
+
   /** Generate an init message for original RPT */
   static init = (
     admin:    Address,
     portion:  RPTAmount,
     config:   RPTConfig,
-    token:    Instance,
-    mgmt:     Instance
+    token:    IntoLink,
+    mgmt:     IntoLink
   ) => ({
     admin,
     portion,
@@ -158,31 +319,21 @@ export class RPT_TGE extends RPT {
     token: linkTuple(token),
     mgmt:  linkTuple(mgmt),
   })
+
   /** query contract status */
   async status () {
     const { status }: { status: RPTStatus } = await this.query({ status: {} })
     return status
   }
+
   /** set the vesting recipients */
   configure(config = []) {
     return this.execute({ configure: { config } })
   }
+
   /** change the admin */
   setOwner (new_admin: Address) {
     return this.execute({ set_owner: { new_admin } })
   }
-}
-export class RPT_Vested extends RPT {
-  configuration() {
-    return this.query({ configuration: {} });
-  }
-  configure(distribution: any, portion: any) {
-    return this.execute({ configure: { distribution, portion } });
-  }
-  vest() {
-    return this.execute({ vest: {} });
-  }
-}
 
-RPT.legacy = RPT_TGE
-RPT.vested = RPT_Vested
+}

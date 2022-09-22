@@ -1,17 +1,95 @@
 import {
-  Client, Fee, Address, Decimal256, Uint128, Uint256, ContractLink,
-  Permit, Signer, ViewingKey, ViewingKeyClient
-} from '@fadroma/scrt'
-import { Snip20, TokenInfo } from '@fadroma/tokens'
-import { Pagination, PaginatedResponse } from './Pagination'
+  Address,
+  Client,
+  ContractLink,
+  Decimal256,
+  Fee,
+  PaginatedResponse,
+  Pagination,
+  Permit,
+  Signer,
+  Snip20,
+  TokenInfo,
+  Uint128,
+  Uint256,
+  VersionedDeployment,
+  ViewingKey,
+  ViewingKeyClient,
+  randomBase64,
+} from './Core'
+import type { AuthStrategy, AuthMethod } from './Auth'
+import TGEDeployment from './SiennaTGE'
 
-export type LendAuthStrategy =
-  | { type: 'permit', signer: Signer }
-  | { type: 'vk', viewing_key: { address: Address, key: ViewingKey } }
+export type LendVersions = 'v1'
 
-export type LendAuthMethod<T> =
-  | { permit: Permit<T>; }
-  | { viewing_key: { address: Address, key: ViewingKey } }
+export default class LendDeployment extends VersionedDeployment<LendVersions> {
+  /** The names of contract in a Lend group. */
+  names = {
+    interestModel: `Lend[${this.version}].InterestModel`,
+    oracle:        `Lend[${this.version}].Oracle`,
+    mockOracle:    `Lend[${this.version}].MockOracle`,
+    overseer:      `Lend[${this.version}].Overseer`,
+    rewardToken:   `Lend[${this.version}].Placeholder.SIENNA`,
+  }
+  /** The lend interest model contract. */
+  interestModel = this.contract({
+    name:   this.names.interestModel,
+    client: LendInterestModel
+  }).get()
+  /** The lend overseer factory. */
+  overseer = this.contract({
+    name:   this.names.overseer,
+    client: LendOverseer
+  }).get()
+  /** Configure the overseer whitelist. */
+  whitelist = async () => {
+    const MARKET_INITIAL_EXCHANGE_RATE = "0.2";
+    const MARKET_RESERVE_FACTOR        = "1";
+    const MARKET_SEIZE_FACTOR          = "0.9";
+    const MARKET_LTV_RATIO             = "0.7";
+    const MARKET_TOKEN_SYMBOL          = "SSCRT";
+    const overseer      = await this.overseer
+    const interestModel = await this.interestModel
+    const config        = {
+      initial_exchange_rate: MARKET_INITIAL_EXCHANGE_RATE,
+      reserve_factor:        MARKET_RESERVE_FACTOR,
+      seize_factor:          MARKET_SEIZE_FACTOR,
+    }
+    const underlying_asset = {
+      address:   "",
+      code_hash: "",
+    }
+    await overseer.execute({
+      whitelist: {
+        config: {
+          entropy:                 randomBase64(36),
+          prng_seed:               randomBase64(36),
+          interest_model_contract: interestModel.asLink,
+          ltv_ratio:               MARKET_LTV_RATIO,
+          token_symbol:            MARKET_TOKEN_SYMBOL,
+          config,
+          underlying_asset,
+        },
+      },
+    })
+  }
+  /** The known lend markets. */
+  markets:     Promise<LendMarket[]> = Promise.resolve([])
+  /** The lend oracle. */
+  oracle?:     Promise<LendOracle>   = undefined
+  /** The lend mock oracle. */
+  mockOracle?: Promise<MockOracle>   = undefined
+  /** The TGE containing the token and RPT used by the deployment. */
+  tge = new TGEDeployment(this)
+  /** The reward token for Lend. Defaults to SIENNA. */
+  get rewardToken () { return this.tge.token }
+
+  showStatus = async () => {}
+}
+
+export type LendAuthStrategy = AuthStrategy
+
+export type LendAuthMethod<T> = AuthMethod<T>
 
 export interface LendMarketState {
   /** Block height that the interest was last accrued at */
@@ -54,10 +132,8 @@ export interface LendMarketBorrower {
   principal_balance: Uint256,
   /** Current borrow balance. */
   actual_balance: Uint256,
-
   liquidity: LendAccountLiquidity,
-
-  markets: LendMarket[]
+  markets: LendOverseerMarket[]
 }
 
 export interface LendSimulatedLiquidation {
@@ -139,7 +215,9 @@ export class LendMarket extends Client {
     transfer:          new Fee( '80000', 'uscrt'),
   }
 
-  vk = new ViewingKeyClient(this.agent, this)
+  get vk () {
+    return new ViewingKeyClient(this.agent, this.address, this.codeHash)
+  }
 
   /** Convert and burn the specified amount of slToken to the underlying asset
     * based on the current exchange rate and transfer them to the user. */
@@ -172,7 +250,7 @@ export class LendMarket extends Client {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent!.getClient(Snip20, address)
       .withFee(this.getFee('deposit'))
-      .send(amount, this.address, 'deposit')
+      .send(amount, this.address!, 'deposit')
   }
 
   async repay (
@@ -184,7 +262,7 @@ export class LendMarket extends Client {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent!.getClient(Snip20, address)
       .withFee(this.getFee('repay'))
-      .send(amount, this.address, { repay: { borrower } })
+      .send(amount, this.address!, { repay: { borrower } })
   }
 
   /** Try to liquidate an existing borrower in this market. */
@@ -201,7 +279,7 @@ export class LendMarket extends Client {
     const address = underlying_asset || (await this.getUnderlyingAsset()).address
     return this.agent!.getClient(Snip20, address)
       .withFee(this.getFee('liquidate'))
-      .send(amount, this.address, { liquidate: { borrower, collateral } })
+      .send(amount, this.address!, { liquidate: { borrower, collateral } })
   }
 
   /** Dry run a liquidation returning a result indicating the amount of `collateral`
@@ -227,16 +305,16 @@ export class LendMarket extends Client {
   }
 
   async getTokenInfo (): Promise<TokenInfo> {
-    return this.agent!.getClient(Snip20, this.address).getTokenInfo()
+    return this.agent!.getClient(Snip20, this.address!).getTokenInfo()
   }
 
   async getBalance (address: Address, key: ViewingKey): Promise<Uint128> {
-    return this.agent!.getClient(Snip20, this.address).getBalance(address, key)
+    return this.agent!.getClient(Snip20, this.address!).getBalance(address, key)
   }
 
   async getUnderlyingBalance (auth: LendAuth, block?: number): Promise<Uint128> {
     block = block || await this.agent!.height
-    const method = await auth.createMethod<LendMarketPermissions>(this.address, 'balance')
+    const method = await auth.createMethod<LendMarketPermissions>(this.address!, 'balance')
     return this.query({ balance_underlying: { block, method } })
   }
 
@@ -266,13 +344,13 @@ export class LendMarket extends Client {
 
   async getAccount (auth: LendAuth, block?: number): Promise<LendMarketAccount> {
     block = block || await this.agent!.height
-    const method = await auth.createMethod<LendMarketPermissions>(this.address, 'account_info')
+    const method = await auth.createMethod<LendMarketPermissions>(this.address!, 'account_info')
     return this.query({ account: { block, method } })
   }
 
   /** Will throw if the account hasn't borrowed at least once before. */
   async getAccountId (auth: LendAuth): Promise<string> {
-    const method = await auth.createMethod<LendMarketPermissions>(this.address, 'id')
+    const method = await auth.createMethod<LendMarketPermissions>(this.address!, 'id')
     return this.query({ id: { method } })
   }
 
@@ -303,7 +381,7 @@ export class LendOverseer extends Client {
   }
 
   /** Max limit per page is `30`. */
-  async getMarkets (pagination: Pagination): Promise<PaginatedResponse<LendMarket>> {
+  async getMarkets (pagination: Pagination): Promise<PaginatedResponse<LendOverseerMarket>> {
     return this.query({ markets: { pagination } })
   }
 
@@ -312,7 +390,7 @@ export class LendOverseer extends Client {
   }
 
   async getEnteredMarkets (auth: LendAuth): Promise<LendOverseerMarket[]> {
-    const method = await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info')
+    const method = await auth.createMethod<LendOverseerPermissions>(this.address!, 'account_info')
     return this.query({ entered_markets: { method } })
   }
 
@@ -323,7 +401,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? await this.agent!.height,
-        method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<LendOverseerPermissions>(this.address!, 'account_info'),
         market: null,
         redeem_amount: '0',
         borrow_amount: '0'
@@ -343,7 +421,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? await this.agent!.height,
-        method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<LendOverseerPermissions>(this.address!, 'account_info'),
         market,
         redeem_amount,
         borrow_amount: '0'
@@ -367,7 +445,7 @@ export class LendOverseer extends Client {
     return this.query({
       account_liquidity: {
         block:  block ?? await this.agent!.height,
-        method: await auth.createMethod<LendOverseerPermissions>(this.address, 'account_info'),
+        method: await auth.createMethod<LendOverseerPermissions>(this.address!, 'account_info'),
         market,
         redeem_amount: '0',
         borrow_amount

@@ -3,3 +3,6 @@ tsconfig.json
 DEVELOP.md
 *.ts
 !*.d.ts
+toolbox
+.git*
+dist
