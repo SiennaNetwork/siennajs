@@ -4,15 +4,18 @@ import {
   CustomToken,
   Fee,
   Snip20,
+  Token,
+  TokenAmount,
+  TokenInfo,
   TokenPair,
   TokenPairAmount,
   VersionedDeployment,
   bold,
   colors,
-  create_entropy,
   getTokenId,
   isCustomToken,
-  isNativeToken
+  isNativeToken,
+  randomBase64,
 } from './Core'
 import type {
   Address,
@@ -25,11 +28,6 @@ import type {
   ExecOpts,
   Uint128,
 } from "@fadroma/scrt";
-import {
-  Token,
-  TokenAmount,
-  TokenInfo,
-} from './Core'
 
 export type AMMVersion = "v1" | "v2";
 
@@ -125,7 +123,7 @@ export abstract class AMMFactory extends Client {
   /** Create a liquidity pool, i.e. an instance of the AMMExchange contract */
   async createExchange(token_0: Token, token_1: Token) {
     const pair = { token_0, token_1 };
-    const entropy = create_entropy();
+    const entropy = randomBase64();
     const message = { create_exchange: { pair, entropy } };
     const result = await this.execute(message);
     return result;

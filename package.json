@@ -21,6 +21,7 @@
     "@fadroma/scrt-amino": "^3.0.2",
     "@fadroma/tokens":     "^5.0.2",
     "@hackbg/konzola":     "^2.1",
+    "@hackbg/formati":     "^5.1",
     "@types/js-yaml":      "^4.0.5",
     "crypto-js":           "^4.1.1",
     "js-yaml":             "^4.1.0",

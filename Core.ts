@@ -1,8 +1,7 @@
 import * as Scrt from '@fadroma/scrt'
 import { TokenManager } from '@fadroma/tokens'
-import { SecureRandom, Base64 } from '@hackbg/formati'
+import { SecureRandom } from '@hackbg/formati'
 
-export const { b64encode, b64decode, b64fromBuffer } = Base64
 export { randomBase64, SecureRandom } from '@hackbg/formati'
 export { CustomConsole, bold, colors } from '@hackbg/konzola'
 export * from '@fadroma/scrt'
@@ -11,42 +10,6 @@ export * as YAML from 'js-yaml'
 
 /** Get the current time in seconds since the Unix epoch. */
 export const now = () => Math.floor(+new Date() / 1000);
-
-// These two are not exported in secretjs...
-export interface Coin {
-  readonly denom:  string;
-  readonly amount: string;
-}
-
-export function decode_data<T>(result: { data: Buffer }): T {
-  const b64string = b64fromBuffer(result.data)
-  return JSON.parse(b64decode(b64string))
-}
-
-export function create_coin(amount: Scrt.Uint128): Coin {
-  return {
-    denom: 'uscrt',
-    amount: `${amount}`
-  }
-}
-
-export function create_fee(amount: Scrt.Uint128, gas?: Scrt.Uint128): Scrt.IFee {
-  if (gas === undefined) {
-    gas = amount
-  }
-  return {
-    amount: [{ amount: `${amount}`, denom: "uscrt" }],
-    gas: `${gas}`,
-  }
-}
-
-export function create_base64_msg(msg: object): string {
-  return b64encode(JSON.stringify(msg))
-}
-
-export function create_entropy (bytes = 32): string {
-  return SecureRandom.randomBuffer(bytes).toString('base64')
-}
 
 export class Deployment extends Scrt.Deployment {
   tokens: TokenManager = new TokenManager(()=>this as Scrt.Deployment)
