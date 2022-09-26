@@ -1,8 +1,8 @@
 import {
   Address,
   Client,
+  ClientConsole,
   CodeHash,
-  CustomConsole,
   Deployment,
   Duration,
   IntoLink,
@@ -114,7 +114,7 @@ export default class SiennaTGE extends Deployment {
   }
 }
 
-const log = new class SiennaVestingConsole extends CustomConsole {
+const log = new class SiennaVestingConsole extends ClientConsole {
 
   name = 'Sienna Vesting'
 

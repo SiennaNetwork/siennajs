@@ -86,7 +86,6 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     if (!(exchanges.length > 0)) return log.noExchanges()
     const column1 = 15
     for (const exchange of exchanges) {
-      log.info()
       if (!exchange) continue
       log.exchangeHeader(exchange, column1)
       log.exchangeDetail(exchange, column1, ...await Promise.all([
@@ -95,7 +94,6 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
         exchange.lpToken?.getTokenInfo(),
       ]))
     }
-    log.info()
   }
 }
 
