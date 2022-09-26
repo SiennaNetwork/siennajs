@@ -45,12 +45,16 @@ export default class SiennaTGE extends Deployment {
   getSchedule () {
     return this.mgmt.then(mgmt=>mgmt.schedule())
   }
-
+  setSchedule () {
+    throw new Error('TODO')
+  }
+  addToSchedule () {
+    throw new Error('TODO')
+  }
   /** Fetch the current schedule of MGMT. */
   getMgmtStatus () {
     return this.mgmt.then(mgmt=>mgmt.status())
   }
-
   /** Fetch the current progress of the vesting. */
   getMgmtProgress (addr: Address) {
     return this.mgmt.then(mgmt=>mgmt.progress(addr))
@@ -111,6 +115,19 @@ export default class SiennaTGE extends Deployment {
       })
     ))))
     return status
+  }
+
+  /** Make MGMT admin of token, load final config into MGMT, and irreversibly launch MGMT. */
+  async launch (schedule: VestingSchedule) {
+    const [token, mgmt, rpt] = await Promise.all([this.token, this.mgmt, this.rpt])
+    await this.agent!.bundle().wrap(async bundle => {
+      // Make MGMT admin and sole minter of token;
+      await mgmt.as(bundle).acquire(token)
+      // Set final vesting config in MGMT;
+      await mgmt.as(bundle).configure(schedule)
+      // Irreversibly launch MGMT.
+      await mgmt.as(bundle).launch()
+    })
   }
 }
 
