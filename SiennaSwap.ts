@@ -170,6 +170,17 @@ export abstract class AMMFactory extends Client {
       token_1
     );
   }
+  async getExchangeForPair(pair: TokenPair): Promise<AMMExchange|null> {
+    const msg = { get_exchange_address: { pair } };
+    const result: any = await this.query(msg);
+    if (!result?.get_exchange_address?.address) return null
+    return await AMMExchange.fromAddressAndTokens(
+      this.agent!,
+      result.get_exchange_address.address,
+      pair.token_0,
+      pair.token_1
+    );
+  }
 
   /** Get multiple AMMExchange instances corresponding to
    * the passed token pairs. */
