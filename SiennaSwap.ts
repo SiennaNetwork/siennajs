@@ -411,7 +411,7 @@ export class AMMExchange extends Client {
     const info = await this.getPairInfo()
     return this.agent!
       .getClient(Snip20, info.liquidity_token.address)
-      .withFee(this.getFee('remove_liquidity'))
+      .withFee(this.getFee('remove_liquidity')!)
       .send(amount, this.address!, { remove_liquidity: { recipient } })
   }
 
