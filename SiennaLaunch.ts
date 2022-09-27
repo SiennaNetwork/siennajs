@@ -222,7 +222,7 @@ export class IDO extends ViewingKeyClient {
     async deposit(callback: CallbackMsgType, amount: Uint128, token: Address) {
         return this.agent!
             .getClient(Snip20, token)
-            .withFee(this.getFee('deposit'))
+            .withFee(this.getFee('deposit')!)
             .send(amount, this.address!, callback);
     }
 
