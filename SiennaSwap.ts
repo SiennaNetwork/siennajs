@@ -43,7 +43,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   /** The AMM exchanges. */
   exchanges = this.contracts(this.names.exchanges, AMMExchange as any)
   /** Create a new exchange through the factory. */
-  createExchange = async (name: string) => {
+  async createExchange (name: string) {
     log.creatingExchange(name)
     const factory = await this.factory
     const { token_0, token_1 } = await this.tokens.pair(name)
@@ -52,7 +52,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     return { name, token_0, token_1 }
   }
   /** Create multiple exchanges through the factory. */
-  createExchanges = async (names: string[]) => {
+  async createExchanges (names: string[]) {
     log.creatingExchanges(names)
     const result = this.agent!.bundle().wrap(async bundle => {
       const factory = (await this.factory).as(bundle)
@@ -74,12 +74,12 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     await this.showExchangesStatus()
   })
   /** Display the status of the factory. */
-  showFactoryStatus = async () => {
+  async showFactoryStatus () {
     const factory = await this.factory
     log.factoryStatus(factory.address!)
   }
   /** Display the status of the exchanges. */
-  showExchangesStatus = async () => {
+  async showExchangesStatus () {
     const factory = await this.factory
     console.log({factory})
     const exchanges = await factory.listExchangesFull()
