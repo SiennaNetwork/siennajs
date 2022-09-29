@@ -432,6 +432,7 @@ export class AMMExchange extends Client {
       const tokenAddr = (amount.token as CustomToken).custom_token.contract_addr
       return this.agent!
         .getClient(Snip20, tokenAddr)
+        .withFee(this.getFee('swap_snip20')!)
         .send(amount.amount, this.address!, msg);
     }
   }
