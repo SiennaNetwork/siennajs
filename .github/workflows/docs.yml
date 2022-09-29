@@ -1,0 +1,57 @@
+name: SiennaJS docs page
+on: [push]
+jobs:
+  site:
+    name:    build documentation website
+    runs-on: ubuntu-latest
+    if:      startsWith(github.ref, 'refs/tags/')
+
+    steps:
+
+      - name: Get source
+        uses: actions/checkout@v2
+        with: { submodules: recursive }
+
+      - name: Get Node 16
+        uses: actions/setup-node@v3
+        with: { node-version: 16 }
+
+      - name: Get PNPM
+        run:  npm i -g pnpm@^7.5.2
+
+      - name: Don't compile native modules
+        run:  pnpm config set node-gyp /bin/true
+
+      - name: Install deps
+        run:  pnpm i
+
+      - name: Determine default branch
+        run: |
+          DEFAULT_BRANCH=$(git remote show origin | awk '/HEAD branch/ {print $NF}')
+          echo "default_branch=$DEFAULT_BRANCH" >> $GITHUB_ENV
+          echo "default_branch_ref=refs/heads/$DEFAULT_BRANCH" >> $GITHUB_ENV
+
+      - name: Generate, collect, and publish TS reference
+        run: |
+          mkdir -p ../page
+          pnpm i -w typedoc
+          NODE_OPTIONS=--max_old_space_size=8192 time ./node_modules/.bin/typedoc --tsconfig ./tsconfig.json --entryPointStrategy packages --entryPoints . --name SiennaJS
+          pwd
+          ls -al
+          ls -al docs
+          mv docs/* ../page
+          git remote get-url origin
+          git fetch origin gh-pages
+          echo $(git show-ref --verify refs/remotes/origin/gh-pages | cut -c-40) | tee .git/refs/heads/gh-pages
+          git checkout package.json pnpm-lock.yaml
+          git checkout gh-pages
+          git clean -fdx
+          touch .nojekyll
+          rm -rf *
+          mv ../page/* .
+          git config --global user.email "bot@sienna.network"
+          git config --global user.name "Sienna Network"
+          git add .
+          git commit -m "🤖 built docs for ${{ github.ref_name }} @ $(date -u)" || true
+          git push -u origin gh-pages --force
+

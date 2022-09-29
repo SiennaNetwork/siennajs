@@ -1,4 +1,4 @@
-name: SiennaJS
+name: SiennaJS type check only
 on: [push, pull_request]
 
 jobs:

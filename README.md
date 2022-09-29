@@ -1,20 +1,16 @@
-# SiennaJS v1 beta
+# SiennaJS
+
+**Latest version:** [![](https://img.shields.io/github/package-json/v/SiennaNetwork/siennajs?label=siennajs&style=flat-square)](./CONTRIBUTING.md)
 
 Client library to interact with smart contracts on Sienna Network.
 
-## Installation
-
-### Standard setup: install from NPM
-
-**Latest version:** [![](https://img.shields.io/npm/v/siennajs?label=siennajs&style=flat-square)](https://www.npmjs.com/package/siennajs)
+## Standard setup: install from GitHub Release
 
 ```shell
-npm i --save siennajs
+npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/1.1.8/siennajs-1.1.8.tgz
 ```
 
-### Advanced setup: install from Git submodule
-
-**Latest version:** [![](https://img.shields.io/github/package-json/v/SiennaNetwork/siennajs?label=siennajs&style=flat-square)](./CONTRIBUTING.md)
+## Development setup: install from Git submodule
 
 You can also add SiennaJS to your Git repository as a [Git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 This enables you to rapidly edit SiennaJS in the context of an actual project that uses it. For
@@ -25,13 +21,17 @@ project in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 > TODO
 
-## Publishing releases to NPM
-
-> TODO
-
 ---
 
 # SiennaJS v0.2 docs
+
+## Legacy setup: install from NPM
+
+**Latest version:** [![](https://img.shields.io/npm/v/siennajs?label=siennajs&style=flat-square)](https://www.npmjs.com/package/siennajs)
+
+```shell
+npm i --save siennajs
+```
 
 ## Usage
 All smart contract interfaces are created with the following parameters.

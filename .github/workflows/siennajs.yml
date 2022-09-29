@@ -1,4 +1,4 @@
-name: SiennaJS
+name: SiennaJS tarball release
 on: [push, pull_request]
 
 jobs:
