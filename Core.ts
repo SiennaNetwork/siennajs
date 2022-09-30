@@ -50,7 +50,7 @@ export const linkStruct = (instance: IntoLink) => ({
 /** Objects that have an address and code hash.
   * Pass to linkTuple or linkStruct to get either format of link. */
 export interface IntoLink extends Hashed {
-  address: Scrt.Address
+  address?: Scrt.Address
 }
 
 export interface Pagination {

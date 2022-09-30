@@ -116,6 +116,11 @@ export abstract class AMMFactory extends Client {
 
   static "v2": typeof AMMFactory_v2
 
+  constructor (...args: ConstructorParameters<typeof Client>) {
+    super(...args)
+    setImmediate(()=>this.log.name = `AMM Factory ${this.version}`)
+  }
+
   /** Pause or terminate the factory. */
   async setStatus(level: AMMFactoryStatus, new_address?: Address, reason = "") {
     const set_status = { level, new_address, reason };
