@@ -38,10 +38,9 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     exchanges: (name: string) => name.startsWith(`AMM[${this.version}]`) && !name.endsWith(`.LP`),
     lpTokens:  (name: string) => name.startsWith(`AMM[${this.version}]`) &&  name.endsWith(`.LP`)
   }
-  /** The AMM factory. */
+  /** The AMM factory is the hub of Sienna Swap.
+    * It keeps track of all exchanges, and allows creating new ones. */
   factory = this.contract({ name: this.names.factory, client: AMMFactory[this.version!] }).get()
-  /** The AMM exchanges. */
-  exchanges = this.contracts(this.names.exchanges, AMMExchange as any)
   /** Create a new exchange through the factory. */
   async createExchange (name: string) {
     log.creatingExchange(name)
@@ -64,7 +63,13 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     log.createdExchanges(names.length)
     return result
   }
-  /** The LP tokens. */
+  /** The individual AMM exchange contracts, keyed by pair name.
+    * You use one of these to make a swap. */
+  exchanges = this.task('get all AMM exchanges',
+    async (): Promise<Record<AMMPairName, AMMExchange>> => (await this.factory).getAllExchanges())
+  /** The LP token for each exchange. You receive some when you stake liquidity
+    * in an exchange, and can redeem it to withdraw your original tokens,
+    * or stake it in a reward pool to get rewards. */
   lpTokens = this.contracts(this.names.lpTokens, LPToken)
   /** The AMM router. */
   router = this.contract({ name: this.names.router, client: AMMRouter }).get()
