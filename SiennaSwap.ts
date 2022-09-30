@@ -81,7 +81,6 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   /** Display the status of the exchanges. */
   async showExchangesStatus () {
     const factory = await this.factory
-    console.log({factory})
     const exchanges = await factory.listExchangesFull()
     if (!(exchanges.length > 0)) return log.noExchanges()
     const column1 = 15
@@ -134,7 +133,7 @@ export abstract class AMMFactory extends Client {
     // TODO: check for existing pairs and remove them from input
     // warn if passed zero pairs
     if (pairs.length === 0) {
-      console.warn("Creating 0 exchanges.");
+      this.log.warn("Creating 0 exchanges.");
       return [];
     }
     // conform pairs
@@ -155,6 +154,23 @@ export abstract class AMMFactory extends Client {
     return newPairs;
   }
 
+  async getAllExchanges (): Promise<Record<AMMPairName, AMMExchange>> {
+    const exchanges = await this.listExchangesFull()
+    const result: Record<AMMPairName, AMMExchange> = {}
+    const pairNames = await Promise.all(exchanges.map(exchange=>exchange.pairName))
+    this.log.info('All exchanges:', pairNames.map(x=>bold(x)).join(', '))
+    await Promise.all(exchanges.map(async exchange=>result[await exchange.pairName] = exchange))
+    return result
+  }
+
+  /** Get multiple AMMExchange instances corresponding to
+   * the passed token pairs. */
+  async getExchanges(pairs: [Token, Token][]): Promise<AMMExchange[]> {
+    return await Promise.all(
+      pairs.map(([token_0, token_1]) => this.getExchange(token_0, token_1))
+    );
+  }
+
   /** Get an AMMExchange instance corresponding to
    * the exchange contract between two tokens. */
   async getExchange(token_0: Token, token_1: Token): Promise<AMMExchange> {
@@ -170,6 +186,7 @@ export abstract class AMMFactory extends Client {
       token_1
     );
   }
+
   async getExchangeForPair(pair: TokenPair): Promise<AMMExchange|null> {
     const msg = { get_exchange_address: { pair } };
     const result: any = await this.query(msg);
@@ -179,14 +196,6 @@ export abstract class AMMFactory extends Client {
       result.get_exchange_address.address,
       pair.token_0,
       pair.token_1
-    );
-  }
-
-  /** Get multiple AMMExchange instances corresponding to
-   * the passed token pairs. */
-  async getExchanges(pairs: [Token, Token][]): Promise<AMMExchange[]> {
-    return await Promise.all(
-      pairs.map(([token_0, token_1]) => this.getExchange(token_0, token_1))
     );
   }
 
@@ -293,6 +302,9 @@ type TokenPairStr = string;
 
 export type AMMExchanges = Record<TokenPairStr, AMMExchange>;
 
+/** Format: SYMBOL0-SYMBOL1 */
+export type AMMPairName = string;
+
 export class AMMExchange extends Client {
 
   static fromAddress = async function getExchangeByAddress (
@@ -353,7 +365,30 @@ export class AMMExchange extends Client {
     swap_snip20: new Fee("100000", "uscrt"),
   };
 
-  name?:     string
+  name?:     AMMPairName
+
+  get pairName (): Promise<AMMPairName> {
+    const self = this
+    return new Promise(async (resolve)=>{
+      if (self.name) return resolve(self.name)
+      const agent = self.assertAgent()
+      const { pair, liquidity_token } = await self.getPairInfo()
+      const symbol_0 = isNativeToken(pair.token_0) ? 'SCRT' :
+        (await agent.getClient(
+          Snip20,
+          pair.token_0.custom_token!.contract_addr,
+          pair.token_0.custom_token!.token_code_hash
+        ).getTokenInfo()).symbol
+      const symbol_1 = isNativeToken(pair.token_1) ? 'SCRT' :
+        (await agent.getClient(
+          Snip20,
+          pair.token_1.custom_token!.contract_addr,
+          pair.token_1.custom_token!.token_code_hash
+        ).getTokenInfo()).symbol
+      return resolve(self.name = `${symbol_0}-${symbol_1}`)
+    })
+  }
+
   token_0?:  Token
   token_1?:  Token
   lpToken?:  LPToken
