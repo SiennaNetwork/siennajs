@@ -109,16 +109,6 @@ const getNow = () => Math.floor(+new Date() / 1000);
 
 export type PollId = number;
 
-/** Supports any number of additions, saved as a string in the contract.
- *  Limits:
- *     min length: 5
- *     max length: 20 */
-export enum PollType {
-  SiennaRewards = 'sienna_rewards',
-  SiennaSwapParameters = 'sienna_swap_parameters',
-  Other = 'other',
-}
-
 export enum PollStatus {
   /** The poll is not expired, voting is still possible */
   Active = 'active',
@@ -140,6 +130,11 @@ export interface Expiration {
   at_time: Moment;
 }
 
+export interface GovConstraints {
+  min: number,
+  max: number
+}
+
 export interface PollConfig {
   /** Minimum amount of staked tokens needed to create a poll */
   threshold: Uint128;
@@ -151,6 +146,12 @@ export interface PollConfig {
   rewards: ContractLink;
   /** Minimum number of tokens staked to be able to vote */
   voting_threshold: Uint128;
+  /** The allowed character range for a poll's description */
+  desc_length_constraints: GovConstraints;
+  /** The allowed character range for a poll's title */
+  title_length_constraints: GovConstraints;
+  /** The allowed character range for a poll's type */
+  type_length_constraints: GovConstraints;
 }
 
 export interface PollMetadata {
@@ -159,7 +160,7 @@ export interface PollMetadata {
   /** The description of the poll. Has a default min and max */
   description: string;
   /** Generic type of the poll, underlying type can be any string. */
-  poll_type: PollType;
+  poll_type: string;
 }
 
 export interface Poll {
