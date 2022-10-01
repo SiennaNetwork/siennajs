@@ -1,8 +1,77 @@
-import { Address, CodeHash, Contract, Deployment, Snip20 } from './Core'
-import SiennaTGE, { MGMT, RPT } from './SiennaTGE'
-import type { VestingSchedule, VestingAccount } from './SiennaTGE'
-import { Rewards } from './SiennaRewards'
-import type { RewardsAPIVersion, StakingTokens } from './SiennaRewards'
+import {
+  Address,
+  CodeHash,
+  Contract,
+  Deployment,
+  Snip20
+} from './Core'
+import SiennaTGE from './SiennaTGE'
+import {
+  Vesting,
+  MGMT,
+  RPT
+} from './Vesting'
+import type {
+  VestingSchedule,
+  VestingAccount
+} from './Vesting'
+import {
+  Rewards
+} from './SiennaRewards'
+import type {
+  RewardsAPIVersion,
+  StakingTokens
+} from './SiennaRewards'
+import {
+  Rewards_v4_1
+} from './SiennaRewards_v4'
+import type SiennaSwap from './SiennaSwap'
+
+export class SiennaPFRInstance extends Vesting {
+  /** The incentivized token. */
+  token:   Promise<Snip20>
+  /** The staked token. */
+  staked:  Promise<Snip20>
+  /** The incentive token. */
+  reward:  Promise<Snip20>
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  mgmt:    Promise<MGMT_PFR>
+  /** The deployed RPT contracts, which claim tokens from MGMT
+    * and distributes them to the reward pools.  */
+  rpts:    Promise<RPT_PFR[]>
+  /** The staking pool for this PFR instance.
+    * Stake `this.staked` to get rewarded in `this.reward`,
+    * either of which may or may not be `this.token` */
+  staking: Promise<Rewards_v4_1>
+
+  constructor (
+    context:       { amm: { v2: SiennaSwap } },
+    public symbol: string     = 'ALTER',
+    public amm:    SiennaSwap = context.amm.v2
+  ) {
+    super(context)
+
+    this.token  = this.tokens.deploy(symbol)
+
+    this.reward = this.token
+
+    let name
+
+    name = `AMM[${amm.version}].SIENNA-${symbol}.LP`
+    this.staked  = this.contract({ client: Snip20, name }).get()
+
+    name = `AMM[${amm.version}].SIENNA-${symbol}.LP.Rewards[v4].${symbol}`
+    this.staking = this.contract({ client: Rewards_v4_1, name }).get()
+
+    name = `${symbol}.MGMT`
+    this.mgmt = this.contract({ client: MGMT_PFR, name }).get()
+
+    this.rpts = this.contract({ client: RPT_PFR })
+      .getMany(({name})=>name.startWith(`${symbol}.RPT`))
+  }
+
+}
 
 export default class SiennaPFR extends Deployment {
 
@@ -42,13 +111,6 @@ export default class SiennaPFR extends Deployment {
 
 }
 
-export class SiennaPFRInstance extends SiennaTGE {
-  constructor (token: string) {
-    super()
-    this.names = { token, mgmt: `${token}.MGMT`, rpt: `${token}.RPT` }
-  }
-}
-
 export interface PFRVesting {
   name:         string
   rewards: {
@@ -82,9 +144,15 @@ export class MGMT_PFR extends MGMT {
   config() {
     return this.query({ config: {} })
   }
+  status () {
+    return this.config()
+  }
 }
 
 export class RPT_PFR extends RPT {
+  status () {
+    return this.configuration()
+  }
   configuration() {
     return this.query({ configuration: {} });
   }
