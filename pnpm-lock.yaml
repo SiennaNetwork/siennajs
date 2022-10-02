@@ -4,9 +4,9 @@ importers:
 
   .:
     specifiers:
-      '@fadroma/scrt': ^4
-      '@fadroma/scrt-amino': ^3.0.14
-      '@fadroma/tokens': ^5.1.4
+      '@fadroma/scrt': ^4.0.1
+      '@fadroma/scrt-amino': ^3.0.15
+      '@fadroma/tokens': ^5.1.5
       '@hackbg/formati': ^5.1.1
       '@hackbg/konzola': ^2.1
       '@hackbg/ubik': ^1.2
@@ -22,9 +22,9 @@ importers:
       ts-jest: ^28.0.8
       typescript: ^4.7.4
     dependencies:
-      '@fadroma/scrt': 4.0.0
-      '@fadroma/scrt-amino': 3.0.14
-      '@fadroma/tokens': 5.1.4
+      '@fadroma/scrt': 4.0.1
+      '@fadroma/scrt-amino': 3.0.15
+      '@fadroma/tokens': 5.1.5
       '@hackbg/formati': 5.1.1
       '@hackbg/konzola': 2.1.0
       '@types/js-yaml': 4.0.5
@@ -420,39 +420,39 @@ packages:
       - dotenv
     dev: false
 
-  /@fadroma/scrt-amino/3.0.14:
-    resolution: {integrity: sha512-ii7X7s+1JVrQvKymygGOhXeaSQKEXvtfPn62AWNamOHGhp6Su4mnWp2Qyzo/IzsLF7/VcDSvkjl40BqdIk/bIQ==}
+  /@fadroma/scrt-amino/3.0.15:
+    resolution: {integrity: sha512-4N0i63FlsYn8XoaDqLafd3RgDDEjI3MSjA1y/wkPk1+7OOemIovfemrbQtP5Cyoat9bDvNUZkFlXT8/zW1viQQ==}
     dependencies:
-      '@fadroma/scrt': 4.0.0
+      '@fadroma/scrt': 4.0.1
       '@hackbg/formati': 5.1.1
       axios: 0.26.0
       exponential-backoff: 3.1.0
-      secretjs: 0.17.5
+      secretjs-old: 0.17.8
     transitivePeerDependencies:
       - debug
       - dotenv
       - google-protobuf
     dev: false
 
-  /@fadroma/scrt/4.0.0:
-    resolution: {integrity: sha512-oNCDOgv5PpNFUHccgl8ToP+Hn8d4GIklaOhxP5BtLIzI8Td0lqIOpOAS2vDcn7k6N7yMlOHvzf/zOJXTQA62bg==}
+  /@fadroma/scrt/4.0.1:
+    resolution: {integrity: sha512-50TvbokuMv6susU/E96Hkte4yZltdNdb9Ezu/sE8g1FzGYvjT16YB8eE+3RnKubyX/HvuSaD/ntdkSdQ9PL9JA==}
     dependencies:
       '@fadroma/client': 6.1.2
       '@hackbg/formati': 5.1.1
       '@hackbg/konfizi': 3.0.1
       '@hackbg/konzola': 2.1.0
       '@ungap/structured-clone': 1.0.1
-      secretjs: 1.4.1
+      secretjs: 1.4.3
     transitivePeerDependencies:
       - dotenv
       - google-protobuf
     dev: false
 
-  /@fadroma/tokens/5.1.4:
-    resolution: {integrity: sha512-5SV0sdfjkzJIE7fIyvQC+1JsZmXZyGmXkNsyFNnPPbZZ66J+6hCUYavOeTH9j48IVd9GxgQyQeR97aR8dqouiA==}
+  /@fadroma/tokens/5.1.5:
+    resolution: {integrity: sha512-uIp3EviXGk7BKwSk4okTkfskpcW/9kKgr/JRdB08Uhj6MCWIsjL+M32zUPbElWXnXuPz/K3CmgE01IurWQ/hvw==}
     dependencies:
       '@fadroma/client': 6.1.2
-      '@fadroma/scrt': 4.0.0
+      '@fadroma/scrt': 4.0.1
       '@hackbg/formati': 5.1.1
       '@hackbg/konzola': 2.1.0
     transitivePeerDependencies:
@@ -3053,8 +3053,8 @@ packages:
       node-gyp-build: 4.5.0
     dev: false
 
-  /secretjs/0.17.5:
-    resolution: {integrity: sha512-sf0+Je9KIEMQr/wJOgeqyBOV0ruiMNHSwP4L2vXiJbtzJWQqyVHyPkpavAhruNZ+91XlSzAFP2X5MPxqPBC9fQ==}
+  /secretjs-old/0.17.8:
+    resolution: {integrity: sha512-m4R+6T7jC0k3xBqY0wldV/rFnHvkUSMJQ9UXKNEJfU5Cge/BXe0e3bZMsR/eBCJjSQi8MtJmcfkpf/mmqhiQng==}
     dependencies:
       '@iov/crypto': 2.1.0
       '@iov/encoding': 2.1.0
@@ -3071,8 +3071,8 @@ packages:
       - debug
     dev: false
 
-  /secretjs/1.4.1:
-    resolution: {integrity: sha512-/+7GpnI7QczcpATx/REDvbvlhfIPAR06vQvclfawo7B1FSZZ6uz8qd+DhULZJJ1JMlIL419qsLtTuN222tU+ag==}
+  /secretjs/1.4.3:
+    resolution: {integrity: sha512-IDhoPWg1Nra7ji3FU07ZHbxkp1S5uQnbLsDNj/t6Q9M9wysxv/BZafHnoEkAcB7FYYwOkxs5RxnSAZ2oiJORPw==}
     dependencies:
       '@cosmjs/encoding': 0.27.1
       '@cosmjs/math': 0.27.1
