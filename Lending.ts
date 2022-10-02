@@ -89,7 +89,7 @@ export class Deployment extends VersionedSubsystem<Version> {
   }
 }
 
-export { AuthStrategy, AuthMethod } from './Auth'
+export type { AuthStrategy, AuthMethod } from './Auth'
 
 export interface MarketState {
   /** Block height that the interest was last accrued at */
