@@ -9,9 +9,6 @@ import SiennaLaunch     from './SiennaLaunch'
 import SiennaLend       from './SiennaLend'
 import SiennaPFR        from './SiennaPFR'
 
-import { PatchedSigningCosmWasmClient_1_2 } from '@fadroma/scrt-amino'
-export { PatchedSigningCosmWasmClient_1_2 as PatchedSigningCosmWasmClient }
-
 export default class Sienna extends Deployment {
   /** The SIENNA token. */
   get token () { return this.tge.token }
