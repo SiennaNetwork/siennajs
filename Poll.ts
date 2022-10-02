@@ -33,19 +33,25 @@ export class Deployment extends VersionedSubsystem<Version> {
   }
 
   /** The token staked in the governance pool for voting power. */
-  token   = this.context.tge['v1'].token
+  token = this.context.tge['v1'].token
+
   /** The RPT contract which needs to be reconfigured when we upgrade
     * the staking pool, so that the new pool gets rewards budget. */
-  rpts    = this.context.tge['v1'].rpts
+  rpts = this.context.tge['v1'].rpts
+
   /** The auth provider and oracle used to give
     * the voting contract access to the balances in the
     * staking contract, which it uses to compute voting power. */
-  auth    = this.context.auth['v1'].provider('Governance').group('Rewards_and_Governance')
+  auth = this.context.auth['v1']
+    .provider('Governance')
+    .group('Rewards_and_Governance')
+
   /** The up-to-date Rewards v4 staking pool with governance support. */
   staking = this.context.tge['v1'].staking
+
   /** The governance voting contract. */
-  voting  = this.contract({
-    name:   `SIENNA.Rewards[v4].Polls[${this.version}]`,
+  voting = this.contract({
+    name: `SIENNA.Rewards[v4].Polls[${this.version}]`,
     client: Polls
   }).get()
 

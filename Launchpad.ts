@@ -24,20 +24,25 @@ export class Deployment extends VersionedSubsystem<Version> {
     context.attach(this, `lpd ${version}`, `Sienna Launch ${version}`)
   }
 
-  /** The token staked in the launchpad pool. */
-  staked = this.context.tge['v1'].token
+  /** The launchpad staking pool. */
+  staking = this.context.tge['v1'].staking
 
   /** TODO: What does launchpad use RPT for? */
-  rpts   = this.context.tge['v1'].rpts
-
-  /** The auth provider and oracle used by the deployment. */
-  auth   = this.context.auth['v1'].provider('Launchpad').group('Rewards_and_Launchpad')
+  rpts    = this.context.tge['v1'].rpts
 
   /** The launchpad contract. */
   lpd    = this.contract({ name: Names.Launchpad(this.version), client: Launchpad }).get()
 
   /** The known IDOs, matched by name */
   idos   = this.contract({ client: IDO }).getMany(Names.isIDO(this.version))
+
+  /** The auth provider and oracle used by the deployment.
+    * This allows the staking contract to see the user's balance
+    * in the staking contract. */
+  auth    = this.context.auth['v1'].provider('Launchpad').group('Rewards_and_Launchpad', [
+    this.lpd,
+    this.staking
+  ])
 
   /** Display the status of the Launchpad/IDO system. */
   async showStatus () {

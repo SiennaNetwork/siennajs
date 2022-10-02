@@ -1,5 +1,5 @@
 import { bold, colors } from '@hackbg/konzola'
-import type { Address, Snip20, TokenInfo } from './Core'
+import type { Address, Snip20, TokenInfo, TokenOptions } from './Core'
 import { Deployment, TokenManager, ClientConsole } from './Core'
 import * as Vesting     from './Vesting'
 import * as TGE         from './TGE'
@@ -26,10 +26,10 @@ export class SiennaDeployment extends Deployment {
     super(context)
   }
 
-  tokens: TokenManager = new TokenManager(()=>this as Deployment)
+  tokens: TokenManager = new TokenManager(this as Deployment)
 
-  token (symbol: string) {
-    return this.tokens.deploy(symbol)
+  token (symbol: string, options?: Partial<TokenOptions>) {
+    return this.tokens.define(symbol, options)
   }
 
   /** The SIENNA Token Generation Event. */

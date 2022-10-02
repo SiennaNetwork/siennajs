@@ -27,27 +27,31 @@ export class Deployment extends VersionedSubsystem<Version> {
   }
 
   /** The AMM factory is the hub of Sienna Swap.
-    * It keeps track of all exchanges, and allows creating new ones. */
+    * It keeps track of all exchange pair contracts,
+    * and allows anyone to create new ones. */
   factory = this.contract({ name: Names.Factory(this.version), client: Factory[this.version] })
     .get()
   /** All exchanges stored in the deployment. */
-  exchanges = this.contract({ client: Exchange })
+  exchanges: Promise<Exchange[]> = this.contract({ client: Exchange })
     .getMany(Names.isExchange(this.version))
-  /** All exchanges known to the factory. */
+  /** All exchanges known to the factory.
+    * This is a list fetched from an external source. */
   async getAllExchanges (): Promise<Record<PairName, Exchange>> {
     return this.task('get all exchanges from AMM', async () =>
       (await this.factory).getAllExchanges())
   }
-  /** The LP token for each exchange. You receive some when you stake liquidity
-    * in an exchange, and can redeem it to withdraw your original tokens,
-    * or stake it in a reward pool to get rewards. */
+  /** Each AMM exchange emits its Liquidity Provision token
+    * to users who provide liquidity. Later, reward pools are
+    * spawned for select LP tokens. */
   lpTokens = this.contract({ client: LPToken })
     .getMany(Names.isLPToken(this.version))
   /** TODO: all LP tokens known to the factory. */
   async getAllLPTokens (): Promise<never> {
     return this.task('get all LP tokens from amm', () => { throw new Error('TODO') })
   }
-  /** The AMM router. */
+  /** The AMM router bounces transactions across multiple exchange
+    * pools within the scode of a a single transaction, allowing
+    * multi-hop swaps for tokens between which no direct pairing exists. */
   router = this.contract({ name: Names.Router(this.version), client: Router })
     .get()
 

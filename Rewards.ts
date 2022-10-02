@@ -25,6 +25,7 @@ import type {
 import { AuthClient, AuthMethod } from './Auth';
 import { LPToken } from './AMM';
 import type * as AMM from './AMM'
+import type * as Auth from './Auth'
 import type { Rewards_v2 } from './Rewards_v2'
 import type { Rewards_v3, Rewards_v3_1 } from './Rewards_v3'
 import type { Rewards_v4_1 } from './Rewards_v4'
@@ -43,6 +44,11 @@ export const AMMVersions: Record<Version, AMM.Version> = {
   'v4.1': 'v2',
 };
 
+/** Which version of Auth Provider corresponds to which version of rewards. */
+export const AuthVersions: Partial<Record<Version, Auth.Version>> = {
+  'v4.1': 'v1'
+}
+
 export class Deployment extends VersionedSubsystem<Version> {
 
   log = new SiennaConsole(`Rewards ${this.version}`)
@@ -56,7 +62,25 @@ export class Deployment extends VersionedSubsystem<Version> {
     context.attach(this, `rewards ${version}`, `Sienna Rewards ${version}`)
   }
 
-  pools: Promise<Rewards[]> = this.contract({
+  /** Which version of the AMM are these rewards for. */
+  ammVersion:   AMM.Version  = AMMVersions[this.version]
+
+  /** Which version of Auth Provider should these rewards use. */
+  authVersion?: Auth.Version = AuthVersions[this.version]
+
+  /** The name of the auth provider, if used. */
+  authProviderName =
+    this.authVersion
+      ? `Rewards[${this.version}]`
+      : undefined
+
+  /** The auth provider, if used. */
+  authProvider =
+    this.authVersion
+      ? this.context.auth[this.authVersion].provider(this.authProviderName!)
+      : null
+
+  pools = this.contract({
     client: Rewards[this.version] as unknown as RewardsCtor
   }).getMany(
     ({name}:{name?:string})=>name?.includes('Rewards')
