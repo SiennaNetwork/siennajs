@@ -18,15 +18,11 @@ import {
 import * as Auth from './Auth';
 import * as TGE from './TGE';
 import * as Rewards from './Rewards';
+import { Names } from './Names'
 import type { SiennaDeployment } from "./index";
 import { SiennaConsole } from "./index";
 
 export type Version = 'v1'
-
-export const Names = {
-  Polls: (t: TokenSymbol, r: Rewards.Version, v: Version) =>
-    `${t}.Rewards[${r}].Polls[${v}]`
-}
 
 export class Deployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Governance ${this.version}`)

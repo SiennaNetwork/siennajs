@@ -9,29 +9,12 @@ import {
   bold, getTokenId, isCustomToken, isNativeToken, randomBase64
 } from './Core'
 import type * as Rewards from './Rewards'
+import { Names } from './Names';
 import type { SiennaDeployment } from "./index";
 import { SiennaConsole } from "./index";
 
 /** Supported versions of the AMM subsystem. */
 export type Version = 'v1'|'v2'
-
-/** Deployment-internal nomenclature for AMM contracts. */
-export const Names = {
-  Factory: (v: Version) =>
-    `AMM[${v}].Factory`,
-  Router:  (v: Version) =>
-    `AMM[${v}].Router`,
-  Exchange: (v: Version, t0: TokenSymbol, t1: TokenSymbol) =>
-    `AMM[${v}].${t0}-${t1}`,
-  LPToken: (v: Version, t0: TokenSymbol, t1: TokenSymbol) =>
-    `AMM[${v}].${t0}-${t1}.LP`,
-  Rewards: (v: Version, t0: TokenSymbol, t1: TokenSymbol, r: Rewards.Version) =>
-    `AMM[${v}].${t0}-${t1}.LP.Rewards`,
-  isExchange: (v: Version) => ({name}: Partial<ContractMetadata>) =>
-    name?.startsWith(`AMM[${v}]`) && !name.endsWith(`.LP`) || false,
-  isLPToken:  (v: Version) => ({name}: Partial<ContractMetadata>) =>
-    name?.startsWith(`AMM[${v}]`) &&  name.endsWith(`.LP`) || false,
-}
 
 /** The AMM subsystem client. */
 export class Deployment extends VersionedSubsystem<Version> {
@@ -48,20 +31,22 @@ export class Deployment extends VersionedSubsystem<Version> {
   factory = this.contract({ name: Names.Factory(this.version), client: Factory[this.version] })
     .get()
   /** All exchanges stored in the deployment. */
-  knownExchanges = this.contract({ client: Exchange })
+  exchanges = this.contract({ client: Exchange })
     .getMany(Names.isExchange(this.version))
   /** All exchanges known to the factory. */
-  allExchanges: Promise<Record<PairName, Exchange>> =
-    this.task('get all exchanges from AMM', async () =>
+  async getAllExchanges (): Promise<Record<PairName, Exchange>> {
+    return this.task('get all exchanges from AMM', async () =>
       (await this.factory).getAllExchanges())
+  }
   /** The LP token for each exchange. You receive some when you stake liquidity
     * in an exchange, and can redeem it to withdraw your original tokens,
     * or stake it in a reward pool to get rewards. */
   lpTokens = this.contract({ client: LPToken })
     .getMany(Names.isLPToken(this.version))
   /** TODO: all LP tokens known to the factory. */
-  allLPTokens: Promise<never> =
-    this.task('get all LP tokens from amm', () => { throw new Error('TODO') })
+  async getAllLPTokens (): Promise<never> {
+    return this.task('get all LP tokens from amm', () => { throw new Error('TODO') })
+  }
   /** The AMM router. */
   router = this.contract({ name: Names.Router(this.version), client: Router })
     .get()

@@ -6,19 +6,11 @@ import { validatedAddressOf, validatedCodeHashOf } from './Core'
 import * as Vesting from './Vesting'
 import type * as Rewards from './Rewards'
 import { Rewards_v3_1 } from './Rewards_v3'
+import { Names } from './Names'
 import type { SiennaDeployment } from "./index"
 import { SiennaConsole } from "./index"
 
 export type Version = 'v1'
-
-export const Names = {
-  MGMT: (t: TokenSymbol) =>
-    `${t}.MGMT`,
-  Rewards: (t: TokenSymbol, r: Rewards.Version = 'v3') =>
-    `${t}.Rewards[${r}]`,
-  isRPT: (t: TokenSymbol) => ({name}: Partial<ContractMetadata>) =>
-    name?.startsWith(`${t}.RPT`),
-}
 
 /** Connect to an existing TGE. */
 export class Deployment extends Vesting.Deployment<Version> {
@@ -48,8 +40,11 @@ export class Deployment extends Vesting.Deployment<Version> {
     .getMany(Names.isRPT(this.symbol), `get all RPTs for ${this.symbol} vesting`)
   /** The initial staking pool.
     * Stake TOKEN to get rewarded more TOKEN from the RPT. */
-  staking: Promise<(typeof Rewards.Rewards)['v3.1']> =
-    this.contract({ name: Names.Rewards(this.symbol), client: Rewards_v3_1 }).get()
+  staking: Promise<Rewards.Rewards> =
+    this.contract({
+      name:   Names.Staking(this.symbol),
+      client: Rewards_v3_1 as unknown as Rewards.RewardsCtor
+    }).get()
   /** Launch the TGE.
     * - Makes MGMT admin of token
     * - Loads final schedule into MGMT

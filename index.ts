@@ -184,8 +184,7 @@ export class SiennaConsole extends ClientConsole {
       return
     }
     for (const exchange of exchanges) {
-      const { name, address, codeHash, token_0, token_1, lpToken } =
-        exchange as AMM.AMMExchange
+      const { name, address, codeHash, token_0, token_1, lpToken } = exchange as AMM.Exchange
       const codeId = '??'
       this.info(
         ' ', bold(colors.inverse(name!)).padEnd(30), // wat

@@ -17,18 +17,12 @@ import {
   ViewingKeyClient,
   randomBase64,
 } from './Core'
-import type { AuthStrategy, AuthMethod } from './Auth'
+import type * as Auth from './Auth'
+import { Names } from './Names'
 import type { SiennaDeployment } from './index'
 import { SiennaConsole } from './index'
 
 export type Version = 'v1'
-
-export const Names = {
-  InterestModel: (v: Version) => `Lend[${v}].InterestModel`,
-  Overseer:      (v: Version) => `Lend[${v}].Overseer`,
-  Oracle:        (v: Version) => `Lend[${v}].Oracle`,
-  MockOracle:    (v: Version) => `Lend[${v}].MockOracle`
-}
 
 export class Deployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Lend ${this.version}`)
@@ -95,7 +89,7 @@ export class Deployment extends VersionedSubsystem<Version> {
   }
 }
 
-export { AuthStrategy, AuthMethod }
+export { AuthStrategy, AuthMethod } from './Auth'
 
 export interface MarketState {
   /** Block height that the interest was last accrued at */
@@ -181,19 +175,19 @@ export type MarketPermissions = 'account_info' | 'balance' | 'id'
 
 export type OverseerPermissions = 'account_info'
 
-export class Auth {
+export class LendAuth {
 
-  private constructor (private readonly strategy: AuthStrategy) { }
+  private constructor (private readonly strategy: Auth.AuthStrategy) { }
 
-  static vk (address: Address, key: ViewingKey): Auth {
+  static vk (address: Address, key: ViewingKey): LendAuth {
     return new this({ type: 'vk', viewing_key: { address, key } })
   }
 
-  static permit (signer: Signer): Auth {
+  static permit (signer: Signer): LendAuth {
     return new this({ type: 'permit', signer })
   }
 
-  async createMethod <T> (address: Address, permission: T): Promise<AuthMethod<T>> {
+  async createMethod <T> (address: Address, permission: T): Promise<Auth.AuthMethod<T>> {
     if (this.strategy.type === 'permit') {
       const permit = await this.strategy.signer.sign({
         permit_name: `SiennaJS permit for ${address}`,
@@ -318,7 +312,7 @@ export class Market extends Client {
     return this.agent!.getClient(Snip20, this.address!).getBalance(address, key)
   }
 
-  async getUnderlyingBalance (auth: Auth, block?: number): Promise<Uint128> {
+  async getUnderlyingBalance (auth: LendAuth, block?: number): Promise<Uint128> {
     block = block || await this.agent!.height
     const method = await auth.createMethod<MarketPermissions>(this.address!, 'balance')
     return this.query({ balance_underlying: { block, method } })
@@ -348,14 +342,14 @@ export class Market extends Client {
     return this.query({ exchange_rate: { block } })
   }
 
-  async getAccount (auth: Auth, block?: number): Promise<MarketAccount> {
+  async getAccount (auth: LendAuth, block?: number): Promise<MarketAccount> {
     block = block || await this.agent!.height
     const method = await auth.createMethod<MarketPermissions>(this.address!, 'account_info')
     return this.query({ account: { block, method } })
   }
 
   /** Will throw if the account hasn't borrowed at least once before. */
-  async getAccountId (auth: Auth): Promise<string> {
+  async getAccountId (auth: LendAuth): Promise<string> {
     const method = await auth.createMethod<MarketPermissions>(this.address!, 'id')
     return this.query({ id: { method } })
   }
@@ -395,13 +389,13 @@ export class Overseer extends Client {
     return this.query({ market: { address } })
   }
 
-  async getEnteredMarkets (auth: Auth): Promise<OverseerMarket[]> {
+  async getEnteredMarkets (auth: LendAuth): Promise<OverseerMarket[]> {
     const method = await auth.createMethod<OverseerPermissions>(this.address!, 'account_info')
     return this.query({ entered_markets: { method } })
   }
 
   async getCurrentLiquidity (
-    auth: Auth,
+    auth: LendAuth,
     block?: number
   ): Promise<AccountLiquidity> {
     return this.query({
@@ -417,7 +411,7 @@ export class Overseer extends Client {
 
   /** The hypothetical liquidity after a redeem operation from a market. */
   async getLiquidityAfterRedeem (
-    auth: Auth,
+    auth: LendAuth,
     /** The market to redeem from. Must have been entered that market. */
     market: Address,
     /** The amount to redeem. */
@@ -441,7 +435,7 @@ export class Overseer extends Client {
 
   /** The hypothetical liquidity after a borrow operation from a market. */
   async getLiquidityAfterBorrow (
-    auth: Auth,
+    auth: LendAuth,
     /** The market to borrow from. Must have been entered that market. */
     market: Address,
     /** The amount to borrow. */

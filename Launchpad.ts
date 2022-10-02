@@ -7,6 +7,7 @@ import {
 } from './Core';
 import * as Auth from './Auth';
 import * as TGE from './TGE';
+import { Names } from './Names';
 import type { SiennaDeployment } from "./index";
 import { SiennaConsole } from "./index";
 
@@ -14,18 +15,6 @@ import CryptoJS from 'crypto-js';
 import MerkleTree from 'merkletreejs';
 
 export type Version = 'v1'
-
-export const Names = {
-  /** The name of the launchpad contract. */
-  Launchpad: (v: Version) =>
-    `Launchpad[${v}]`,
-  /** Name of group in auth provider that authorizes the rewards and launchpad contracts. */
-  AuthGroup:
-    'Rewards_and_Launchpad',
-  /** Matches IDOs by name. */
-  isIDO: (v: Version) => ({name}: Partial<ContractMetadata>) =>
-    name?.startsWith(`${Names.Launchpad(v)}.IDO[`)
-}
 
 export class Deployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Launchpad ${this.version}`)
@@ -89,7 +78,7 @@ export class Launchpad extends ViewingKeyClient {
      * @returns Entries
      */
     async getEntries(
-        auth: AuthMethod<LaunchpadPermissions>,
+        auth: Auth.AuthMethod<LaunchpadPermissions>,
         addresses: Address[],
         time: number
     ): Promise<number[]> {
@@ -118,7 +107,7 @@ export class Launchpad extends ViewingKeyClient {
 
     async drawWinners(
         addresses: Address[],
-        auth: AuthMethod<LaunchpadPermissions>,
+        auth: Auth.AuthMethod<LaunchpadPermissions>,
         seatsOpen: number
     ): Promise<Address[]> {
         const entries = await this.getEntries(auth, addresses, Date.now());

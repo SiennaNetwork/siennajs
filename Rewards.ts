@@ -28,6 +28,7 @@ import type * as AMM from './AMM'
 import type { Rewards_v2 } from './Rewards_v2'
 import type { Rewards_v3, Rewards_v3_1 } from './Rewards_v3'
 import type { Rewards_v4_1 } from './Rewards_v4'
+import { Names } from './Names'
 import type { SiennaDeployment } from "./index"
 import { SiennaConsole } from "./index"
 
@@ -42,12 +43,6 @@ export const AMMVersions: Record<Version, AMM.Version> = {
   'v4.1': 'v2',
 };
 
-/** Deployment-internal nomenclature for Rewards contracts. */
-export const Names = {
-  isRewardPool: (v: Version) => ({name}: Partial<ContractMetadata>) =>
-    name?.includes(`Rewards[${v}]`)
-}
-
 export class Deployment extends VersionedSubsystem<Version> {
 
   log = new SiennaConsole(`Rewards ${this.version}`)
@@ -61,8 +56,8 @@ export class Deployment extends VersionedSubsystem<Version> {
     context.attach(this, `rewards ${version}`, `Sienna Rewards ${version}`)
   }
 
-  pools: Promise<Rewards> = this.contract({
-    client: Rewards[this.version]
+  pools: Promise<Rewards[]> = this.contract({
+    client: Rewards[this.version] as unknown as RewardsCtor
   }).getMany(
     ({name}:{name?:string})=>name?.includes('Rewards')
   )

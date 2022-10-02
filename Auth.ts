@@ -11,19 +11,11 @@ import {
   ViewingKey,
   linkStruct,
 } from "./Core";
+import { Names } from './Names';
 import type { SiennaDeployment } from "./index";
 import { SiennaConsole } from "./index";
 
 export type Version = 'v1'
-
-export const Names = {
-  Provider: (v: Version) =>
-    `Auth[${v}]`,
-  NamedProvider: (v: Version, n: string) =>
-    `${Names.Provider(v)}.${n}`,
-  Oracle: (v: Version) =>
-    `Auth[${v}].Oracle`
-}
 
 export class Deployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Auth ${this.version}`)
@@ -34,7 +26,7 @@ export class Deployment extends VersionedSubsystem<Version> {
   }
 
   /** The auth provider's RNG oracle. */
-  oracle = this.contract({ name: Names.Oracle(this.version) }).get()
+  oracle = this.contract({ name: Names.AuthOracle(this.version) }).get()
 
   /** The auth provider contract. */
   provider (name: string, oracle: Client|Promise<Client> = this.oracle): ProviderDeployment {
