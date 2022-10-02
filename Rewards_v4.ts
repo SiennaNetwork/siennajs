@@ -13,13 +13,13 @@ import {
 } from './Auth'
 import {
   Rewards,
-  RewardsInitParams
-} from './SiennaRewards'
+  InitParams
+} from './Rewards'
 import {
   Rewards_v3_Account,
   Rewards_v3_1,
   Rewards_v3_Total
-} from './SiennaRewards_v3'
+} from './Rewards_v3'
 
 export class Rewards_v4_1 extends Rewards_v3_1 {
 
@@ -30,7 +30,7 @@ export class Rewards_v4_1 extends Rewards_v3_1 {
     stakedToken,
     bonding   = 86400,
     unbonding = 86400
-  }: RewardsInitParams): Message {
+  }: InitParams): Message {
     if (!authProvider) {
       throw new Error('Pass authProvider')
     }

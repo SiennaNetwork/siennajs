@@ -8,11 +8,11 @@ import {
 } from './Core'
 import {
   Rewards,
-  RewardsInitParams
-} from './SiennaRewards'
+  InitParams
+} from './Rewards'
 import {
   LPToken
-} from './SiennaSwap'
+} from './AMM'
 
 export class Rewards_v2 extends Rewards {
   /** Create an init message for Sienna Rewards v2 */
@@ -22,7 +22,7 @@ export class Rewards_v2 extends Rewards {
     stakedToken,
     threshold = 15940,
     cooldown = 15940,
-  }: RewardsInitParams): Message => ({
+  }: InitParams): Message => ({
     admin,
     lp_token:     linkStruct(stakedToken),
     reward_token: linkStruct(rewardToken),

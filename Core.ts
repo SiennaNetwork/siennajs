@@ -1,5 +1,4 @@
 import * as Scrt from '@fadroma/scrt'
-import { TokenManager } from '@fadroma/tokens'
 import { SecureRandom } from '@hackbg/formati'
 
 export { randomBase64, SecureRandom } from '@hackbg/formati'
@@ -8,16 +7,10 @@ export * from '@fadroma/scrt'
 export * from '@fadroma/tokens'
 export * as YAML from 'js-yaml'
 
+import type { SiennaDeployment } from './index'
+
 /** Get the current time in seconds since the Unix epoch. */
 export const now = () => Math.floor(+new Date() / 1000);
-
-export class Deployment extends Scrt.Deployment {
-  tokens: TokenManager = new TokenManager(()=>this as Scrt.Deployment)
-}
-
-export class VersionedDeployment<V> extends Scrt.VersionedDeployment<V> {
-  tokens: TokenManager = new TokenManager(()=>this as Scrt.Deployment)
-}
 
 export function validatedAddressOf (instance?: { address?: Scrt.Address }): Scrt.Address {
   if (!instance)         throw new Error("Can't create an inter-contract link without a target")
@@ -86,4 +79,12 @@ export class Immigration extends Scrt.Client {
   migrateFrom(link: Scrt.ContractLink) {
     return this.execute({ immigration: { request_migration: link } });
   }
+}
+
+/** All subsystems of the Sienna DeFi system are versioned. */
+export abstract class VersionedSubsystem<V> extends Scrt.VersionedDeployment<V> {
+  constructor (public context: SiennaDeployment, public version: V) {
+    super(context, version)
+  }
+  abstract showStatus (): Promise<void>
 }

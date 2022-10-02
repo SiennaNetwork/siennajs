@@ -2,7 +2,7 @@ import {
   Client,
   ClientConsole,
   CustomConsole,
-  VersionedDeployment,
+  VersionedSubsystem,
   ViewingKeyClient,
   bold,
   colors,
@@ -14,6 +14,7 @@ import type {
   ClientClass,
   Contract,
   ContractLink,
+  ContractMetadata,
   Emigration,
   Immigration,
   IntoLink,
@@ -22,38 +23,59 @@ import type {
   Uint128,
 } from './Core';
 import { AuthClient, AuthMethod } from './Auth';
-import { LPToken } from './SiennaSwap';
-import SiennaTGE from './SiennaTGE';
-import type { AMMVersion } from './SiennaSwap';
-import type { Rewards_v2 } from './SiennaRewards_v2'
-import type { Rewards_v3, Rewards_v3_1 } from './SiennaRewards_v3'
-import type { Rewards_v4_1 } from './SiennaRewards_v4'
+import { LPToken } from './AMM';
+import type * as AMM from './AMM'
+import type { Rewards_v2 } from './Rewards_v2'
+import type { Rewards_v3, Rewards_v3_1 } from './Rewards_v3'
+import type { Rewards_v4_1 } from './Rewards_v4'
+import type { SiennaDeployment } from "./index"
+import { SiennaConsole } from "./index"
 
-/** Maybe change this to 'v2'|'v3'|'v4' and simplify the classes below? */
-export type RewardsAPIVersion = 'v2' | 'v3' | 'v3.1' | 'v4.1';
+/** Supported versions of the Rewards subsystem. */
+export type Version = 'v2' | 'v3' | 'v3.1' | 'v4.1'
 
 /** Which version of AMM corresponds to which version of rewards. */
-export const RewardsToAMMVersion: Record<RewardsAPIVersion, AMMVersion> = {
+export const AMMVersions: Record<Version, AMM.Version> = {
   'v2':   'v1',
   'v3':   'v2',
   'v3.1': 'v2',
   'v4.1': 'v2',
 };
 
-export default class SiennaRewards extends VersionedDeployment<RewardsAPIVersion> {
+/** Deployment-internal nomenclature for Rewards contracts. */
+export const Names = {
+  isRewardPool: (v: Version) => ({name}: Partial<ContractMetadata>) =>
+    name?.includes(`Rewards[${v}]`)
+}
 
-  tge = new SiennaTGE(this)
+export class Deployment extends VersionedSubsystem<Version> {
 
-  rewardPools: Promise<Client[]> = Promise.all(this
-    .filter((name: string)=>name.includes('Rewards'))
-    .map((receipt: object)=>this.contract(receipt).getClient()))
+  log = new SiennaConsole(`Rewards ${this.version}`)
 
-  showStatus = async () => log.rewardsContracts(this.name, this.state)
+  constructor (
+    context: SiennaDeployment,
+    version: Version,
+    public reward: Snip20|Promise<Snip20> = context.token('SIENNA')
+  ) {
+    super(context, version)
+    context.attach(this, `rewards ${version}`, `Sienna Rewards ${version}`)
+  }
+
+  pools: Promise<Rewards> = this.contract({
+    client: Rewards[this.version]
+  }).getMany(
+    ({name}:{name?:string})=>name?.includes('Rewards')
+  )
+
+  async showStatus () {
+    this.log.rewardPools(this.name, this.state)
+  }
 
 }
 
-/** Universal init parameters for all versions of rewards. */
-export interface RewardsInitParams {
+/** Universal init parameters for all versions of rewards.
+  * Some of these may be ignored. */
+export interface InitParams {
   rewardToken:   IntoLink;
   stakedToken:   IntoLink;
   admin?:        Address;
@@ -110,30 +132,10 @@ export abstract class Rewards extends Client {
 /** Constructs a reward pool of some version. */
 export interface RewardsCtor extends ClientClass<Rewards> {
   /** Generate the correct format of Rewards init message for the given version */
-  init(params: RewardsInitParams): Message;
+  init(params: InitParams): Message;
 }
 
 export interface StakingTokens {
   stakedToken: Snip20
   rewardToken: Snip20
-}
-
-const log = new class SiennaRewardsConsole extends CustomConsole {
-
-  name = 'Sienna Rewards'
-
-  rewardsContracts = (name: string, state: Record<string, any>) => {
-    const isRewardPool     = (x: string) => x.startsWith('SiennaRewards_')
-    const rewardsContracts = Object.keys(state).filter(isRewardPool)
-    if (rewardsContracts.length > 0) {
-      this.info(`\nRewards contracts in ${bold(name)}:`)
-      for (const name of rewardsContracts) {
-        this.info(`  ${colors.green('✓')}  ${name}`)
-      }
-    } else {
-      this.info(`\nNo rewards contracts.`)
-    }
-    return rewardsContracts
-  }
-
 }

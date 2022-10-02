@@ -5,107 +5,69 @@ import {
   ContractLink,
   CustomConsole,
   Decimal,
-  Deployment,
+  VersionedSubsystem,
   Fee,
   Moment,
   Snip20,
+  TokenSymbol,
   Uint128,
   YAML,
   bold,
+  now as getNow
 } from './Core';
-import AuthProviderDeployment, { Auth, AuthClient } from './Auth';
-import TGEDeployment, { RPT_TGE } from './SiennaTGE';
-import { Rewards_v4_1 } from './SiennaRewards_v4'
+import * as Auth from './Auth';
+import * as TGE from './TGE';
+import * as Rewards from './Rewards';
+import type { SiennaDeployment } from "./index";
+import { SiennaConsole } from "./index";
 
-export default class GovernanceDeployment extends Deployment {
-  version = 'v1'
-  names = {
-    /** The name of the auth group that gives the voting contract
-      * access to the balances in the staking contract, which it
-      * uses to compute voting power. */
-    authGroup: 'Rewards_and_Governance',
-    /** The name of the governance staking pool where voting power is accumulated. */
-    pool:      `SIENNA.Rewards[v4]`,
-    /** The name of the governance contract where users vote on proposals. */
-    polls:     `SIENNA.Rewards[v4].Polls[${this.version}]`
+export type Version = 'v1'
+
+export const Names = {
+  Polls: (t: TokenSymbol, r: Rewards.Version, v: Version) =>
+    `${t}.Rewards[${r}].Polls[${v}]`
+}
+
+export class Deployment extends VersionedSubsystem<Version> {
+  log = new SiennaConsole(`Governance ${this.version}`)
+
+  constructor (context: SiennaDeployment, version: Version,) {
+    super(context, version)
+    context.attach(this, `gov ${version}`, `Sienna Governance ${version}`)
   }
-  Clients = {
-    /** The client class used to talk to the governance staking pool. */
-    Pool:  Rewards_v4_1,
-    /** The client class used to talk to the governance voting polls. */
-    Polls: Polls
-  }
-  /** The TGE containing the token and RPT used by the deployment. */
-  tge = new TGEDeployment(this)
-  /** The token staked in the governance pool. */
-  get token () { return this.tge.token }
+
+  /** The token staked in the governance pool for voting power. */
+  token   = this.context.tge['v1'].token
   /** The RPT contract which needs to be reconfigured when we upgrade
     * the staking pool, so that the new pool gets rewards budget. */
-  get rpt () { return this.tge.rpt }
-  /** The auth provider and oracle used by the deployment. */
-  auth = new AuthProviderDeployment(this, 'v1', this.names.authGroup)
+  rpts    = this.context.tge['v1'].rpts
+  /** The auth provider and oracle used to give
+    * the voting contract access to the balances in the
+    * staking contract, which it uses to compute voting power. */
+  auth    = this.context.auth['v1'].provider('Governance').group('Rewards_and_Governance')
   /** The up-to-date Rewards v4 staking pool with governance support. */
-  pool = this.contract({ name: this.names.pool, client: this.Clients.Pool }).get()
+  staking = this.context.tge['v1'].staking
   /** The governance voting contract. */
-  polls = this.contract({ name: this.names.polls, client: this.Clients.Polls }).get()
+  voting  = this.contract({
+    name:   `SIENNA.Rewards[v4].Polls[${this.version}]`,
+    client: Polls
+  }).get()
 
   /** Display the status of the governance system. */
-  showStatus = async () => {
-    const [pool, polls] = await Promise.all([this.pool, this.polls])
-    log.pool(pool)
-    const stakedToken = await pool.getStakedToken()
+  async showStatus () {
+    const [staking, voting] = await Promise.all([this.staking, this.voting])
+    this.log.pool(staking)
+    const stakedToken = await staking.getStakedToken()
     const label = '(todo)'
-    log.stakedToken(stakedToken, label)
-    log.epoch(await pool.getEpoch())
-    log.config(await pool.getConfig())
-    log.pollsContract(polls)
-    log.pollsAuthProvider(await polls.auth.getProvider())
-    log.pollsConfig(await polls.getPollConfig())
-    log.activePolls(await polls.getPolls(+ new Date() / 1000, 0, 10, 0))
+    this.log.stakedToken(stakedToken, label)
+    this.log.epoch(await staking.getEpoch())
+    this.log.config(await staking.getConfig())
+    this.log.pollsContract(voting)
+    this.log.pollsAuthProvider(await voting.auth.getProvider())
+    this.log.pollsConfig(await voting.getPollConfig())
+    this.log.activePolls(await voting.getPolls(+ new Date() / 1000, 0, 10, 0))
   }
 }
-
-const log = new class SiennaGovernanceConsole extends CustomConsole {
-
-  name = 'Sienna Governance'
-
-  pool (pool: any) {
-    this.info('Governance-enabled staking pool:')
-    this.info(' ', JSON.stringify(pool.asLink))
-  }
-  async stakedToken (stakedToken: any, label: any) {
-    const link = JSON.stringify(stakedToken?.asLink)
-    this.info('Staked token:')
-    this.info(`  ${label} ${link}`)
-  }
-  epoch (epoch: any) {
-    this.info('Epoch:')
-    this.info(' ', epoch)
-  }
-  config (config: any) {
-    this.info('Pool config:')
-    YAML.dump(config).trim().split('\n').forEach(line=>this.info(' ', line))
-  }
-  pollsContract (contract: any) {
-    this.info('Governance contract:')
-    this.info(' ', JSON.stringify(contract.asLink))
-  }
-  pollsAuthProvider (provider: any) {
-    this.info('Auth provider:')
-    this.info(' ', JSON.stringify(provider))
-  }
-  pollsConfig (config: any) {
-    this.info('Poll config:')
-    this.info(' ', config)
-  }
-  activePolls (polls: any) {
-    this.info('Active polls:')
-    this.info(' ', polls)
-    this.info('')
-  }
-}
-
-const getNow = () => Math.floor(+new Date() / 1000);
 
 export type PollId = number;
 
@@ -231,7 +193,7 @@ export class Polls extends Client {
     change_vote_choice: new Fee('100000', 'uscrt'),
   };
 
-  get auth () { return new AuthClient(this.agent, this.address, this.codeHash) }
+  get auth () { return new Auth.AuthClient(this.agent, this.address, this.codeHash) }
 
   async createPoll(meta: PollMetadata) {
     return this.execute({ create_poll: { meta } });
@@ -265,7 +227,7 @@ export class Polls extends Client {
     return await this.query(msg);
   }
 
-  async getVoteStatus(address: Address, poll_id: PollId, auth: Auth): Promise<VoteStatus | null> {
+  async getVoteStatus(address: Address, poll_id: PollId, auth: Auth.Auth): Promise<VoteStatus | null> {
     const msg = { vote_status: { address, auth, poll_id } };
     const result: VoteStatus = await this.query(msg);
     if (!result.choice || !result.power) {
@@ -274,7 +236,7 @@ export class Polls extends Client {
     return result;
   }
 
-  async getUser(auth: Auth): Promise<PollUser> {
+  async getUser(auth: Auth.Auth): Promise<PollUser> {
     const msg = { user: { at: Date.now() } };
     const result: { user: PollUser } = await this.query(msg);
     return result.user;

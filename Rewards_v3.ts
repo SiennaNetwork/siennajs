@@ -14,8 +14,8 @@ import type {
   Uint128,
   Uint256
 } from './Core'
-import { Rewards, RewardsInitParams } from './SiennaRewards'
-import { LPToken } from './SiennaSwap'
+import { Rewards, InitParams } from './Rewards'
+import { LPToken } from './AMM'
 
 export class Rewards_v3 extends Rewards {
 
@@ -26,7 +26,7 @@ export class Rewards_v3 extends Rewards {
     admin,
     timekeeper,
     bonding = 86400,
-  }: RewardsInitParams): Message => ({
+  }: InitParams): Message => ({
     admin,
     config: {
       rewards_vk:   randomBase64(36),

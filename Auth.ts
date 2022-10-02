@@ -3,42 +3,76 @@ import {
   Client,
   CodeHash,
   ContractLink,
-  Deployment,
   IntoLink,
   Pagination,
   Permit,
   Signer,
-  VersionedDeployment,
+  VersionedSubsystem,
   ViewingKey,
   linkStruct,
 } from "./Core";
+import type { SiennaDeployment } from "./index";
+import { SiennaConsole } from "./index";
 
-export type AuthProviderVersion = 'v1'
+export type Version = 'v1'
 
-export const LatestAuthProviderVersion: AuthProviderVersion = 'v1'
+export const Names = {
+  Provider: (v: Version) =>
+    `Auth[${v}]`,
+  NamedProvider: (v: Version, n: string) =>
+    `${Names.Provider(v)}.${n}`,
+  Oracle: (v: Version) =>
+    `Auth[${v}].Oracle`
+}
 
-export default class SiennaAuth extends VersionedDeployment<AuthProviderVersion> {
-  constructor (
-    options: object = {},
-    public readonly version: AuthProviderVersion = (options as any)?.version ?? LatestAuthProviderVersion,
-    /** Appended to the provider and oracle names. */
-    public readonly extraName: string|false      = (options as any)?.extraName ?? false,
-  ) {
-    super(options, version)
-    if (extraName) {
-      this.names.provider += `.${extraName}`
-      this.names.oracle    = `${this.names.provider}.Oracle`
-    }
+export class Deployment extends VersionedSubsystem<Version> {
+  log = new SiennaConsole(`Auth ${this.version}`)
+
+  constructor (context: SiennaDeployment, version: Version = 'v1',) {
+    super(context, version)
+    context.attach(this, `auth ${this.version}`, `Sienna Auth Provider ${this.version}`)
   }
-  /** The names under which the provider and oracle are known in the deployment. */
-  names = {
-    provider: `Auth[${this.version}]`,
-    oracle:   `Auth[${this.version}].Oracle`
-  }
-  /** The auth provider contract. */
-  provider = this.contract({ name: this.names.provider, client: AuthProvider }).get()
+
   /** The auth provider's RNG oracle. */
-  oracle = this.contract({ name: this.names.oracle }).get()
+  oracle = this.contract({ name: Names.Oracle(this.version) }).get()
+
+  /** The auth provider contract. */
+  provider (name: string, oracle: Client|Promise<Client> = this.oracle): ProviderDeployment {
+    const inst = new ProviderDeployment(this.context, this.version, name, oracle)
+    this.attach(inst, name)
+    return inst
+  }
+
+  async showStatus () {
+    // TODO
+  }
+}
+
+export class ProviderDeployment extends VersionedSubsystem<Version> {
+  log = new SiennaConsole(`Auth ${this.version}`)
+
+  constructor (
+    context:             SiennaDeployment,
+    version:             Version = 'v1',
+    public providerName: string,
+    public oracle:       ContractLink|Client|Promise<Client>
+  ) {
+    super(context, version)
+    context.attach(this, `auth ${this.version}`, `Sienna Auth Provider ${this.version}`)
+  }
+
+  group (name: string): Promise<this> {
+    return this.task(`get or create auth group ${name}`, () => Promise.resolve(this))
+  }
+
+  provider = this.contract({
+    name:   Names.NamedProvider(this.version, this.providerName),
+    client: AuthProvider
+  }).get()
+
+  async showStatus () {
+    // TODO
+  }
 }
 
 export type AuthStrategy =
