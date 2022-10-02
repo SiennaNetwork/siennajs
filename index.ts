@@ -20,9 +20,6 @@ Rewards.Rewards['v3']   = Rewards_v3
 Rewards.Rewards['v3.1'] = Rewards_v3_1
 Rewards.Rewards['v4.1'] = Rewards_v4_1
 
-import { PatchedSigningCosmWasmClient_1_2 } from '@fadroma/scrt-amino'
-export { PatchedSigningCosmWasmClient_1_2 as PatchedSigningCosmWasmClient }
-
 export class SiennaDeployment extends Deployment {
 
   constructor (public context: Deployment) {
