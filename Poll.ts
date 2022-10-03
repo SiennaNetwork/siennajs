@@ -1,24 +1,16 @@
 import {
   Address,
-  Client,
-  Contract,
-  ContractLink,
-  CustomConsole,
-  Decimal,
-  VersionedSubsystem,
-  Fee,
+  Client, Contract, ContractLink,
   Moment,
-  Snip20,
-  TokenSymbol,
-  Uint128,
-  YAML,
-  bold,
+  Names,
+  TokenSymbol, Snip20,
+  Uint128, Decimal, Fee,
+  VersionedSubsystem,
   now as getNow
 } from './Core';
 import * as Auth from './Auth';
 import * as TGE from './TGE';
 import * as Rewards from './Rewards';
-import { Names } from './Names'
 import type { SiennaDeployment } from "./index";
 import { SiennaConsole } from "./index";
 
@@ -26,34 +18,27 @@ export type Version = 'v1'
 
 class GovernanceDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Governance ${this.version}`)
-
-  constructor (context: SiennaDeployment, version: Version,) {
-    super(context, version)
-    context.attach(this, `gov ${version}`, `Sienna Governance ${version}`)
-  }
-
   /** The token staked in the governance pool for voting power. */
   token   = this.context.tge['v1'].token
-
   /** The RPT contract which needs to be reconfigured when we upgrade
     * the staking pool, so that the new pool gets rewards budget. */
   rpts    = this.context.tge['v1'].rpts
-
   /** The up-to-date Rewards v4 staking pool with governance support. */
   staking = this.context.tge['v1'].staking
-
   /** The governance voting contract. */
-  voting  = this.contract({
-    name: `SIENNA.Rewards[v4].Polls[${this.version}]`,
-    client: Polls
-  }).get()
-
+  voting  = this.contract({ client: Polls })
   /** The auth provider and oracle used to give
     * the voting contract access to the balances in the
     * staking contract, which it uses to compute voting power. */
   auth    = this.context.auth['v1']
     .provider('Governance')
     .group('Rewards_and_Governance', [ this.voting, this.staking ])
+
+  constructor (context: SiennaDeployment, version: Version,) {
+    super(context, version)
+    context.attach(this, `gov ${version}`, `Sienna Governance ${version}`)
+    this.voting.provide({ name: Names.Polls('SIENNA', 'v4', this.version) })
+  }
 
   /** Display the status of the governance system. */
   async showStatus () {

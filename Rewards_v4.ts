@@ -12,16 +12,16 @@ import {
   AuthMethod
 } from './Auth'
 import {
-  Rewards,
+  RewardPool,
   InitParams
 } from './Rewards'
 import {
+  RewardPool_v3_1,
   Rewards_v3_Account,
-  Rewards_v3_1,
   Rewards_v3_Total
 } from './Rewards_v3'
 
-export class Rewards_v4_1 extends Rewards_v3_1 {
+export class RewardPool_v4_1 extends RewardPool_v3_1 {
 
   /** Create an init message for Sienna Rewards v4 */
   static init({
@@ -157,5 +157,3 @@ enum RewardsPermissions {
   UserInfo = 'user_info',
   Balance = 'balance',
 }
-
-Rewards['v4.1'] = Rewards_v4_1

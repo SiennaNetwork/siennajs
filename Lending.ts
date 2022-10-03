@@ -4,6 +4,7 @@ import {
   ContractLink,
   Decimal256,
   Fee,
+  Names,
   PaginatedResponse,
   Pagination,
   Permit,
@@ -18,7 +19,6 @@ import {
   randomBase64,
 } from './Core'
 import type * as Auth from './Auth'
-import { Names } from './Names'
 import type { SiennaDeployment } from './index'
 import { SiennaConsole } from './index'
 
@@ -26,31 +26,24 @@ export type Version = 'v1'
 
 class LendDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Lend ${this.version}`)
+  /** The lend interest model contract. */
+  interestModel = this.contract({ client: InterestModel })
+  /** The lend overseer factory. */
+  overseer      = this.contract({ client: Overseer })
+  /** The known lend markets. */
+  markets       = Promise.resolve([])
+  /** The lend oracle. */
+  oracle        = this.contract({ client: MockOracle })
+  /** The reward token for Lend. Defaults to SIENNA. */
+  reward        = this.context.tokens.define('SIENNA')
 
   constructor (context: SiennaDeployment, version: Version) {
     super(context, version)
     context.attach(this, `lend ${version}`, `Sienna Lend ${version}`)
+    this.interestModel.provide({ name: Names.InterestModel(this.version) })
+    this.overseer.provide({ name: Names.LendOverseer(this.version) })
+    this.oracle.provide({ name: Names.LendOracle(this.version) })
   }
-
-  /** The lend interest model contract. */
-  interestModel =
-    this.contract({ name: Names.InterestModel(this.version), client: InterestModel }).get()
-
-  /** The lend overseer factory. */
-  overseer =
-    this.contract({ name: Names.Overseer(this.version), client: Overseer }).get()
-
-  /** The known lend markets. */
-  markets: Promise<Market[]> = Promise.resolve([])
-
-  /** The lend oracle. */
-  oracle = this.contract({
-    name:   Names.LendOracle(this.version),
-    client: MockOracle
-  }).get()
-
-  /** The reward token for Lend. Defaults to SIENNA. */
-  rewardToken: Promise<Snip20> = this.context.tokens.define('SIENNA')
 
   async showStatus () {
     // TODO

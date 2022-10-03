@@ -2,11 +2,10 @@ import type {
   Address, CodeHash, ContractMetadata, TokenSymbol, Snip20, ViewingKey,
   IntoLink, Uint128
 } from './Core'
-import { validatedAddressOf, validatedCodeHashOf } from './Core'
+import { Names, validatedAddressOf, validatedCodeHashOf } from './Core'
 import * as Vesting from './Vesting'
 import type * as Rewards from './Rewards'
-import { Rewards_v3_1 } from './Rewards_v3'
-import { Names } from './Names'
+import { RewardPool_v3_1 } from './Rewards_v3'
 import type { SiennaDeployment } from "./index"
 import { SiennaConsole } from "./index"
 
@@ -14,7 +13,21 @@ export type Version = 'v1'
 
 /** Connect to an existing TGE. */
 class TGEDeployment extends Vesting.Deployment<Version> {
-  log = new SiennaConsole(`TGE ${this.version}`)
+  log     = new SiennaConsole(`TGE ${this.version}`)
+  /** The deployed SIENNA SNIP20 token contract. */
+  token   = this.context.tokens.define(this.symbol)
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  mgmt    = this.contract({ client: MGMT })
+  /** The deployed RPT contracts, which claim tokens from MGMT
+    * and distributes them to the reward pools.  */
+  rpts    = this.contract({ client: RPT }).getMany(Names.isRPT(this.symbol), `get all RPTs for ${this.symbol} vesting`)
+  /** The initial staking pool.
+    * Stake TOKEN to get rewarded more TOKEN from the RPT. */
+  staking = this.contract({
+    name:   Names.Staking(this.symbol),
+    client: RewardPool_v3_1 as unknown as Rewards.RewardsCtor
+  }).get()
 
   constructor (
     context:          SiennaDeployment,
@@ -26,24 +39,9 @@ class TGEDeployment extends Vesting.Deployment<Version> {
   ) {
     super(context, version)
     context.attach(this, 'tge', 'SIENNA token generation event')
+    this.mgmt.provide({ name: Names.MGMT(this.symbol) })
   }
-  /** The deployed SIENNA SNIP20 token contract. */
-  token: Promise<Snip20> = this.context.tokens.define(this.symbol)
-  /** The deployed MGMT contract, which unlocks tokens
-    * for claiming according to a pre-defined schedule.  */
-  mgmt = this.contract({
-    name: Names.MGMT(this.symbol), client: MGMT
-  }).get()
-  /** The deployed RPT contracts, which claim tokens from MGMT
-    * and distributes them to the reward pools.  */
-  rpts = this.contract({ client: RPT })
-    .getMany(Names.isRPT(this.symbol), `get all RPTs for ${this.symbol} vesting`)
-  /** The initial staking pool.
-    * Stake TOKEN to get rewarded more TOKEN from the RPT. */
-  staking = this.contract({
-    name:   Names.Staking(this.symbol),
-    client: Rewards_v3_1 as unknown as Rewards.RewardsCtor
-  }).get()
+
   /** Launch the TGE.
     * - Makes MGMT admin of token
     * - Loads final schedule into MGMT

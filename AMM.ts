@@ -4,12 +4,11 @@ import type {
   Token, TokenSymbol, CustomToken, TokenAmount, Decimal, Uint128
 } from './Core'
 import {
-  Client, Fee, Snip20, VersionedSubsystem,
-  TokenPair, TokenPairAmount, 
+  Client, Fee, Snip20, VersionedSubsystem, Names,
+  TokenPair, TokenPairAmount,
   bold, getTokenId, isCustomToken, isNativeToken, randomBase64
 } from './Core'
 import type * as Rewards from './Rewards'
-import { Names } from './Names';
 import type { SiennaDeployment } from "./index";
 import { SiennaConsole } from "./index";
 
@@ -18,42 +17,28 @@ export type Version = 'v1'|'v2'
 
 /** The AMM subsystem client. */
 class AMMDeployment extends VersionedSubsystem<Version> {
-
   log = new SiennaConsole(`AMM ${this.version}`)
+  /** The AMM factory is the hub of Sienna Swap.
+    * It keeps track of all exchange pair contracts,
+    * and allows anyone to create new ones. */
+  factory   = this.contract({ client: Factory[this.version] })
+  /** All exchanges stored in the deployment. */
+  exchanges = this.contract({ client: Exchange }).getMany(Names.isExchange(this.version))
+  /** Each AMM exchange emits its Liquidity Provision token
+    * to users who provide liquidity. Later, reward pools are
+    * spawned for select LP tokens. */
+  lpTokens  = this.contract({ client: LPToken }).getMany(Names.isLPToken(this.version))
+  /** The AMM router bounces transactions across multiple exchange
+    * pools within the scode of a a single transaction, allowing
+    * multi-hop swaps for tokens between which no direct pairing exists. */
+  router    = this.contract({ client: Router })
 
   constructor (context: SiennaDeployment, version: Version) {
     super(context, version)
     context.attach(this, `amm ${version}`, `Sienna Swap AMM ${version}`)
+    this.factory.provide({ name: Names.Factory(this.version) })
+    this.router.provide({ name: Names.Router(this.version) })
   }
-
-  /** The AMM factory is the hub of Sienna Swap.
-    * It keeps track of all exchange pair contracts,
-    * and allows anyone to create new ones. */
-  factory = this.contract({ name: Names.Factory(this.version), client: Factory[this.version] })
-    .get()
-  /** All exchanges stored in the deployment. */
-  exchanges: Promise<Exchange[]> = this.contract({ client: Exchange })
-    .getMany(Names.isExchange(this.version))
-  /** All exchanges known to the factory.
-    * This is a list fetched from an external source. */
-  async getAllExchanges (): Promise<Record<PairName, Exchange>> {
-    return this.task('get all exchanges from AMM', async () =>
-      (await this.factory).getAllExchanges())
-  }
-  /** Each AMM exchange emits its Liquidity Provision token
-    * to users who provide liquidity. Later, reward pools are
-    * spawned for select LP tokens. */
-  lpTokens = this.contract({ client: LPToken })
-    .getMany(Names.isLPToken(this.version))
-  /** TODO: all LP tokens known to the factory. */
-  async getAllLPTokens (): Promise<never> {
-    return this.task('get all LP tokens from amm', () => { throw new Error('TODO') })
-  }
-  /** The AMM router bounces transactions across multiple exchange
-    * pools within the scode of a a single transaction, allowing
-    * multi-hop swaps for tokens between which no direct pairing exists. */
-  router = this.contract({ name: Names.Router(this.version), client: Router })
-    .get()
 
   async showStatus () {
     await this.showFactoryStatus()
@@ -79,6 +64,16 @@ class AMMDeployment extends VersionedSubsystem<Version> {
         exchange.lpToken?.getTokenInfo(),
       ]))
     }
+  }
+  /** All exchanges known to the factory.
+    * This is a list fetched from an external source. */
+  async getAllExchanges (): Promise<Record<PairName, Exchange>> {
+    return this.task('get all exchanges from AMM', async () =>
+      (await this.factory).getAllExchanges())
+  }
+  /** TODO: all LP tokens known to the factory. */
+  async getAllLPTokens (): Promise<never> {
+    return this.task('get all LP tokens from amm', () => { throw new Error('TODO') })
   }
 
   /** Create a new exchange through the factory. */
@@ -778,7 +773,7 @@ export class RouterPair {
 
     return result
   }
-  
+
   asHop (): RouterHop {
     const { from_token, pair_address, pair_code_hash } = this
     return { from_token, pair_address, pair_code_hash }

@@ -2,6 +2,7 @@ import {
   Client,
   ClientConsole,
   CustomConsole,
+  Names,
   VersionedSubsystem,
   ViewingKeyClient,
   bold,
@@ -29,7 +30,6 @@ import type * as Auth from './Auth'
 import type { Rewards_v2 } from './Rewards_v2'
 import type { Rewards_v3, Rewards_v3_1 } from './Rewards_v3'
 import type { Rewards_v4_1 } from './Rewards_v4'
-import { Names } from './Names'
 import type { SiennaDeployment } from "./index"
 import { SiennaConsole } from "./index"
 
@@ -50,48 +50,37 @@ export const AuthVersions: Partial<Record<Version, Auth.Version>> = {
 }
 
 class RewardsDeployment extends VersionedSubsystem<Version> {
-
   log = new SiennaConsole(`Rewards ${this.version}`)
+  /** Which version of Auth Provider should these rewards use. */
+  authVersion? = AuthVersions[this.version]
+  /** The name of the auth provider, if used. */
+  authProviderName = this.authVersion
+    ? `Rewards[${this.version}]`
+    : undefined
+  /** The auth provider, if used. */
+  auth = this.authVersion
+    ? this.context.auth[this.authVersion].provider(this.authProviderName!)
+    : null
+  /** Which version of the AMM are these rewards for. */
+  ammVersion = AMMVersions[this.version]
+  /** The version of the Rewards client to use. */
+  client: RewardsCtor = Rewards[this.version] as unknown as RewardsCtor
+  /** The reward pools in this deployment. */
+  pools = this.contract({ client: this.client }).getMany(Names.isRewardPool(this.version))
 
   constructor (
     context: SiennaDeployment,
     version: Version,
+    /** The token distributed by the reward pools. */
     public reward: Snip20|Promise<Snip20> = context.tokens.define('SIENNA')
   ) {
     super(context, version)
     context.attach(this, `rewards ${version}`, `Sienna Rewards ${version}`)
   }
 
-  rewardToken = this.context.tokens.define('SIENNA')
-
-  /** Which version of the AMM are these rewards for. */
-  ammVersion:   AMM.Version  = AMMVersions[this.version]
-
-  /** Which version of Auth Provider should these rewards use. */
-  authVersion?: Auth.Version = AuthVersions[this.version]
-
-  /** The name of the auth provider, if used. */
-  authProviderName =
-    this.authVersion
-      ? `Rewards[${this.version}]`
-      : undefined
-
-  /** The auth provider, if used. */
-  authProvider =
-    this.authVersion
-      ? this.context.auth[this.authVersion].provider(this.authProviderName!)
-      : null
-
-  pools = this.contract({
-    client: Rewards[this.version] as unknown as RewardsCtor
-  }).getMany(
-    ({name}:{name?:string})=>name?.includes('Rewards')
-  )
-
   async showStatus () {
     this.log.rewardPools(this.name, this.state)
   }
-
 }
 
 export { RewardsDeployment as Deployment }
@@ -111,7 +100,7 @@ export interface InitParams {
 }
 
 /** A reward pool. */
-export abstract class Rewards extends Client {
+export abstract class RewardPool extends Client {
 
   log = new ClientConsole(this.constructor.name)
 
@@ -144,13 +133,12 @@ export abstract class Rewards extends Client {
     throw new Error('Migration is only available in Rewards >=3');
   }
   get auth (): AuthClient {
-    throw new Error('Auth provider is only available in Rewards >=4.1');
+    throw new Error('Auth provider is only used by Rewards >=4.1');
   }
   /** Point this pool to the governance contract that will be using it for voting power. */
   async setGovernanceLink<T>(link: ContractLink): Promise<T> {
     throw new Error('Governance integration is only available in Rewards >=4.1');
   }
-
   getEpoch () {
     throw new Error('Not implemented');
   }
@@ -160,7 +148,7 @@ export abstract class Rewards extends Client {
 }
 
 /** Constructs a reward pool of some version. */
-export interface RewardsCtor extends ClientClass<Rewards> {
+export interface RewardsCtor extends ClientClass<RewardPool> {
   /** Generate the correct format of Rewards init message for the given version */
   init(params: InitParams): Message;
 }

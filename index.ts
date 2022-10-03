@@ -11,14 +11,14 @@ import * as Governance  from './Poll'
 import * as Lending     from './Lending'
 import * as Launchpad   from './Launchpad'
 import * as Rewards     from './Rewards'
-import { Rewards_v2 }   from './Rewards_v2'
-import { Rewards_v3 }   from './Rewards_v3'
-import { Rewards_v3_1 } from './Rewards_v3'
-import { Rewards_v4_1 } from './Rewards_v4'
-Rewards.Rewards['v2']   = Rewards_v2
-Rewards.Rewards['v3']   = Rewards_v3
-Rewards.Rewards['v3.1'] = Rewards_v3_1
-Rewards.Rewards['v4.1'] = Rewards_v4_1
+import { RewardPool_v2 }   from './Rewards_v2'
+import { RewardPool_v3 }   from './Rewards_v3'
+import { RewardPool_v3_1 } from './Rewards_v3'
+import { RewardPool_v4_1 } from './Rewards_v4'
+Rewards.RewardPool['v2']   = RewardPool_v2
+Rewards.RewardPool['v3']   = RewardPool_v3
+Rewards.RewardPool['v3.1'] = RewardPool_v3_1
+Rewards.RewardPool['v4.1'] = RewardPool_v4_1
 
 export class SiennaDeployment extends Deployment {
 

@@ -4,10 +4,10 @@ import {
   VersionedSubsystem,
   Snip20, ViewingKeyClient,
   CustomConsole, bold,
+  Names,
 } from './Core';
 import * as Auth from './Auth';
 import * as TGE from './TGE';
-import { Names } from './Names';
 import type { SiennaDeployment } from "./index";
 import { SiennaConsole } from "./index";
 
@@ -17,24 +17,21 @@ import MerkleTree from 'merkletreejs';
 export type Version = 'v1'
 
 class LaunchpadDeployment extends VersionedSubsystem<Version> {
-  log = new SiennaConsole(`Launchpad ${this.version}`)
+  log     = new SiennaConsole(`Launchpad ${this.version}`)
+  /** The launchpad staking pool. */
+  staking = this.context.tge['v1'].staking
+  /** TODO: What does launchpad use RPT for? */
+  rpts    = this.context.tge['v1'].rpts
+  /** The launchpad contract. */
+  lpd     = this.contract({ client: Launchpad })
+  /** The known IDOs, matched by name */
+  idos    = this.contract({ client: IDO }).getMany(Names.isIDO(this.version))
 
   constructor (context: SiennaDeployment, version: Version) {
     super(context, version)
     context.attach(this, `lpd ${version}`, `Sienna Launch ${version}`)
+    this.lpd.provide({ name: Names.Launchpad(this.version) })
   }
-
-  /** The launchpad staking pool. */
-  staking = this.context.tge['v1'].staking
-
-  /** TODO: What does launchpad use RPT for? */
-  rpts    = this.context.tge['v1'].rpts
-
-  /** The launchpad contract. */
-  lpd    = this.contract({ name: Names.Launchpad(this.version), client: Launchpad }).get()
-
-  /** The known IDOs, matched by name */
-  idos   = this.contract({ client: IDO }).getMany(Names.isIDO(this.version))
 
   /** The auth provider and oracle used by the deployment.
     * This allows the staking contract to see the user's balance

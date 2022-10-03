@@ -14,10 +14,10 @@ import type {
   Uint128,
   Uint256
 } from './Core'
-import { Rewards, InitParams } from './Rewards'
+import { RewardPool, InitParams } from './Rewards'
 import { LPToken } from './AMM'
 
-export class Rewards_v3 extends Rewards {
+export class RewardPool_v3 extends RewardPool {
 
   /** Create an init message for Sienna Rewards v3 */
   static init = ({
@@ -122,7 +122,7 @@ export class Rewards_v3 extends Rewards {
 }
 
 // for now use this for testing only
-export class Rewards_v3_1 extends Rewards_v3 {
+export class RewardPool_v3_1 extends RewardPool_v3 {
   async depositToken(
     token: LPToken,
     amount: Uint128,
@@ -203,6 +203,3 @@ export interface Rewards_v3_Account {
   /** How many units of time (seconds) remain until the user can claim? */
   bonding?: Duration;
 }
-
-Rewards['v3']   = Rewards_v3
-Rewards['v3.1'] = Rewards_v3_1

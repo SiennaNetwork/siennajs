@@ -7,14 +7,14 @@ import {
   now
 } from './Core'
 import {
-  Rewards,
+  RewardPool,
   InitParams
 } from './Rewards'
 import {
   LPToken
 } from './AMM'
 
-export class Rewards_v2 extends Rewards {
+export class RewardPool_v2 extends RewardPool {
   /** Create an init message for Sienna Rewards v2 */
   static init = ({
     admin,
@@ -120,5 +120,3 @@ export interface Rewards_v2_Account {
    * with 6 decimals of precision. */
   user_share: Uint128;
 }
-
-Rewards['v2'] = Rewards_v2

@@ -5,6 +5,7 @@ import {
   ContractLink,
   ContractMetadata,
   IntoLink,
+  Names,
   Pagination,
   Permit,
   Signer,
@@ -12,7 +13,6 @@ import {
   ViewingKey,
   linkStruct,
 } from "./Core";
-import { Names } from './Names';
 import type { SiennaDeployment } from "./index";
 import { SiennaConsole } from "./index";
 
@@ -21,13 +21,14 @@ export type Version = 'v1'
 export class AuthDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Auth ${this.version}`)
 
+  /** The auth provider's RNG oracle. */
+  oracle = this.contract()
+
   constructor (context: SiennaDeployment, version: Version = 'v1',) {
     super(context, version)
     context.attach(this, `auth ${this.version}`, `Sienna Auth Provider ${this.version}`)
+    this.oracle.provide({ name: Names.AuthOracle(this.version) })
   }
-
-  /** The auth provider's RNG oracle. */
-  oracle = this.contract({ name: Names.AuthOracle(this.version) }).get()
 
   /** The auth provider contract. */
   provider (name: string, oracle: Client|Promise<Client> = this.oracle): AuthProviderDeployment {
@@ -45,6 +46,8 @@ export class AuthDeployment extends VersionedSubsystem<Version> {
 export class AuthProviderDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Auth ${this.version}`)
 
+  provider = this.contract({ client: AuthProvider })
+
   constructor (
     context:             AuthDeployment,
     version:             Version = 'v1',
@@ -53,12 +56,8 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
   ) {
     super(context.context, version)
     context.attach(this, providerName, `auth provider "${providerName}"`)
+    this.provider.provide({ name: Names.NamedProvider(this.version, this.providerName) })
   }
-
-  provider = this.contract({
-    name:   Names.NamedProvider(this.version, this.providerName),
-    client: AuthProvider
-  }).get()
 
   group (
     name:    string,

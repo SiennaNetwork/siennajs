@@ -1,10 +1,9 @@
 import type { Address, CodeHash, TokenSymbol, ContractMetadata, Contract, Client, Task } from './Core'
-import { Snip20, VersionedSubsystem } from './Core'
-import { Rewards_v4_1 } from './Rewards_v4'
+import { Names, Snip20, VersionedSubsystem } from './Core'
+import { RewardPool_v4_1 } from './Rewards_v4'
 import * as Vestings from './Vesting'
 import type * as AMM from './AMM'
 import type * as Rewards  from './Rewards'
-import { Names } from './Names'
 import type { SiennaDeployment } from "./index"
 import { SiennaConsole } from "./index"
 
@@ -14,12 +13,6 @@ export type Version = 'v1'
 class PFRDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`PFR ${this.version}`)
 
-  constructor (context: SiennaDeployment, version: Version) {
-    super(context, version)
-    this.attach(this.alter, 'alter', 'ALTER rewards for LP-SIENNA-ALTER')
-    this.attach(this.shade, 'shade', 'SHD rewards for LP-SIENNA-SHD')
-  }
-
   /** The PFR for Alter. */
   alter: PFRVesting = new PFRVesting(this.context, this.version, 'ALTER')
 
@@ -28,6 +21,11 @@ class PFRDeployment extends VersionedSubsystem<Version> {
 
   async showStatus () {}
 
+  constructor (context: SiennaDeployment, version: Version) {
+    super(context, version)
+    this.attach(this.alter, 'alter', 'ALTER rewards for LP-SIENNA-ALTER')
+    this.attach(this.shade, 'shade', 'SHD rewards for LP-SIENNA-SHD')
+  }
 }
 
 /** A partner-funded rewards vesting.
@@ -38,6 +36,23 @@ class PFRDeployment extends VersionedSubsystem<Version> {
 class PFRVesting extends Vestings.Deployment<Version> {
   log = new SiennaConsole(`PFR ${this.version} ${this.symbol}`)
 
+  /** The incentivized token. */
+  token   = this.context.tokens.define(this.symbol)
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  mgmt    = this.contract({ client: MGMT })
+  /** The deployed RPT contract(s), which claim tokens from MGMT
+    * and distribute them to the reward pools.  */
+  rpts    = this.contract({ client: RPT }).many(Names.isRPTPFR(this.symbol))
+  /** The staked token, e.g. LP-SIENNA-SMTHNG. */
+  staked  = this.contract({ client: Snip20 })
+  /** The incentive token. */
+  reward  = this.token
+  /** The staking pool for this PFR instance.
+    * Stake `this.staked` to get rewarded in `this.reward`,
+    * either of which may or may not be `this.token` */
+  staking = this.contract({ client: RewardPool_v4_1 })
+
   constructor (
     context: SiennaDeployment,
     version: Version,
@@ -46,34 +61,16 @@ class PFRVesting extends Vestings.Deployment<Version> {
     public rewardsVersion: Rewards.Version = 'v3',
   ) {
     super(context, version)
+    this.mgmt.provide({
+      name: Names.PFR_MGMT(this.symbol)
+    })
+    this.staked.provide({
+      name: Names.Exchange(this.ammVersion, 'SIENNA', this.symbol)
+    })
+    this.staking.provide({
+      name: Names.PFR_Pool(this.ammVersion, 'SIENNA', this.symbol, this.rewardsVersion)
+    })
   }
-  /** The incentivized token. */
-  token:  Task<ContractMetadata, Snip20> =
-    this.context.tokens.define(this.symbol)
-  /** The deployed MGMT contract, which unlocks tokens
-    * for claiming according to a pre-defined schedule.  */
-  mgmt:   Task<Contract<Client>, MGMT> =
-    this.contract({ name: Names.PFR_MGMT(this.symbol), client: MGMT }).get()
-  /** The deployed RPT contract(s), which claim tokens from MGMT
-    * and distribute them to the reward pools.  */
-  rpts:   Task<Contract<Client>, RPT[]> = this.contract({ client: RPT })
-    .getMany(Names.isRPTPFR(this.symbol), `get all RPT contracts for ${this.symbol} vesting`)
-  /** The incentive token. */
-  reward: Task<ContractMetadata, Snip20> =
-    this.token
-  /** The staked token. */
-  staked: Task<ContractMetadata, Snip20> = this.contract({
-    name:   Names.Exchange(this.ammVersion, 'SIENNA', this.symbol), 
-    client: Snip20
-  }).get()
-  /** The staking pool for this PFR instance.
-    * Stake `this.staked` to get rewarded in `this.reward`,
-    * either of which may or may not be `this.token` */
-  staking: Promise<Rewards_v4_1> =
-    this.contract({
-      name:   Names.PFR_Pool(this.ammVersion, 'SIENNA', this.symbol, this.rewardsVersion),
-      client: Rewards_v4_1
-    }).get()
 }
 
 export { PFRDeployment as Deployment, PFRVesting as Vesting }

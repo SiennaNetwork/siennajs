@@ -5,78 +5,66 @@ import { SiennaConsole } from "./index"
 /** A vesting consists of a MGMT and one or more RPTs. */
 export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   log = new SiennaConsole(`Vesting ${this.version}`)
-
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  abstract mgmt: Task<Contract<Client>, BaseMGMT>
-
+  abstract mgmt: Contract<BaseMGMT>
   /** The deployed RPT contract, which claims tokens from MGMT
     * and distributes them to the reward pools.  */
-  abstract rpts: Task<Contract<Client>, BaseRPT[]>
-
+  abstract rpt: Contract<BaseRPT>
+  abstract subRpts: Promise<BaseRPT[]>
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
     return this.mgmt.then((mgmt: BaseMGMT)=>mgmt.schedule())
   }
-
   setSchedule () {
     throw new Error('TODO')
   }
-
   addToSchedule () {
     throw new Error('TODO')
   }
-
   /** Fetch the current schedule of MGMT. */
   getMgmtStatus () {
     return this.mgmt.then((mgmt: BaseMGMT)=>mgmt.status())
   }
-
   /** Fetch the current progress of the vesting. */
   getMgmtProgress (addr: Address) {
     return this.mgmt.then((mgmt: BaseMGMT)=>mgmt.progress(addr))
   }
-
   /** Fetch the current status of RPT. */
   async getRptStatus () {
     const [rpt0, ...rpts] = await this.rpts
     return await rpt0.status()
   }
-
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) {
     console.warn('TGEDeployment#setRptConfig: TODO')
   }
-
-  showStatus = this.command('status', 'show the status of this TGE', async (
+  async showStatus (
     address = this.agent?.address!
-  ) => {
+  ) {
     await this.showMgmtStatus()
       .catch(({message})=>this.log.error("Can't show MGMT status:  ", message))
     await this.showMgmtProgress(address)
       .catch(({message})=>this.log.error("Can't show MGMT progress:", message))
     await this.showRptStatus()
       .catch(({message})=>this.log.error("Can't show RPT status:   ", message))
-  })
-
+  }
   /** Show the current status of the MGMT */
   async showMgmtStatus () {
     const {address} = await this.mgmt
-    const status = await this.getMgmtStatus()
+    const status    = await this.getMgmtStatus()
     this.log.mgmtStatus(status)
     return status
   }
-
   async showMgmtProgress (user: Address) {
     const {address} = await this.mgmt
-    const progress = await this.getMgmtProgress(user)
+    const progress  = await this.getMgmtProgress(user)
     this.log.mgmtProgress(user, address, progress)
     return progress
   }
-
   /** Show the current status of the RPT. */
   async showRptStatus () {
-    const rpt = (await this.rpts)[0]
+    const rpt    = await this.rpt
     const status = await rpt.status() as { config: any[] }
     this.log.rptStatus(rpt, status)
     this.log.rptRecipients((await Promise.all(status.config.map(
@@ -88,7 +76,6 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
     ))))
     return status
   }
-
 }
 
 /** A MGMT vesting contract of either version. */
