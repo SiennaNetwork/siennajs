@@ -49,18 +49,20 @@ export const AuthVersions: Partial<Record<Version, Auth.Version>> = {
   'v4.1': 'v1'
 }
 
-export class Deployment extends VersionedSubsystem<Version> {
+class RewardsDeployment extends VersionedSubsystem<Version> {
 
   log = new SiennaConsole(`Rewards ${this.version}`)
 
   constructor (
     context: SiennaDeployment,
     version: Version,
-    public reward: Snip20|Promise<Snip20> = context.token('SIENNA')
+    public reward: Snip20|Promise<Snip20> = context.tokens.define('SIENNA')
   ) {
     super(context, version)
     context.attach(this, `rewards ${version}`, `Sienna Rewards ${version}`)
   }
+
+  rewardToken = this.context.tokens.define('SIENNA')
 
   /** Which version of the AMM are these rewards for. */
   ammVersion:   AMM.Version  = AMMVersions[this.version]
@@ -91,6 +93,8 @@ export class Deployment extends VersionedSubsystem<Version> {
   }
 
 }
+
+export { RewardsDeployment as Deployment }
 
 /** Universal init parameters for all versions of rewards.
   * Some of these may be ignored. */
@@ -145,6 +149,13 @@ export abstract class Rewards extends Client {
   /** Point this pool to the governance contract that will be using it for voting power. */
   async setGovernanceLink<T>(link: ContractLink): Promise<T> {
     throw new Error('Governance integration is only available in Rewards >=4.1');
+  }
+
+  getEpoch () {
+    throw new Error('Not implemented');
+  }
+  getConfig () {
+    throw new Error('Not implemented');
   }
 }
 

@@ -17,7 +17,7 @@ import { SiennaConsole } from "./index";
 export type Version = 'v1'|'v2'
 
 /** The AMM subsystem client. */
-export class Deployment extends VersionedSubsystem<Version> {
+class AMMDeployment extends VersionedSubsystem<Version> {
 
   log = new SiennaConsole(`AMM ${this.version}`)
 
@@ -105,6 +105,8 @@ export class Deployment extends VersionedSubsystem<Version> {
   }
 
 }
+
+export { AMMDeployment as Deployment }
 
 /** Format: SYMBOL0-SYMBOL1 */
 export type PairName = string;

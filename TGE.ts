@@ -13,7 +13,7 @@ import { SiennaConsole } from "./index"
 export type Version = 'v1'
 
 /** Connect to an existing TGE. */
-export class Deployment extends Vesting.Deployment<Version> {
+class TGEDeployment extends Vesting.Deployment<Version> {
   log = new SiennaConsole(`TGE ${this.version}`)
 
   constructor (
@@ -28,23 +28,22 @@ export class Deployment extends Vesting.Deployment<Version> {
     context.attach(this, 'tge', 'SIENNA token generation event')
   }
   /** The deployed SIENNA SNIP20 token contract. */
-  token: Promise<Snip20> =
-    this.context.token(this.symbol)
+  token: Promise<Snip20> = this.context.tokens.define(this.symbol)
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt: Promise<MGMT> =
-    this.contract({ name: Names.MGMT(this.symbol), client: MGMT }).get()
+  mgmt = this.contract({
+    name: Names.MGMT(this.symbol), client: MGMT
+  }).get()
   /** The deployed RPT contracts, which claim tokens from MGMT
     * and distributes them to the reward pools.  */
-  rpts: Promise<RPT[]> = this.contract({ client: RPT })
+  rpts = this.contract({ client: RPT })
     .getMany(Names.isRPT(this.symbol), `get all RPTs for ${this.symbol} vesting`)
   /** The initial staking pool.
     * Stake TOKEN to get rewarded more TOKEN from the RPT. */
-  staking: Promise<Rewards.Rewards> =
-    this.contract({
-      name:   Names.Staking(this.symbol),
-      client: Rewards_v3_1 as unknown as Rewards.RewardsCtor
-    }).get()
+  staking = this.contract({
+    name:   Names.Staking(this.symbol),
+    client: Rewards_v3_1 as unknown as Rewards.RewardsCtor
+  }).get()
   /** Launch the TGE.
     * - Makes MGMT admin of token
     * - Loads final schedule into MGMT
@@ -87,7 +86,7 @@ export class Deployment extends Vesting.Deployment<Version> {
     * circular dependency. To resolve it, the RPT account in the schedule
     * is briefly mutated to point to the deployer's address (before any funds are vested). */
   get rptAccount () {
-    const { mintingPoolName, rptAccountName } = this.constructor as typeof Deployment
+    const { mintingPoolName, rptAccountName } = this.constructor as typeof TGEDeployment
     return Vesting.findInSchedule(this.schedule, mintingPoolName, rptAccountName)
   }
 
@@ -96,7 +95,7 @@ export class Deployment extends Vesting.Deployment<Version> {
     * to provide funding for tester accounts. In practice, testers are funded with an extra
     * mint operation in `deployTGE`. */
   get lpfAccount () {
-    const { mintingPoolName, lpfAccountName } = this.constructor as typeof Deployment
+    const { mintingPoolName, lpfAccountName } = this.constructor as typeof TGEDeployment
     return Vesting.findInSchedule(this.schedule, mintingPoolName, lpfAccountName)
   }
 
@@ -117,6 +116,8 @@ export class Deployment extends Vesting.Deployment<Version> {
     } ]
   })
 }
+
+export { TGEDeployment as Deployment }
 
 /** Contract address/hash pair as used by MGMT */
 export type LinkTuple = [Address, CodeHash]

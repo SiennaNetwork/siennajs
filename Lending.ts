@@ -24,7 +24,7 @@ import { SiennaConsole } from './index'
 
 export type Version = 'v1'
 
-export class Deployment extends VersionedSubsystem<Version> {
+class LendDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Lend ${this.version}`)
 
   constructor (context: SiennaDeployment, version: Version) {
@@ -44,13 +44,13 @@ export class Deployment extends VersionedSubsystem<Version> {
   markets: Promise<Market[]> = Promise.resolve([])
 
   /** The lend oracle. */
-  oracle?: Promise<Oracle> = undefined
-
-  /** The lend mock oracle. */
-  mockOracle?: Promise<MockOracle> = undefined
+  oracle = this.contract({
+    name:   Names.LendOracle(this.version),
+    client: MockOracle
+  }).get()
 
   /** The reward token for Lend. Defaults to SIENNA. */
-  rewardToken: Promise<Snip20> = this.context.token('SIENNA')
+  rewardToken: Promise<Snip20> = this.context.tokens.define('SIENNA')
 
   async showStatus () {
     // TODO
@@ -88,6 +88,8 @@ export class Deployment extends VersionedSubsystem<Version> {
     })
   }
 }
+
+export { LendDeployment as Deployment }
 
 export type { AuthStrategy, AuthMethod } from './Auth'
 

@@ -11,7 +11,7 @@ import { SiennaConsole } from "./index"
 export type Version = 'v1'
 
 /** Partner-funded rewards manager. */
-export class Deployment extends VersionedSubsystem<Version> {
+class PFRDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`PFR ${this.version}`)
 
   constructor (context: SiennaDeployment, version: Version) {
@@ -21,12 +21,10 @@ export class Deployment extends VersionedSubsystem<Version> {
   }
 
   /** The PFR for Alter. */
-  alter: Vesting = new Vesting(this.context, this.version,
-                               'ALTER')
+  alter: PFRVesting = new PFRVesting(this.context, this.version, 'ALTER')
 
   /** The PFR for Shade. */
-  shade: Vesting = new Vesting(this.context, this.version,
-                               'SHD')
+  shade: PFRVesting = new PFRVesting(this.context, this.version, 'SHD')
 
   async showStatus () {}
 
@@ -37,7 +35,7 @@ export class Deployment extends VersionedSubsystem<Version> {
   * into an alternate reward pool which distributes
   * rewards in TOKENX instead of SIENNA. This pool
   * is funded by its own TOKENX vesting. */
-export class Vesting extends Vestings.Deployment<Version> {
+class PFRVesting extends Vestings.Deployment<Version> {
   log = new SiennaConsole(`PFR ${this.version} ${this.symbol}`)
 
   constructor (
@@ -51,7 +49,7 @@ export class Vesting extends Vestings.Deployment<Version> {
   }
   /** The incentivized token. */
   token:  Promise<Snip20> =
-    this.context.token(this.symbol)
+    this.context.tokens.define(this.symbol)
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
   mgmt:   Promise<MGMT> =
@@ -78,7 +76,9 @@ export class Vesting extends Vestings.Deployment<Version> {
     }).get()
 }
 
-export interface PFRConfig {
+export { PFRDeployment as Deployment, PFRVesting as Vesting }
+
+export interface Config {
   name:         string
   rewards: {
     name:       string

@@ -24,7 +24,7 @@ import { SiennaConsole } from "./index";
 
 export type Version = 'v1'
 
-export class Deployment extends VersionedSubsystem<Version> {
+class GovernanceDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Governance ${this.version}`)
 
   constructor (context: SiennaDeployment, version: Version,) {
@@ -70,6 +70,8 @@ export class Deployment extends VersionedSubsystem<Version> {
     this.log.activePolls(await voting.getPolls(+ new Date() / 1000, 0, 10, 0))
   }
 }
+
+export { GovernanceDeployment as Deployment }
 
 export type PollId = number;
 

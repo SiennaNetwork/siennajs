@@ -28,8 +28,9 @@ export class SiennaDeployment extends Deployment {
 
   tokens: TokenManager = new TokenManager(this as Deployment)
 
-  token (symbol: string, options?: Partial<TokenOptions>) {
-    return this.tokens.define(symbol, options)
+  /** Sienna Auth: Authentication provider. */
+  auth = {
+    'v1':   new Auth.Deployment(this, 'v1')
   }
 
   /** The SIENNA Token Generation Event. */
@@ -69,11 +70,6 @@ export class SiennaDeployment extends Deployment {
   /** Sienna Launch: Launchpad/IDO system. */
   launchpad = {
     'v1':   new Launchpad.Deployment(this, 'v1')
-  }
-
-  /** Sienna Auth: Authentication provider. */
-  auth = {
-    'v1':   new Auth.Deployment(this, 'v1')
   }
 
   async showStatus () {

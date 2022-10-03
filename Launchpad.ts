@@ -16,7 +16,7 @@ import MerkleTree from 'merkletreejs';
 
 export type Version = 'v1'
 
-export class Deployment extends VersionedSubsystem<Version> {
+class LaunchpadDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Launchpad ${this.version}`)
 
   constructor (context: SiennaDeployment, version: Version) {
@@ -52,6 +52,8 @@ export class Deployment extends VersionedSubsystem<Version> {
     this.log.latestIdos(await launchpad.getIdos())
   }
 }
+
+export { LaunchpadDeployment as Deployment }
 
 export class Launchpad extends ViewingKeyClient {
 

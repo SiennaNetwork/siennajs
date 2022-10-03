@@ -3,6 +3,7 @@ import {
   Client,
   CodeHash,
   ContractLink,
+  ContractMetadata,
   IntoLink,
   Pagination,
   Permit,
@@ -17,7 +18,7 @@ import { SiennaConsole } from "./index";
 
 export type Version = 'v1'
 
-export class Deployment extends VersionedSubsystem<Version> {
+export class AuthDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Auth ${this.version}`)
 
   constructor (context: SiennaDeployment, version: Version = 'v1',) {
@@ -29,18 +30,19 @@ export class Deployment extends VersionedSubsystem<Version> {
   oracle = this.contract({ name: Names.AuthOracle(this.version) }).get()
 
   /** The auth provider contract. */
-  provider (name: string, oracle: Client|Promise<Client> = this.oracle): ProviderDeployment {
-    const inst = new ProviderDeployment(this.context, this.version, name, oracle)
-    this.attach(inst, name)
-    return inst
+  provider (name: string, oracle: Client|Promise<Client> = this.oracle): AuthProviderDeployment {
+    return new AuthProviderDeployment(this.context, this.version, name, oracle)
   }
 
   async showStatus () {
     // TODO
+    for (const name in this.context.state) {
+      if (name.includes('Auth')) this.log.info(`* ${name}`)
+    }
   }
 }
 
-export class ProviderDeployment extends VersionedSubsystem<Version> {
+export class AuthProviderDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Auth ${this.version}`)
 
   constructor (
@@ -50,11 +52,7 @@ export class ProviderDeployment extends VersionedSubsystem<Version> {
     public oracle:       ContractLink|Client|Promise<Client>
   ) {
     super(context, version)
-    context.attach(this, `auth ${this.version}`, `Sienna Auth Provider ${this.version}`)
-  }
-
-  group (name: string): Promise<this> {
-    return this.task(`get or create auth group ${name}`, () => Promise.resolve(this))
+    context.attach(this, providerName, `auth provider "${providerName}"`)
   }
 
   provider = this.contract({
@@ -62,10 +60,16 @@ export class ProviderDeployment extends VersionedSubsystem<Version> {
     client: AuthProvider
   }).get()
 
+  group (name: string, members?: ({ address?: Address }|Promise<{ address?: Address }>)[]): Promise<this> {
+    return this.task(`get or create auth group ${name}`, () => Promise.resolve(this))
+  }
+
   async showStatus () {
     // TODO
   }
 }
+
+export { AuthDeployment as Deployment, AuthProviderDeployment as ProviderDeployment }
 
 export type AuthStrategy =
   | { type: "permit"; signer: Signer }
