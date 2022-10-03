@@ -31,7 +31,7 @@ export class AuthDeployment extends VersionedSubsystem<Version> {
 
   /** The auth provider contract. */
   provider (name: string, oracle: Client|Promise<Client> = this.oracle): AuthProviderDeployment {
-    return new AuthProviderDeployment(this.context, this.version, name, oracle)
+    return new AuthProviderDeployment(this, this.version, name, oracle)
   }
 
   async showStatus () {
@@ -46,12 +46,12 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Auth ${this.version}`)
 
   constructor (
-    context:             SiennaDeployment,
+    context:             AuthDeployment,
     version:             Version = 'v1',
     public providerName: string,
     public oracle:       ContractLink|Client|Promise<Client>
   ) {
-    super(context, version)
+    super(context.context, version)
     context.attach(this, providerName, `auth provider "${providerName}"`)
   }
 
@@ -60,8 +60,16 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
     client: AuthProvider
   }).get()
 
-  group (name: string, members?: ({ address?: Address }|Promise<{ address?: Address }>)[]): Promise<this> {
-    return this.task(`get or create auth group ${name}`, () => Promise.resolve(this))
+  group (
+    name:    string,
+    members: ({ address?: Address }|Promise<{ address?: Address }>)[] = []
+  ): Promise<this> {
+    return this.task(`get or create auth group ${name}`, async () => {
+      const provider = await this.provider
+      members = await Promise.all(members.map(Promise.resolve)) as { address?: Address }[]
+      await (await this.provider).createGroup(name, members as any[]) // TODO
+      return this
+    })
   }
 
   async showStatus () {

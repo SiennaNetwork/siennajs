@@ -1,22 +1,22 @@
 import { VersionedSubsystem, Client, ClientConsole, YAML, bold } from './Core'
-import type { Address, ViewingKey, Snip20, Uint128, Duration, Name } from './Core'
+import type { Address, ViewingKey, Snip20, Uint128, Duration, Name, Contract, Task } from './Core'
 import { SiennaConsole } from "./index"
 
 /** A vesting consists of a MGMT and one or more RPTs. */
-export abstract class Deployment<V> extends VersionedSubsystem<V> {
+export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   log = new SiennaConsole(`Vesting ${this.version}`)
 
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  abstract mgmt: Promise<MGMT>
+  abstract mgmt: Task<Contract<Client>, BaseMGMT>
 
   /** The deployed RPT contract, which claims tokens from MGMT
     * and distributes them to the reward pools.  */
-  abstract rpts: Promise<RPT[]>
+  abstract rpts: Task<Contract<Client>, BaseRPT[]>
 
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
-    return this.mgmt.then(mgmt=>mgmt.schedule())
+    return this.mgmt.then((mgmt: BaseMGMT)=>mgmt.schedule())
   }
 
   setSchedule () {
@@ -29,12 +29,12 @@ export abstract class Deployment<V> extends VersionedSubsystem<V> {
 
   /** Fetch the current schedule of MGMT. */
   getMgmtStatus () {
-    return this.mgmt.then(mgmt=>mgmt.status())
+    return this.mgmt.then((mgmt: BaseMGMT)=>mgmt.status())
   }
 
   /** Fetch the current progress of the vesting. */
   getMgmtProgress (addr: Address) {
-    return this.mgmt.then(mgmt=>mgmt.progress(addr))
+    return this.mgmt.then((mgmt: BaseMGMT)=>mgmt.progress(addr))
   }
 
   /** Fetch the current status of RPT. */
@@ -92,7 +92,7 @@ export abstract class Deployment<V> extends VersionedSubsystem<V> {
 }
 
 /** A MGMT vesting contract of either version. */
-export abstract class MGMT extends Client {
+export abstract class BaseMGMT extends Client {
   /** See the full schedule */
   schedule  () {
     return this.query({ schedule: {} })
@@ -177,7 +177,7 @@ export interface Progress {
 }
 
 /** A RPT (redistribution) contract of each version. */
-export abstract class RPT extends Client {
+export abstract class BaseRPT extends Client {
   /** Claim from mgmt and distribute to recipients. Anyone can call this method as:
     * - the recipients can only be changed by the admin
     * - the amount is determined by MGMT */
@@ -190,3 +190,9 @@ export abstract class RPT extends Client {
 export type RPTConfig    = [Address, Uint128][]
 
 export type RPTStatus    = unknown
+
+export {
+  VestingDeployment as Deployment,
+  BaseMGMT          as MGMT,
+  BaseRPT           as RPT
+}

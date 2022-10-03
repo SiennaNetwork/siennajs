@@ -39,10 +39,9 @@ class LaunchpadDeployment extends VersionedSubsystem<Version> {
   /** The auth provider and oracle used by the deployment.
     * This allows the staking contract to see the user's balance
     * in the staking contract. */
-  auth    = this.context.auth['v1'].provider('Launchpad').group('Rewards_and_Launchpad', [
-    this.lpd,
-    this.staking
-  ])
+  auth = this.context.auth['v1']
+    .provider('Launchpad')
+    .group('Rewards_and_Launchpad', [ this.lpd, this.staking ])
 
   /** Display the status of the Launchpad/IDO system. */
   async showStatus () {

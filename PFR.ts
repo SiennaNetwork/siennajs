@@ -1,8 +1,8 @@
-import type { Address, CodeHash, TokenSymbol, ContractMetadata } from './Core'
+import type { Address, CodeHash, TokenSymbol, ContractMetadata, Contract, Client, Task } from './Core'
 import { Snip20, VersionedSubsystem } from './Core'
 import { Rewards_v4_1 } from './Rewards_v4'
 import * as Vestings from './Vesting'
-import type * as AMM      from './AMM'
+import type * as AMM from './AMM'
 import type * as Rewards  from './Rewards'
 import { Names } from './Names'
 import type { SiennaDeployment } from "./index"
@@ -48,21 +48,21 @@ class PFRVesting extends Vestings.Deployment<Version> {
     super(context, version)
   }
   /** The incentivized token. */
-  token:  Promise<Snip20> =
+  token:  Task<ContractMetadata, Snip20> =
     this.context.tokens.define(this.symbol)
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt:   Promise<MGMT> =
+  mgmt:   Task<Contract<Client>, MGMT> =
     this.contract({ name: Names.PFR_MGMT(this.symbol), client: MGMT }).get()
   /** The deployed RPT contract(s), which claim tokens from MGMT
     * and distribute them to the reward pools.  */
-  rpts:   Promise<RPT[]> = this.contract({ client: RPT })
+  rpts:   Task<Contract<Client>, RPT[]> = this.contract({ client: RPT })
     .getMany(Names.isRPTPFR(this.symbol), `get all RPT contracts for ${this.symbol} vesting`)
   /** The incentive token. */
-  reward: Promise<Snip20> =
+  reward: Task<ContractMetadata, Snip20> =
     this.token
   /** The staked token. */
-  staked: Promise<Snip20> = this.contract({
+  staked: Task<ContractMetadata, Snip20> = this.contract({
     name:   Names.Exchange(this.ammVersion, 'SIENNA', this.symbol), 
     client: Snip20
   }).get()
