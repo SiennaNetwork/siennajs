@@ -10,7 +10,6 @@ import {
   Moment,
   Snip20,
   Uint128,
-  YAML,
   bold,
 } from './Core';
 import AuthProviderDeployment, { Auth, AuthClient } from './Auth';
@@ -84,7 +83,7 @@ const log = new class SiennaGovernanceConsole extends CustomConsole {
   }
   config (config: any) {
     this.info('Pool config:')
-    YAML.dump(config).trim().split('\n').forEach(line=>this.info(' ', line))
+    this.info(' ', JSON.stringify(config))
   }
   pollsContract (contract: any) {
     this.info('Governance contract:')

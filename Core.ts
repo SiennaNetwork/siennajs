@@ -6,7 +6,6 @@ export { randomBase64, SecureRandom } from '@hackbg/formati'
 export { CustomConsole, bold, colors } from '@hackbg/konzola'
 export * from '@fadroma/scrt'
 export * from '@fadroma/tokens'
-export * as YAML from 'js-yaml'
 
 /** Get the current time in seconds since the Unix epoch. */
 export const now = () => Math.floor(+new Date() / 1000);

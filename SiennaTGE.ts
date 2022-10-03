@@ -9,7 +9,6 @@ import {
   Snip20,
   Uint128,
   ViewingKey,
-  YAML,
   bold,
   validatedAddressOf,
   validatedCodeHashOf
@@ -152,7 +151,7 @@ const log = new class SiennaVestingConsole extends ClientConsole {
     this.info(`RPT contract:`)
     this.info(` `, JSON.stringify(rpt.asLink))
     this.info(`RPT contract config:`)
-    YAML.dump(status).trim().split('\n').forEach(line=>this.info(' ', line))
+    this.info(` `, JSON.stringify(status))
   }
 
   rptRecipients (instances: any) {
