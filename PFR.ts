@@ -1,4 +1,4 @@
-import type { Address, CodeHash, TokenSymbol, ContractMetadata, Contract, Client, Task } from './Core'
+import type { Address, CodeHash, TokenSymbol, Contract, Client, Task } from './Core'
 import { Names, Snip20, VersionedSubsystem } from './Core'
 import { RewardPool_v4_1 } from './Rewards_v4'
 import * as Vestings from './Vesting'
@@ -40,10 +40,13 @@ class PFRVesting extends Vestings.Deployment<Version> {
   token   = this.context.tokens.define(this.symbol)
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt    = this.contract({ client: MGMT })
-  /** The deployed RPT contract(s), which claim tokens from MGMT
-    * and distribute them to the reward pools.  */
-  rpts    = this.contract({ client: RPT }).many(Names.isRPTPFR(this.symbol))
+  mgmt    = this.contract({ client: PFRMGMT })
+  /** The root RPT contract, which claims tokens from MGMT
+    * and distributes them to recipients either directly or via the subRPTs. */
+  rpt     = this.contract({ client: PFRRPT })
+  /** The other RPT contract(s), distributing tokens in multiple transactions
+    * in order to bypass the gas limit. */
+  subRpts = this.contracts({ client: PFRRPT, match: Names.isRPTPFR(this.symbol) })
   /** The staked token, e.g. LP-SIENNA-SMTHNG. */
   staked  = this.contract({ client: Snip20 })
   /** The incentive token. */
@@ -73,8 +76,6 @@ class PFRVesting extends Vestings.Deployment<Version> {
   }
 }
 
-export { PFRDeployment as Deployment, PFRVesting as Vesting }
-
 export interface Config {
   name:         string
   rewards: {
@@ -93,7 +94,7 @@ export interface Config {
   account:      Vestings.Account
 }
 
-export class MGMT extends Vestings.MGMT {
+export class PFRMGMT extends Vestings.MGMT {
   /** Change the admin of the contract, requires the other user to accept */
   change_admin(new_admin: any) {
     return this.execute({ auth: { change_admin: { address: new_admin } } })
@@ -113,7 +114,7 @@ export class MGMT extends Vestings.MGMT {
   }
 }
 
-export class RPT extends Vestings.RPT {
+export class PFRRPT extends Vestings.RPT {
   status () {
     return this.configuration()
   }
@@ -126,4 +127,11 @@ export class RPT extends Vestings.RPT {
   vest() {
     return this.execute({ vest: {} });
   }
+}
+
+export {
+  PFRDeployment as Deployment,
+  PFRVesting    as Vesting,
+  PFRMGMT       as MGMT,
+  PFRRPT        as RPT
 }

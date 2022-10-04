@@ -22,7 +22,7 @@ class GovernanceDeployment extends VersionedSubsystem<Version> {
   token   = this.context.tge['v1'].token
   /** The RPT contract which needs to be reconfigured when we upgrade
     * the staking pool, so that the new pool gets rewards budget. */
-  rpts    = this.context.tge['v1'].rpts
+  rpt     = this.context.tge['v1'].rpt
   /** The up-to-date Rewards v4 staking pool with governance support. */
   staking = this.context.tge['v1'].staking
   /** The governance voting contract. */
@@ -37,7 +37,7 @@ class GovernanceDeployment extends VersionedSubsystem<Version> {
   constructor (context: SiennaDeployment, version: Version,) {
     super(context, version)
     context.attach(this, `gov ${version}`, `Sienna Governance ${version}`)
-    this.voting.provide({ name: Names.Polls('SIENNA', 'v4', this.version) })
+    this.voting.provide({ name: Names.Polls('SIENNA', 'v4.1', this.version) })
   }
 
   /** Display the status of the governance system. */

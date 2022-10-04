@@ -1,12 +1,12 @@
 import type {
   Class,
-  Agent, Address, CodeHash, ContractInfo, ContractLink, ContractMetadata, ExecOpts,
-  Token, TokenSymbol, CustomToken, TokenAmount, Decimal, Uint128
+  Agent, Address, CodeHash, ContractInfo, ContractInstance, ContractLink, ExecOpts,
+  Token, TokenSymbol, CustomToken, TokenAmount, Decimal, Uint128,
 } from './Core'
 import {
   Client, Fee, Snip20, VersionedSubsystem, Names,
   TokenPair, TokenPairAmount,
-  bold, getTokenId, isCustomToken, isNativeToken, randomBase64
+  assertAgent, bold, getTokenId, isCustomToken, isNativeToken, randomBase64
 } from './Core'
 import type * as Rewards from './Rewards'
 import type { SiennaDeployment } from "./index";
@@ -23,11 +23,11 @@ class AMMDeployment extends VersionedSubsystem<Version> {
     * and allows anyone to create new ones. */
   factory   = this.contract({ client: Factory[this.version] })
   /** All exchanges stored in the deployment. */
-  exchanges = this.contract({ client: Exchange }).getMany(Names.isExchange(this.version))
+  exchanges = this.contracts({ client: Exchange, match: Names.isExchange(this.version) })
   /** Each AMM exchange emits its Liquidity Provision token
     * to users who provide liquidity. Later, reward pools are
     * spawned for select LP tokens. */
-  lpTokens  = this.contract({ client: LPToken }).getMany(Names.isLPToken(this.version))
+  lpTokens  = this.contracts({ client: LPToken, match: Names.isLPToken(this.version) })
   /** The AMM router bounces transactions across multiple exchange
     * pools within the scode of a a single transaction, allowing
     * multi-hop swaps for tokens between which no direct pairing exists. */
@@ -311,7 +311,7 @@ export type CreateExchangesResults = Array<CreateExchangesResult>
 /// # Exchange (liquidity pool) and LP token (liqidity provider token) /////////////////////////////
 
 export interface ExchangeClass extends Class<Exchange, [
-  Agent?, Address?, CodeHash?, ContractMetadata?, Partial<ExchangeOpts>?
+  Agent?, Address?, CodeHash?, ContractInstance?, Partial<ExchangeOpts>?
 ]> {}
 
 export interface ExchangeOpts {
@@ -394,7 +394,7 @@ export class Exchange extends Client {
     agent?:    Agent,
     address?:  Address,
     codeHash?: CodeHash,
-    metadata?: ContractMetadata,
+    metadata?: ContractInstance,
     options:   Partial<ExchangeOpts> = {}
   ) {
     super(agent, address, codeHash, metadata)
@@ -417,7 +417,7 @@ export class Exchange extends Client {
     const self = this
     return new Promise(async (resolve)=>{
       if (self.name) return resolve(self.name)
-      const agent = self.assertAgent()
+      const agent = assertAgent(self)
       const { pair, liquidity_token } = await self.getPairInfo()
       const symbol_0 = isNativeToken(pair.token_0) ? 'SCRT' :
         (await agent.getClient(

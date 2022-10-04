@@ -1,6 +1,6 @@
 import type {
-  Address, CodeHash, ContractMetadata, TokenSymbol, Snip20, ViewingKey,
-  IntoLink, Uint128
+  Address, CodeHash, IntoLink, Contracts,
+  TokenSymbol, Snip20, ViewingKey, Uint128
 } from './Core'
 import { Names, validatedAddressOf, validatedCodeHashOf } from './Core'
 import * as Vesting from './Vesting'
@@ -16,18 +16,18 @@ class TGEDeployment extends Vesting.Deployment<Version> {
   log     = new SiennaConsole(`TGE ${this.version}`)
   /** The deployed SIENNA SNIP20 token contract. */
   token   = this.context.tokens.define(this.symbol)
+  /** The initial single-sided staking pool.
+    * Stake TOKEN to get rewarded more TOKEN from the RPT. */
+  staking = this.contract({ client: RewardPool_v3_1 as unknown as Rewards.RewardsCtor })
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt    = this.contract({ client: MGMT })
+  mgmt    = this.contract({ client: TGEMGMT })
   /** The deployed RPT contracts, which claim tokens from MGMT
     * and distributes them to the reward pools.  */
-  rpts    = this.contract({ client: RPT }).getMany(Names.isRPT(this.symbol), `get all RPTs for ${this.symbol} vesting`)
-  /** The initial staking pool.
-    * Stake TOKEN to get rewarded more TOKEN from the RPT. */
-  staking = this.contract({
-    name:   Names.Staking(this.symbol),
-    client: RewardPool_v3_1 as unknown as Rewards.RewardsCtor
-  }).get()
+  rpt     = this.contract({ client: TGERPT })
+  /** TODO: RPT vesting can be split between multiple contracts
+    * in order to vest to more addresses than the gas limit allows. */
+  subRpts = this.contracts<TGERPT>({ client: TGERPT, match: Names.isRPT(this.symbol) })
 
   constructor (
     context:          SiennaDeployment,
@@ -40,6 +40,7 @@ class TGEDeployment extends Vesting.Deployment<Version> {
     super(context, version)
     context.attach(this, 'tge', 'SIENNA token generation event')
     this.mgmt.provide({ name: Names.MGMT(this.symbol) })
+    this.staking.provide({ name: Names.Staking(this.symbol) })
   }
 
   /** Launch the TGE.
@@ -48,7 +49,7 @@ class TGEDeployment extends Vesting.Deployment<Version> {
     * - Irreversibly launches the vesting.
     * After launching, you can only modify the config of the RPT. */
   async launch (schedule: Vesting.Schedule) {
-    const [token, mgmt, rpts] = await Promise.all([this.token, this.mgmt, this.rpts])
+    const [token, mgmt, rpt] = await Promise.all([this.token, this.mgmt, this.rpt])
     await this.agent!.bundle().wrap(async bundle => {
       // Make MGMT admin and sole minter of token;
       await mgmt.as(bundle).acquire(token)
@@ -115,8 +116,6 @@ class TGEDeployment extends Vesting.Deployment<Version> {
   })
 }
 
-export { TGEDeployment as Deployment }
-
 /** Contract address/hash pair as used by MGMT */
 export type LinkTuple = [Address, CodeHash]
 
@@ -125,7 +124,7 @@ export const linkTuple = (instance: IntoLink) => (
   [ validatedAddressOf(instance), validatedCodeHashOf(instance) ]
 )
 
-export class MGMT extends Vesting.MGMT {
+class TGEMGMT extends Vesting.MGMT {
   /** Generate an init message for Origina MGMT */
   static init = (
     admin:    Address,
@@ -150,7 +149,7 @@ export class MGMT extends Vesting.MGMT {
   }
 }
 
-export class RPT extends Vesting.RPT {
+class TGERPT extends Vesting.RPT {
   /** Generate an init message for original RPT */
   static init = (
     admin:   Address,
@@ -178,4 +177,10 @@ export class RPT extends Vesting.RPT {
   setOwner (new_admin: Address) {
     return this.execute({ set_owner: { new_admin } })
   }
+}
+
+export {
+  TGEDeployment as Deployment,
+  TGEMGMT       as MGMT,
+  TGERPT        as RPT
 }

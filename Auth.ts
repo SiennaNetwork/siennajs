@@ -3,7 +3,6 @@ import {
   Client,
   CodeHash,
   ContractLink,
-  ContractMetadata,
   IntoLink,
   Names,
   Pagination,
@@ -31,7 +30,7 @@ export class AuthDeployment extends VersionedSubsystem<Version> {
   }
 
   /** The auth provider contract. */
-  provider (name: string, oracle: Client|Promise<Client> = this.oracle): AuthProviderDeployment {
+  provider (name: string, oracle: Client|PromiseLike<Client> = this.oracle): AuthProviderDeployment {
     return new AuthProviderDeployment(this, this.version, name, oracle)
   }
 
@@ -52,7 +51,7 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
     context:             AuthDeployment,
     version:             Version = 'v1',
     public providerName: string,
-    public oracle:       ContractLink|Client|Promise<Client>
+    public oracle:       ContractLink|Client|PromiseLike<Client>
   ) {
     super(context.context, version)
     context.attach(this, providerName, `auth provider "${providerName}"`)

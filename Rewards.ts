@@ -15,7 +15,6 @@ import type {
   ClientClass,
   Contract,
   ContractLink,
-  ContractMetadata,
   Emigration,
   Immigration,
   IntoLink,
@@ -27,9 +26,9 @@ import { AuthClient, AuthMethod } from './Auth';
 import { LPToken } from './AMM';
 import type * as AMM from './AMM'
 import type * as Auth from './Auth'
-import type { Rewards_v2 } from './Rewards_v2'
-import type { Rewards_v3, Rewards_v3_1 } from './Rewards_v3'
-import type { Rewards_v4_1 } from './Rewards_v4'
+import type { RewardPool_v2 } from './Rewards_v2'
+import type { RewardPool_v3, RewardPool_v3_1 } from './Rewards_v3'
+import type { RewardPool_v4_1 } from './Rewards_v4'
 import type { SiennaDeployment } from "./index"
 import { SiennaConsole } from "./index"
 
@@ -64,9 +63,9 @@ class RewardsDeployment extends VersionedSubsystem<Version> {
   /** Which version of the AMM are these rewards for. */
   ammVersion = AMMVersions[this.version]
   /** The version of the Rewards client to use. */
-  client: RewardsCtor = Rewards[this.version] as unknown as RewardsCtor
+  client: RewardsCtor = RewardPool[this.version] as unknown as RewardsCtor
   /** The reward pools in this deployment. */
-  pools = this.contract({ client: this.client }).getMany(Names.isRewardPool(this.version))
+  pools = this.contracts({ client: this.client, match: Names.isRewardPool(this.version) })
 
   constructor (
     context: SiennaDeployment,
@@ -105,13 +104,13 @@ export abstract class RewardPool extends Client {
   log = new ClientConsole(this.constructor.name)
 
   /** Rewards v1/v2 with the buggy algo. Counts time in blocks. */
-  static 'v2':   typeof Rewards_v2;
+  static 'v2':   typeof RewardPool_v2;
   /** Rewards v3 with the fixed algo. Counts time in seconds. */
-  static 'v3':   typeof Rewards_v3;
+  static 'v3':   typeof RewardPool_v3;
   /** Rewards v3.1 adds depositing using SNIP20 Send instead of IncreaseAllowance+Transfer. */
-  static 'v3.1': typeof Rewards_v3_1;
+  static 'v3.1': typeof RewardPool_v3_1;
   /** Rewards v4 adds admin authentication via AuthProvider. */
-  static 'v4.1': typeof Rewards_v4_1;
+  static 'v4.1': typeof RewardPool_v4_1;
 
   /** Get a LPToken interface to the staked token. */
   abstract getStakedToken(): Promise<LPToken | null>;

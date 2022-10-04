@@ -1,6 +1,6 @@
 import {
   Address, Uint128,
-  Contract, ContractLink, ContractMetadata,
+  Contract, ContractLink,
   VersionedSubsystem,
   Snip20, ViewingKeyClient,
   CustomConsole, bold,
@@ -21,11 +21,11 @@ class LaunchpadDeployment extends VersionedSubsystem<Version> {
   /** The launchpad staking pool. */
   staking = this.context.tge['v1'].staking
   /** TODO: What does launchpad use RPT for? */
-  rpts    = this.context.tge['v1'].rpts
+  rpt     = this.context.tge['v1'].rpt
   /** The launchpad contract. */
   lpd     = this.contract({ client: Launchpad })
   /** The known IDOs, matched by name */
-  idos    = this.contract({ client: IDO }).getMany(Names.isIDO(this.version))
+  idos    = this.contracts({ client: IDO, match: Names.isIDO(this.version) })
 
   constructor (context: SiennaDeployment, version: Version) {
     super(context, version)

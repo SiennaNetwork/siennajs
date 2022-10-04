@@ -1,5 +1,5 @@
 import { VersionedSubsystem, Client, ClientConsole, YAML, bold } from './Core'
-import type { Address, ViewingKey, Snip20, Uint128, Duration, Name, Contract, Task } from './Core'
+import type { Address, ViewingKey, Snip20, Uint128, Duration, Name, Contract, Contracts } from './Core'
 import { SiennaConsole } from "./index"
 
 /** A vesting consists of a MGMT and one or more RPTs. */
@@ -7,11 +7,13 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   log = new SiennaConsole(`Vesting ${this.version}`)
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  abstract mgmt: Contract<BaseMGMT>
+  abstract mgmt:    Contract<BaseMGMT>
   /** The deployed RPT contract, which claims tokens from MGMT
     * and distributes them to the reward pools.  */
-  abstract rpt: Contract<BaseRPT>
-  abstract subRpts: Promise<BaseRPT[]>
+  abstract rpt:     Contract<BaseRPT>
+  /** TODO: RPT vesting can be split between multiple contracts
+    * in order to vest to more addresses than the gas limit allows. */
+  abstract subRpts: Contracts<BaseRPT>
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
     return this.mgmt.then((mgmt: BaseMGMT)=>mgmt.schedule())
@@ -32,8 +34,8 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   }
   /** Fetch the current status of RPT. */
   async getRptStatus () {
-    const [rpt0, ...rpts] = await this.rpts
-    return await rpt0.status()
+    const rpt = await this.rpt
+    return await rpt.status()
   }
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) {
