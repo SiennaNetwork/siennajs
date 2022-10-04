@@ -71,7 +71,7 @@ class RewardsDeployment extends VersionedSubsystem<Version> {
     context: SiennaDeployment,
     version: Version,
     /** The token distributed by the reward pools. */
-    public reward: Snip20|Promise<Snip20> = context.tokens.define('SIENNA')
+    public reward: Contract<Snip20> = context.tokens.define('SIENNA')
   ) {
     super(context, version)
     context.attach(this, `rewards ${version}`, `Sienna Rewards ${version}`)

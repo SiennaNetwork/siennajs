@@ -1,8 +1,8 @@
 import type {
   Address, CodeHash, IntoLink, Contracts,
-  TokenSymbol, Snip20, ViewingKey, Uint128
+  TokenSymbol, Snip20, ViewingKey, Uint128,
 } from './Core'
-import { Names, validatedAddressOf, validatedCodeHashOf } from './Core'
+import { Names, assertAddress, codeHashOf } from './Core'
 import * as Vesting from './Vesting'
 import type * as Rewards from './Rewards'
 import { RewardPool_v3_1 } from './Rewards_v3'
@@ -120,9 +120,8 @@ class TGEDeployment extends Vesting.Deployment<Version> {
 export type LinkTuple = [Address, CodeHash]
 
 /** Convert Fadroma.Instance to address/hash pair as used by MGMT */
-export const linkTuple = (instance: IntoLink) => (
-  [ validatedAddressOf(instance), validatedCodeHashOf(instance) ]
-)
+export const linkTuple = (instance: IntoLink) =>
+  ([ assertAddress(instance), codeHashOf(instance) ])
 
 class TGEMGMT extends Vesting.MGMT {
   /** Generate an init message for Origina MGMT */
