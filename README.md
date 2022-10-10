@@ -7,7 +7,7 @@ Client library to interact with smart contracts on Sienna Network.
 ## Standard setup: install from GitHub Release
 
 ```shell
-npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/1.1.8/siennajs-1.1.8.tgz
+npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/2.1.0/siennajs-2.1.0.tgz
 ```
 
 ## Development setup: install from Git submodule
