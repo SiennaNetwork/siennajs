@@ -151,7 +151,7 @@ const log = new class SiennaVestingConsole extends ClientConsole {
     this.info(`RPT contract:`)
     this.info(` `, JSON.stringify(rpt.asLink))
     this.info(`RPT contract config:`)
-    this.info(` `, JSON.stringify(status)
+    this.info(` `, JSON.stringify(status))
   }
 
   rptRecipients (instances: any) {

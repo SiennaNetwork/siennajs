@@ -1,6 +1,6 @@
 {
   "name": "siennajs",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Sienna Network official API client for JavaScript and TypeScript.",
   "homepage": "https://sienna.network",
   "repository": { "type": "git", "url": "https://github.com/SiennaNetwork/siennajs" },
