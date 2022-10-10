@@ -19,20 +19,23 @@ export type Version = 'v1'
 class GovernanceDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Governance ${this.version}`)
   /** The token staked in the governance pool for voting power. */
-  token   = this.context.tge['v1'].token
+  token = this.context.tge['v1'].token
   /** The RPT contract which needs to be reconfigured when we upgrade
     * the staking pool, so that the new pool gets rewards budget. */
-  rpt     = this.context.tge['v1'].rpt
+  rpt = this.context.tge['v1'].rpt
   /** The up-to-date Rewards v4 staking pool with governance support. */
   staking = this.context.tge['v1'].staking
   /** The governance voting contract. */
-  voting  = this.contract({ client: Polls })
+  voting = this.contract({ client: Polls })
   /** The auth provider and oracle used to give
     * the voting contract access to the balances in the
     * staking contract, which it uses to compute voting power. */
-  auth    = this.context.auth['v1']
+  auth = this.context.auth['v1']
     .provider('Governance')
-    .group('Rewards_and_Governance', [ this.voting, this.staking ])
+    //.group('Rewards_and_Governance', async () => [
+      //(await this.voting.deployed).asLink,
+      //(await this.staking.deployed).asLink
+    //])
 
   constructor (context: SiennaDeployment, version: Version,) {
     super(context, version)

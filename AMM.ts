@@ -46,12 +46,12 @@ class AMMDeployment extends VersionedSubsystem<Version> {
   }
   /** Display the status of the factory. */
   async showFactoryStatus () {
-    const factory = await this.factory
+    const factory = await this.factory.deployed
     this.log.factoryStatus(factory.address!)
   }
   /** Display the status of the exchanges. */
   async showExchangesStatus () {
-    const factory = await this.factory
+    const factory = await this.factory.deployed
     const exchanges = await factory.listExchangesFull()
     if (!(exchanges.length > 0)) return this.log.noExchanges()
     const column1 = 15
@@ -69,7 +69,7 @@ class AMMDeployment extends VersionedSubsystem<Version> {
     * This is a list fetched from an external source. */
   async getAllExchanges (): Promise<Record<PairName, Exchange>> {
     return this.task('get all exchanges from AMM', async () =>
-      (await this.factory).getAllExchanges())
+      (await this.factory.deployed).getAllExchanges())
   }
   /** TODO: all LP tokens known to the factory. */
   async getAllLPTokens (): Promise<never> {
@@ -165,7 +165,7 @@ export abstract class Factory extends Client {
     const exchanges = await this.listExchangesFull()
     const result: Record<PairName, Exchange> = {}
     const pairNames = await Promise.all(exchanges.map(exchange=>exchange.pairName))
-    this.log.info('All exchanges:', pairNames.map(x=>bold(x)).join(', '))
+    //this.log.info('All exchanges:', pairNames.map(x=>bold(x)).join(', '))
     await Promise.all(exchanges.map(async exchange=>result[await exchange.pairName] = exchange))
     return result
   }

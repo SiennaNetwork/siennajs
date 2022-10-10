@@ -47,7 +47,11 @@ class TGEDeployment extends Vesting.Deployment<Version> {
     * - Irreversibly launches the vesting.
     * After launching, you can only modify the config of the RPT. */
   async launch (schedule: Vesting.Schedule) {
-    const [token, mgmt, rpt] = await Promise.all([this.token, this.mgmt, this.rpt])
+    const [token, mgmt, rpt] = await Promise.all([
+      this.token.deployed,
+      this.mgmt.deployed,
+      this.rpt.deployed
+    ])
     await this.agent!.bundle().wrap(async bundle => {
       // Make MGMT admin and sole minter of token;
       await mgmt.as(bundle).acquire(token)
@@ -61,7 +65,7 @@ class TGEDeployment extends Vesting.Deployment<Version> {
   /** Get the balance of an address in the vested token. */
   async getBalance (addr: Address, vk: ViewingKey) {
     this.log.info(`Querying balance of ${addr}...`)
-    return await (await this.token).getBalance(addr, vk)
+    return await (await this.token.deployed).getBalance(addr, vk)
   }
 
   /** Print the result of getBalance. */
@@ -72,7 +76,7 @@ class TGEDeployment extends Vesting.Deployment<Version> {
   /** Set the VK of the calling address in the vested token. */
   async setVK (vk: ViewingKey) {
     this.log.info('Setting VK...')
-    return await (await this.token).vk.set(vk)
+    return await (await this.token.deployed).vk.set(vk)
   }
 
   /** The **RPT account** (Remaining Pool Tokens) is a special entry

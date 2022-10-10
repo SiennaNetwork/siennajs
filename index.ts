@@ -1,5 +1,5 @@
 import { bold, colors } from '@hackbg/konzola'
-import type { Address, Snip20, TokenInfo, TokenOptions } from './Core'
+import type { Address, Snip20, TokenInfo, TokenOptions, Contract } from './Core'
 import { Deployment, TokenManager, ClientConsole } from './Core'
 import * as Vesting     from './Vesting'
 import * as TGE         from './TGE'
@@ -36,6 +36,11 @@ export class SiennaDeployment extends Deployment {
   /** The SIENNA Token Generation Event. */
   tge: Record<TGE.Version, TGE.Deployment> = {
     'v1':   new TGE.Deployment(this, 'v1')
+  }
+
+  /** The Sienna token. */
+  get SIENNA (): Contract<Snip20> {
+    return this.tge['v1'].token
   }
 
   /** The Sienna Swap AMM. */

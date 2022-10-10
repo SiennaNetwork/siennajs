@@ -3,6 +3,7 @@ import {
   Client,
   CodeHash,
   ContractLink,
+  IntoArray,
   IntoLink,
   Names,
   Pagination,
@@ -10,6 +11,7 @@ import {
   Signer,
   VersionedSubsystem,
   ViewingKey,
+  intoArray,
   linkStruct,
 } from "./Core";
 import type { SiennaDeployment } from "./index";
@@ -58,14 +60,11 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
     this.provider.provide({ name: Names.NamedProvider(this.version, this.providerName) })
   }
 
-  group (
-    name:    string,
-    members: ({ address?: Address }|Promise<{ address?: Address }>)[] = []
-  ): Promise<this> {
+  group (name: string, members: IntoArray<ContractLink> = []): Promise<this> {
     return this.task(`get or create auth group ${name}`, async () => {
-      const provider = await this.provider
-      members = await Promise.all(members.map(member=>Promise.resolve(member))) as { address?: Address }[]
-      await (await this.provider).createGroup(name, members as any[]) // TODO
+      const provider = await this.provider.deployed
+      members.forEach(member=>member.asLink?member.asLink:member) // FIXME
+      await provider.createGroup(name, await intoArray(members)) // TODO
       return this
     })
   }

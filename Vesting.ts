@@ -16,7 +16,7 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   abstract subRpts: Contracts<BaseRPT>
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
-    return this.mgmt.then((mgmt: BaseMGMT)=>mgmt.schedule())
+    return this.mgmt.deployed.then((mgmt: BaseMGMT)=>mgmt.schedule())
   }
   setSchedule () {
     throw new Error('TODO')
@@ -26,11 +26,11 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   }
   /** Fetch the current schedule of MGMT. */
   getMgmtStatus () {
-    return this.mgmt.then((mgmt: BaseMGMT)=>mgmt.status())
+    return this.mgmt.deployed.then((mgmt: BaseMGMT)=>mgmt.status())
   }
   /** Fetch the current progress of the vesting. */
   getMgmtProgress (addr: Address) {
-    return this.mgmt.then((mgmt: BaseMGMT)=>mgmt.progress(addr))
+    return this.mgmt.deployed.then((mgmt: BaseMGMT)=>mgmt.progress(addr))
   }
   /** Fetch the current status of RPT. */
   async getRptStatus () {
