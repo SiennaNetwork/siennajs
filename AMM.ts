@@ -21,7 +21,7 @@ class AMMDeployment extends VersionedSubsystem<Version> {
   /** The AMM factory is the hub of Sienna Swap.
     * It keeps track of all exchange pair contracts,
     * and allows anyone to create new ones. */
-  factory   = this.contract({ client: Factory[this.version] })
+  factory   = this.contract<Factory>({ client: Factory[this.version] })
   /** All exchanges stored in the deployment. */
   exchanges = this.contracts({ client: Exchange, match: Names.isExchange(this.version) })
   /** Each AMM exchange emits its Liquidity Provision token

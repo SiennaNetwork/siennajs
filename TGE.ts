@@ -18,20 +18,20 @@ class TGEDeployment extends Vesting.Deployment<Version> {
   token   = this.context.tokens.define(this.symbol)
   /** The initial single-sided staking pool.
     * Stake TOKEN to get rewarded more TOKEN from the RPT. */
-  staking = this.contract({ client: RewardPool_v3_1 as unknown as Rewards.RewardsCtor })
+  staking = this.contract({ name: Names.Staking(this.symbol), client: RewardPool_v3_1 })
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt    = this.contract({ client: TGEMGMT })
+  mgmt    = this.contract<TGEMGMT>({ name: Names.MGMT(this.symbol), client: TGEMGMT })
   /** The deployed RPT contracts, which claim tokens from MGMT
     * and distributes them to the reward pools.  */
-  rpt     = this.contract({ client: TGERPT })
+  rpt     = this.contract({ name: Names.RPT(this.symbol), client: TGERPT })
   /** TODO: RPT vesting can be split between multiple contracts
     * in order to vest to more addresses than the gas limit allows. */
-  subRpts = this.contracts<TGERPT>({ client: TGERPT, match: Names.isRPT(this.symbol) })
+  subRpts = this.contracts({ match: Names.isRPT(this.symbol), client: TGERPT })
 
   constructor (
-    context:          SiennaDeployment,
-    version:          Version,
+    context: SiennaDeployment,
+    version: Version,
     /** The vesting schedule to be loaded in MGMT. */
     public schedule?: Vesting.Schedule,
     /** The token to be created. */
@@ -39,8 +39,6 @@ class TGEDeployment extends Vesting.Deployment<Version> {
   ) {
     super(context, version)
     context.attach(this, 'tge', 'SIENNA token generation event')
-    this.mgmt.provide({ name: Names.MGMT(this.symbol) })
-    this.staking.provide({ name: Names.Staking(this.symbol) })
   }
 
   /** Launch the TGE.

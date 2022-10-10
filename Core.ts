@@ -35,6 +35,8 @@ type Meta = Partial<ContractInstance>
 export const Names = {
   MGMT: (t: TokenSymbol) =>
     `${t}.MGMT`,
+  RPT: (t: TokenSymbol) =>
+    `${t}.RPT`,
   Staking: (t: TokenSymbol, r: Rewards.Version = 'v3') =>
     `${t}.Rewards[${r}]`,
   Factory: (v: AMM.Version) =>

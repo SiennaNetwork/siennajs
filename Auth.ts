@@ -51,7 +51,7 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
     context:             AuthDeployment,
     version:             Version = 'v1',
     public providerName: string,
-    public oracle:       ContractLink|Client|PromiseLike<Client>
+    public oracle:       Client
   ) {
     super(context.context, version)
     context.attach(this, providerName, `auth provider "${providerName}"`)
@@ -64,7 +64,7 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
   ): Promise<this> {
     return this.task(`get or create auth group ${name}`, async () => {
       const provider = await this.provider
-      members = await Promise.all(members.map(Promise.resolve)) as { address?: Address }[]
+      members = await Promise.all(members.map(member=>Promise.resolve(member))) as { address?: Address }[]
       await (await this.provider).createGroup(name, members as any[]) // TODO
       return this
     })
