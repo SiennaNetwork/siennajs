@@ -1,13 +1,15 @@
 import { bold, colors } from '@hackbg/konzola'
 import type { Address, Snip20, TokenInfo, TokenOptions, Contract } from './Core'
 import { Deployment, TokenManager, ClientConsole } from './Core'
+
 import * as Vesting     from './Vesting'
-import * as TGE         from './TGE'
-import * as PFR         from './PFR'
+import * as TGE         from './Vesting_TGE'
+import * as PFR         from './Vesting_PFR'
+
 import * as Auth        from './Auth'
 import * as AMM         from './AMM'
 import * as Multicall   from './Multicall'
-import * as Governance  from './Poll'
+import * as Governance  from './Governance'
 import * as Lending     from './Lending'
 import * as Launchpad   from './Launchpad'
 import * as Rewards     from './Rewards'

@@ -7,7 +7,7 @@ import {
   Names,
 } from './Core';
 import * as Auth from './Auth';
-import * as TGE from './TGE';
+import * as TGE from './Vesting_TGE';
 import type { SiennaDeployment } from "./index";
 import { SiennaConsole } from "./index";
 

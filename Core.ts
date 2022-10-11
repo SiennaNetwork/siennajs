@@ -13,7 +13,7 @@ import type { ContractInstance, TokenSymbol } from './Core'
 import type * as Auth       from './Auth'
 import type * as AMM        from './AMM'
 import type * as Rewards    from './Rewards'
-import type * as Governance from './Poll'
+import type * as Governance from './Governance'
 import type * as Lend       from './Lending'
 import type * as Launchpad  from './Launchpad'
 
