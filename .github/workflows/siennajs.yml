@@ -76,9 +76,11 @@ jobs:
           name: SiennaJS ${{ steps.version.outputs.version }}
           body: 'Install from GitHub Releases with NPM:
 
+            ```sh
 
-                npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/${{ steps.version.outputs.version }}/siennajs-${{ steps.version.outputs.version }}.tgz
+            npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/${{ steps.version.outputs.version }}/siennajs-${{ steps.version.outputs.version }}.tgz
 
+            ```
 
             [![Automated release by https://github.com/softprops/action-gh-release](https://img.shields.io/badge/automated%20release%20by-softprops%2Faction--gh--release-blueviolet)](https://github.com/marketplace/actions/gh-release)'
           files: |
