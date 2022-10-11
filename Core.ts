@@ -5,7 +5,6 @@ export { randomBase64, SecureRandom } from '@hackbg/formati'
 export { CustomConsole, bold, colors } from '@hackbg/konzola'
 export * from '@fadroma/scrt'
 export * from '@fadroma/tokens'
-export * as YAML from 'js-yaml'
 
 import type { SiennaDeployment } from './index'
 
