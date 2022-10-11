@@ -60,11 +60,19 @@ jobs:
           cd $SRC
           rm -rf /tmp/downstream
 
+      - name: Package as CJS and ESM bundles
+        run: |
+          npm run bundle:esm
+          npm run bundle:cjs
+
       - name: Upload release
         if:   startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ steps.pack.outputs.file }}
+          files: |
+            LICENSE
+            bundles/*
+            ${{ steps.pack.outputs.file }}
           body:  Automated release by https://github.com/softprops/action-gh-release
 
       - name: Check that release can be installed
