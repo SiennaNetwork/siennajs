@@ -77,16 +77,16 @@ jobs:
             LICENSE
             bundles/*
             ${{ steps.pack.outputs.file }}
-          body: "
-            SiennaJS {{ steps.version.outputs.version }}
+          body: '
+            # SiennaJS ${{ steps.version.outputs.version }}
 
-            Install from NPM:
+            Install from GitHub Releases with NPM:
 
             ```sh
-            npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/{{ steps.version.outputs.version }}/siennajs-{{ steps.version.outputs.version }}.tgz
+            npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/${{ steps.version.outputs.version }}/siennajs-${{ steps.version.outputs.version }}.tgz
             ```
 
-            Automated release by https://github.com/softprops/action-gh-release"
+            Automated release by https://github.com/softprops/action-gh-release'
 
       - name: Check that release can be installed
         if:   startsWith(github.ref, 'refs/tags/')
