@@ -1,23 +1,16 @@
-# SiennaJS
+# SiennaJS [![](https://img.shields.io/github/package-json/v/SiennaNetwork/siennajs?label=siennajs&style=flat-square)](./CONTRIBUTING.md)
 
-**Latest version:** [![](https://img.shields.io/github/package-json/v/SiennaNetwork/siennajs?label=siennajs&style=flat-square)](./CONTRIBUTING.md)
+Official API client for [Sienna Network](https://sienna.network/).
 
-Client library to interact with smart contracts on Sienna Network.
+## Install
 
-## Standard setup: install from GitHub Release
-
-```shell
-npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/2.1.1/siennajs-2.1.1.tgz
-```
-
-## Development setup: install from Git submodule
-
-You can also add SiennaJS to your Git repository as a [Git submodule](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
-This enables you to rapidly edit SiennaJS in the context of an actual project that uses it. For
-internal use, this is the preferred method. See how to add a development copy of SiennaJS to your
-project in [CONTRIBUTING.md](./CONTRIBUTING.md).
+See the [SiennaJS releases page](https://github.com/SiennaNetwork/siennajs/releases).
 
 ## Usage
+
+> TODO
+
+### Updating the SecretJS dependency
 
 > TODO
 

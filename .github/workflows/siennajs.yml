@@ -11,6 +11,11 @@ jobs:
         uses: actions/checkout@v3
         with: { submodules: recursive }
 
+        #see: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
+      - name: Get version from package.json
+        run:  echo "::set-output name=version::$(cat package.json | jq .version)" # lol
+        id:   version
+
       - name: Get Node 16
         uses: actions/setup-node@v3
         with: { node-version: 16 }
@@ -34,8 +39,7 @@ jobs:
         run:  npm run ubik fix
 
       - name: Package as tarball
-        #see: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
-        run:  echo "::set-output name=file::$(npm pack | tail -n1)" # lol
+        run:  echo "::set-output name=file::$(npm pack | tail -n1)"
         id:   pack
 
       - name: Check that tarball can be installed
@@ -73,7 +77,16 @@ jobs:
             LICENSE
             bundles/*
             ${{ steps.pack.outputs.file }}
-          body:  Automated release by https://github.com/softprops/action-gh-release
+          body: "
+            SiennaJS {{ steps.version.outputs.version }}
+
+            Install from NPM:
+
+            ```sh
+            npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/{{ steps.version.outputs.version }}/siennajs-{{ steps.version.outputs.version }}.tgz
+            ```
+
+            Automated release by https://github.com/softprops/action-gh-release"
 
       - name: Check that release can be installed
         if:   startsWith(github.ref, 'refs/tags/')
