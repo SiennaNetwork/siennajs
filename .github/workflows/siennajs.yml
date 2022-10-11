@@ -73,20 +73,18 @@ jobs:
         if:   startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
+          name: SiennaJS ${{ steps.version.outputs.version }}
+          body: 'Install from GitHub Releases with NPM:
+
+
+                npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/${{ steps.version.outputs.version }}/siennajs-${{ steps.version.outputs.version }}.tgz
+
+
+            [![Automated release by https://github.com/softprops/action-gh-release](https://img.shields.io/badge/automated%20release%20by-softprops%2Faction--gh--release-blueviolet)](https://github.com/marketplace/actions/gh-release)'
           files: |
             LICENSE
             bundles/*
             ${{ steps.pack.outputs.file }}
-          body: '
-            # SiennaJS ${{ steps.version.outputs.version }}
-
-            Install from GitHub Releases with NPM:
-
-            ```sh
-            npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/${{ steps.version.outputs.version }}/siennajs-${{ steps.version.outputs.version }}.tgz
-            ```
-
-            Automated release by https://github.com/softprops/action-gh-release'
 
       - name: Check that release can be installed
         if:   startsWith(github.ref, 'refs/tags/')
