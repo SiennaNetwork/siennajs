@@ -79,7 +79,7 @@ class AMMDeployment extends VersionedSubsystem<Version> {
   /** Create a new exchange through the factory. */
   async createExchange (name: PairName) {
     this.log.creatingExchange(name)
-    const factory = await this.factory
+    const factory = await this.factory.deployed
     const { token_0, token_1 } = await this.context.tokens.pair(name)
     await factory.createExchange(token_0, token_1)
     this.log.createdExchange(name)
@@ -89,7 +89,7 @@ class AMMDeployment extends VersionedSubsystem<Version> {
   async createExchanges (names: PairName[]) {
     this.log.creatingExchanges(names)
     const result = this.agent!.bundle().wrap(async bundle => {
-      const factory = (await this.factory).as(bundle)
+      const factory = (await this.factory.deployed).as(bundle)
       for (const name of names) {
         const { token_0, token_1 } = await this.context.tokens.pair(name)
         await factory.createExchange(token_0, token_1)

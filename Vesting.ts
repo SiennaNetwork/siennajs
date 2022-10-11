@@ -34,7 +34,7 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   }
   /** Fetch the current status of RPT. */
   async getRptStatus () {
-    const rpt = await this.rpt
+    const rpt = await this.rpt.deployed
     return await rpt.status()
   }
   /** Update the RPT configuration. */
@@ -66,7 +66,7 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   }
   /** Show the current status of the RPT. */
   async showRptStatus () {
-    const rpt    = await this.rpt
+    const rpt    = await this.rpt.deployed
     const status = await rpt.status() as { config: any[] }
     this.log.rptStatus(rpt, status)
     this.log.rptRecipients((await Promise.all(status.config.map(

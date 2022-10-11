@@ -56,8 +56,8 @@ class LendDeployment extends VersionedSubsystem<Version> {
     const MARKET_SEIZE_FACTOR          = "0.9";
     const MARKET_LTV_RATIO             = "0.7";
     const MARKET_TOKEN_SYMBOL          = "SSCRT";
-    const overseer      = await this.overseer
-    const interestModel = await this.interestModel
+    const overseer      = await this.overseer.deployed
+    const interestModel = await this.interestModel.deployed
     const underlying_asset = 
     await overseer.execute({
       whitelist: {

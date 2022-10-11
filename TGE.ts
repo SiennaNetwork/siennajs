@@ -5,7 +5,7 @@ import type {
 import { Names, assertAddress, codeHashOf } from './Core'
 import * as Vesting from './Vesting'
 import type * as Rewards from './Rewards'
-import { RewardPool_v3_1 } from './Rewards_v3'
+import { RewardPool_v4_1 } from './Rewards_v4'
 import type { SiennaDeployment } from "./index"
 import { SiennaConsole } from "./index"
 
@@ -18,16 +18,16 @@ class TGEDeployment extends Vesting.Deployment<Version> {
   token   = this.context.tokens.define(this.symbol)
   /** The initial single-sided staking pool.
     * Stake TOKEN to get rewarded more TOKEN from the RPT. */
-  staking = this.contract({ name: Names.Staking(this.symbol), client: RewardPool_v3_1 })
+  staking = this.contract({ name: Names.Staking(this.symbol), client: RewardPool_v4_1 })
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
   mgmt    = this.contract<TGEMGMT>({ name: Names.MGMT(this.symbol), client: TGEMGMT })
   /** The deployed RPT contracts, which claim tokens from MGMT
     * and distributes them to the reward pools.  */
-  rpt     = this.contract({ name: Names.RPT(this.symbol), client: TGERPT })
+  rpt     = this.contract<TGERPT>({ name: Names.RPT(this.symbol), client: TGERPT })
   /** TODO: RPT vesting can be split between multiple contracts
     * in order to vest to more addresses than the gas limit allows. */
-  subRpts = this.contracts({ match: Names.isRPT(this.symbol), client: TGERPT })
+  subRpts = this.contracts<TGERPT>({ match: Names.isRPT(this.symbol), client: TGERPT })
 
   constructor (
     context: SiennaDeployment,

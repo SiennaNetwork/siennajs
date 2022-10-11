@@ -1,6 +1,7 @@
 import {
   Address,
   Client,
+  Contract,
   CodeHash,
   ContractLink,
   IntoArray,
@@ -23,16 +24,15 @@ export class AuthDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Auth ${this.version}`)
 
   /** The auth provider's RNG oracle. */
-  oracle = this.contract()
+  oracle = this.contract({ name: Names.AuthOracle(this.version) })
 
   constructor (context: SiennaDeployment, version: Version = 'v1',) {
     super(context, version)
     context.attach(this, `auth ${this.version}`, `Sienna Auth Provider ${this.version}`)
-    this.oracle.provide({ name: Names.AuthOracle(this.version) })
   }
 
   /** The auth provider contract. */
-  provider (name: string, oracle: Client|PromiseLike<Client> = this.oracle): AuthProviderDeployment {
+  provider (name: string, oracle: Contract<Client> = this.oracle): AuthProviderDeployment {
     return new AuthProviderDeployment(this, this.version, name, oracle)
   }
 
@@ -53,7 +53,7 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
     context:             AuthDeployment,
     version:             Version = 'v1',
     public providerName: string,
-    public oracle:       Client
+    public oracle:       Contract<Client>
   ) {
     super(context.context, version)
     context.attach(this, providerName, `auth provider "${providerName}"`)
@@ -63,7 +63,7 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
   group (name: string, members: IntoArray<ContractLink> = []): Promise<this> {
     return this.task(`get or create auth group ${name}`, async () => {
       const provider = await this.provider.deployed
-      members.forEach(member=>member.asLink?member.asLink:member) // FIXME
+      ;(await intoArray(members)).forEach((member:any)=>member.asLink?member.asLink:member) // FIXME
       await provider.createGroup(name, await intoArray(members)) // TODO
       return this
     })

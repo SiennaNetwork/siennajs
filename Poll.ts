@@ -45,7 +45,7 @@ class GovernanceDeployment extends VersionedSubsystem<Version> {
 
   /** Display the status of the governance system. */
   async showStatus () {
-    const [staking, voting] = await Promise.all([this.staking, this.voting])
+    const [staking, voting] = await Promise.all([this.staking.deployed, this.voting.deployed])
     this.log.pool(staking)
     const stakedToken = await staking.getStakedToken()
     const label = '(todo)'

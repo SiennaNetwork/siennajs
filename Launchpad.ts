@@ -23,14 +23,13 @@ class LaunchpadDeployment extends VersionedSubsystem<Version> {
   /** TODO: What does launchpad use RPT for? */
   rpt     = this.context.tge['v1'].rpt
   /** The launchpad contract. */
-  lpd     = this.contract({ client: Launchpad })
+  lpd     = this.contract({ client: Launchpad, name: Names.Launchpad(this.version) })
   /** The known IDOs, matched by name */
   idos    = this.contracts({ client: IDO, match: Names.isIDO(this.version) })
 
   constructor (context: SiennaDeployment, version: Version) {
     super(context, version)
     context.attach(this, `lpd ${version}`, `Sienna Launch ${version}`)
-    this.lpd.provide({ name: Names.Launchpad(this.version) })
   }
 
   /** The auth provider and oracle used by the deployment.
@@ -40,7 +39,7 @@ class LaunchpadDeployment extends VersionedSubsystem<Version> {
 
   /** Display the status of the Launchpad/IDO system. */
   async showStatus () {
-    const launchpad = await this.lpd
+    const launchpad = await this.lpd.deployed
     this.log.authProvider(await launchpad.auth.getProvider())
     this.log.saleConstraints(await launchpad.saleConstraints())
     this.log.latestIdos(await launchpad.getIdos())
