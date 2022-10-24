@@ -5,7 +5,7 @@ importers:
   .:
     specifiers:
       '@fadroma/scrt-amino': ^3.0.19
-      '@fadroma/tokens': ^5.2.2
+      '@fadroma/tokens': ^5.2.3
       '@hackbg/formati': ^5.1.1
       '@hackbg/ubik': ^1.2
       '@rollup/plugin-commonjs': ^23
@@ -22,7 +22,7 @@ importers:
       typescript: ^4.7.4
     dependencies:
       '@fadroma/scrt-amino': 3.0.19
-      '@fadroma/tokens': 5.2.2
+      '@fadroma/tokens': 5.2.3
       '@hackbg/formati': 5.1.1
       crypto-js: 4.1.1
       merkletreejs: 0.2.32
@@ -427,8 +427,8 @@ packages:
       - google-protobuf
     dev: false
 
-  /@fadroma/tokens/5.2.2:
-    resolution: {integrity: sha512-CSljXVt0UXX6H9YsM2UiiEL0yqPMB42nYzyT+CY3VxiI61Lr/679Xp14qFvAbLXRe5cRk0qlopLfDOvlBZvKfA==}
+  /@fadroma/tokens/5.2.3:
+    resolution: {integrity: sha512-p+4kE3mI2cpQJjd/xsys4FY3hl+jwWlZeeIIlxDRSJx3mVBKusXtkjSLVjbuz/p8WbEIAxE+YbsLTGsOFsj2xg==}
     dependencies:
       '@fadroma/client': 6.3.1
       '@fadroma/scrt': 4.1.2
