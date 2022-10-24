@@ -1,7 +1,6 @@
 import {
   Client,
   ClientConsole,
-  ClientConsole,
   VersionedDeployment,
   ViewingKeyClient,
   bold,

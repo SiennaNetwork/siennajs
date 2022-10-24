@@ -27,7 +27,7 @@ import type {
   Decimal,
   ExecOpts,
   Uint128,
-} from "@fadroma/scrt";
+} from "./Core";
 
 export type AMMVersion = "v1" | "v2";
 

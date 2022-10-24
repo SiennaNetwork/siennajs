@@ -1,10 +1,10 @@
-import * as Scrt from '@fadroma/scrt'
+import * as Scrt from '@fadroma/scrt-amino'
 import { TokenManager } from '@fadroma/tokens'
 import { SecureRandom } from '@hackbg/formati'
 
 export { randomBase64, SecureRandom } from '@hackbg/formati'
-export { bold, colors } from '@fadroma/scrt'
-export * from '@fadroma/scrt'
+export { bold, colors } from '@fadroma/scrt-amino'
+export * from '@fadroma/scrt-amino'
 export * from '@fadroma/tokens'
 
 /** Get the current time in seconds since the Unix epoch. */
