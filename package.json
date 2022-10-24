@@ -3,29 +3,38 @@
   "version": "1.1.9",
   "description": "Sienna Network official API client for JavaScript and TypeScript.",
   "homepage": "https://sienna.network",
-  "repository": { "type": "git", "url": "https://github.com/SiennaNetwork/siennajs" },
-  "bugs": { "url": "https://github.com/SiennaNetwork/siennajs/issues" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SiennaNetwork/siennajs"
+  },
+  "bugs": {
+    "url": "https://github.com/SiennaNetwork/siennajs/issues"
+  },
   "author": "Sienna Network",
   "license": "MIT",
   "type": "module",
   "main": "./index.ts",
-  "engines": { "node": "^12.16 || >=13.7" },
+  "engines": {
+    "node": "^12.16 || >=13.7"
+  },
   "scripts": {
     "check": "tsc --noEmit",
-    "ubik":  "npm run check && ubik",
-    "test":  "jest"
+    "ubik": "npm run check && ubik",
+    "test": "jest"
   },
-  "files": [ "*.ts" ],
+  "files": [
+    "*.ts"
+  ],
   "dependencies": {
-    "@fadroma/scrt":       "^3.2.2",
-    "@fadroma/scrt-amino": "^3.0.11",
-    "@fadroma/tokens":     "^5.1.2",
-    "@hackbg/konzola":     "^2.1",
-    "@hackbg/formati":     "^5.1.1",
-    "@types/js-yaml":      "^4.0.5",
-    "crypto-js":           "^4.1.1",
-    "js-yaml":             "^4.1.0",
-    "merkletreejs":        "^0.2.32"
+    "@fadroma/scrt": "^3.2.2",
+    "@fadroma/scrt-amino": "^3.0.17",
+    "@fadroma/tokens": "^5.1.2",
+    "@hackbg/konzola": "^2.1",
+    "@hackbg/formati": "^5.1.1",
+    "@types/js-yaml": "^4.0.5",
+    "crypto-js": "^4.1.1",
+    "js-yaml": "^4.1.0",
+    "merkletreejs": "^0.2.32"
   },
   "devDependencies": {
     "@hackbg/ubik": "^1.2",
