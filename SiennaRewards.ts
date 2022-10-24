@@ -1,7 +1,7 @@
 import {
   Client,
   ClientConsole,
-  CustomConsole,
+  ClientConsole,
   VersionedDeployment,
   ViewingKeyClient,
   bold,
@@ -118,7 +118,7 @@ export interface StakingTokens {
   rewardToken: Snip20
 }
 
-const log = new class SiennaRewardsConsole extends CustomConsole {
+const log = new class SiennaRewardsConsole extends ClientConsole {
 
   name = 'Sienna Rewards'
 

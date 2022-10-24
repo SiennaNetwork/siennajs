@@ -2,7 +2,7 @@ import {
   Address,
   Contract,
   ContractLink,
-  CustomConsole,
+  ClientConsole,
   Deployment,
   Snip20,
   Uint128,
@@ -51,7 +51,7 @@ export default class LaunchpadDeployment extends Deployment {
     })
 }
 
-const log = new class SiennaLaunchConsole extends CustomConsole {
+const log = new class SiennaLaunchConsole extends ClientConsole {
 
   name = 'Sienna Launch'
 

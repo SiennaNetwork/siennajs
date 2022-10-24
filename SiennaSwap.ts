@@ -1,6 +1,6 @@
 import {
   Client,
-  CustomConsole,
+  ClientConsole,
   CustomToken,
   Fee,
   Snip20,
@@ -785,7 +785,7 @@ export interface AMMRouterHop {
   pair_code_hash: CodeHash
 }
 
-const log = new class SiennaSwapConsole extends CustomConsole {
+const log = new class SiennaSwapConsole extends ClientConsole {
 
   name = 'Sienna Swap'
 

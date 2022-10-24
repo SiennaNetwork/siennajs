@@ -3,7 +3,7 @@ import {
   Client,
   Contract,
   ContractLink,
-  CustomConsole,
+  ClientConsole,
   Decimal,
   Deployment,
   Fee,
@@ -64,7 +64,7 @@ export default class GovernanceDeployment extends Deployment {
   }
 }
 
-const log = new class SiennaGovernanceConsole extends CustomConsole {
+const log = new class SiennaGovernanceConsole extends ClientConsole {
 
   name = 'Sienna Governance'
 

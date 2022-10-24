@@ -3,7 +3,7 @@ import { TokenManager } from '@fadroma/tokens'
 import { SecureRandom } from '@hackbg/formati'
 
 export { randomBase64, SecureRandom } from '@hackbg/formati'
-export { CustomConsole, bold, colors } from '@hackbg/konzola'
+export { bold, colors } from '@fadroma/scrt'
 export * from '@fadroma/scrt'
 export * from '@fadroma/tokens'
 
