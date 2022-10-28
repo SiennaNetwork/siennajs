@@ -86,3 +86,5 @@ export class Immigration extends Scrt.Client {
     return this.execute({ immigration: { request_migration: link } });
   }
 }
+
+export type TxResult = any
