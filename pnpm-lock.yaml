@@ -4,7 +4,7 @@ importers:
 
   .:
     specifiers:
-      '@fadroma/scrt-amino': ^3.0.20
+      '@fadroma/scrt-amino': ^3.0.21
       '@fadroma/tokens': ^5.2.4
       '@hackbg/formati': ^5.1.1
       '@hackbg/ubik': ^1.2
@@ -21,7 +21,7 @@ importers:
       ts-jest: ^28.0.8
       typescript: ^4.7.4
     dependencies:
-      '@fadroma/scrt-amino': 3.0.20
+      '@fadroma/scrt-amino': 3.0.21
       '@fadroma/tokens': 5.2.4
       '@hackbg/formati': 5.1.1
       crypto-js: 4.1.1
@@ -379,8 +379,8 @@ packages:
       - dotenv
     dev: false
 
-  /@fadroma/scrt-amino/3.0.20:
-    resolution: {integrity: sha512-KdBYHhe9a+03nqI2MZhYD0bK+Nec3mUfN56wMSEWHvWIsXps8Nr0ZEMTJxCtoTWdNAjCXGFPc23dksgJ76Ketg==}
+  /@fadroma/scrt-amino/3.0.21:
+    resolution: {integrity: sha512-HZ8eP4fbcepibnygfAlWnX9moV2THkylGptzMzdXAeJHReQg/KYTIhQkutnuFQJPeUt6vfFHyXCx7zIJO7ltlA==}
     dependencies:
       '@fadroma/scrt': 5.0.1
       '@hackbg/formati': 5.1.1
