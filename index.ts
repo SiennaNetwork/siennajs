@@ -75,7 +75,3 @@ export {
   SiennaRewards,
   SiennaTGE
 }
-
-export {
-  PatchedSigningCosmWasmClient_1_2 as PatchedSigningCosmWasmClient
-} from '@fadroma/scrt-amino'
