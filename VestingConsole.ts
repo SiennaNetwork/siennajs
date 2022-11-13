@@ -1,4 +1,4 @@
-const log = new class SiennaVestingConsole extends ClientConsole {
+export class SiennaVestingConsole extends ClientConsole {
 
   name = 'Sienna Vesting'
 

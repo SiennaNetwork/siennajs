@@ -1,3 +1,7 @@
+import type { Uint128, Uint256, Decimal256, ContractLink } from './Core'
+
+export type Version = 'v1'
+
 export interface MarketState {
   /** Block height that the interest was last accrued at */
   accrual_block: number,

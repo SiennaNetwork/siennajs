@@ -1,3 +1,4 @@
+export type Version = 'v1';
 
 export type PollId = number;
 

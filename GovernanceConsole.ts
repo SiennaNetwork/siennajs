@@ -1,4 +1,6 @@
-class GovernanceConsole extends ClientConsole {
+import { ClientConsole } from './Core'
+
+export class GovernanceConsole extends ClientConsole {
   name = 'Sienna Governance'
   pool (pool: any) {
     this.info('Governance-enabled staking pool:')

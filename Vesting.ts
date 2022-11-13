@@ -1,9 +1,10 @@
 export * from './VestingConfig'
-export * from './VestingDeployment'
+export * from './VestingConsole'
+export * from './VestingDeploy'
 export * from './VestingMGMT'
 export * from './VestingRPT'
 
-import { VestingDeployment, TGEDeployment, PFRDeployment } from './VestingDeployment'
+import { VestingDeployment, TGEDeployment, PFRDeployment } from './VestingDeploy'
 import { BaseMGMT, TGEMGMT, PFRMGMT } from './VestingMGMT'
 import { BaseRPT, TGERPT, PFRRPT } from './VestingRPT'
 
@@ -21,3 +22,4 @@ export const PFR = Object.assign(PFRDeployment, {
   MGMT: PFRMGMT,
   RPT:  PFRRPT
 })
+

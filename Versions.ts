@@ -1,4 +1,4 @@
-export const Pinned = {
+export const Versions = {
 
   TGE: {
     'v1': 'legacy/amm-v2-rewards-v3'
