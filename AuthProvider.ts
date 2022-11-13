@@ -1,3 +1,6 @@
+import { Client } from './Core'
+import type { Address, ContractLink, Pagination } from './Core'
+
 export class AuthProvider extends Client {
   async getOracle() {
     return this.query({ oracle: {} });

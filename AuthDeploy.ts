@@ -1,6 +1,8 @@
-import { VersionedSubsystem } from './Core'
+import type { Contract, Client, IntoArray, ContractLink } from './Core'
+import { Names, VersionedSubsystem, intoArray } from './Core'
 import { SiennaConsole } from './Console'
 import type { Version } from './AuthConfig'
+import { AuthProvider } from './AuthProvider'
 
 export class AuthDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Auth ${this.version}`)
@@ -40,8 +42,9 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Auth ${this.version}`)
 
   provider = this.contract({
-    client: AuthProvider,
-    crate: 'auth-provider',
+    client:  AuthProvider,
+    crate:   'auth-provider',
+    name:    Names.NamedProvider(this.version, this.providerName),
     initMsg: async () => {
       const admin   = this.agent?.address
       const entropy = randomBase64()
@@ -58,7 +61,6 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
   ) {
     super(context.context, version)
     context.attach(this, providerName, `auth provider "${providerName}"`)
-    this.provider.provide({ name: Names.NamedProvider(this.version, this.providerName) })
   }
 
   group (name: string, members: IntoArray<ContractLink> = []): Promise<this> {

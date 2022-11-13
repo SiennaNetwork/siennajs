@@ -9,6 +9,9 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
 
   log = new SiennaConsole(`Rewards ${this.version}`)
 
+  /** Address to set as admin of newly created pools. */
+  admin: Address = this.agent?.address
+
   /** Which version of Auth Provider should these rewards use. */
   authVersion? = AuthVersions[this.version]
 
@@ -34,9 +37,6 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   /** Whether to emit a multisig TX instead of broadcasting. */
   multisig: boolean  = false
 
-  /** Address to set as admin of newly created pools. */
-  admin: Address = this.agent?.address
-
   /** Auth provider to use if required. */
   auth: AuthProviderDeployment = this.authVersion
     ? this.context.auth[this.authVersion].provider(`Rewards[${this.version}]`)
@@ -52,13 +52,9 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
     context: SiennaDeployment,
     version: Version,
     /** The token distributed by the reward pools. */
-    public reward: Contract<Snip20> = context.SIENNA
+    public reward: Contract<Snip20> = context.tge['v1'].token
   ) {
     super(context, version)
-    context.attach(this, `rewards ${version}`, `Sienna Rewards ${version}`)
-  }
-  constructor (context, version: API.Rewards.Version, reward: Contract<Snip20>) {
-    super(context, version, reward ?? context.tge['v1'].token)
     this.addCommand('deploy one',  'deploy one reward pool',   this.deployOne.bind(this))
         .addCommand('deploy all',  'deploy all reward pools',  this.deployAll.bind(this))
         .addCommand('upgrade all', 'upgrade all reward pools', this.upgradeAll.bind(this))
@@ -152,12 +148,12 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   async upgradeAll (oldVer: Version, newVer: Version, multisig: boolean = false) {
     /** Find list of old rewards pool from the deployment.
       * Rewards pool not recorded in the receipt will be unaffected by the upgrade. */
-    const oldRewards = await this.contracts<API.Rewards.RewardPool>({
+    const oldRewards = await this.contracts<Rewards.RewardPool>({
       match:  ({name})=>name.endsWith(`.Rewards[${oldVer}]`),
-      client: API.Rewards.RewardPool[oldVer]
+      client: Rewards.RewardPool[oldVer]
     })
 
-    const rewardToken      = await this.contract({ name: 'SIENNA', client: API.Snip20 })
+    const rewardToken      = await this.contract({ name: 'SIENNA', client: Snip20 })
     const stakedTokens     = new Map()
     const stakedTokenNames = new Map()
     await Promise.all(oldRewards.map(async pool=>{
@@ -176,14 +172,14 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
 
     // !!! WARNING: This might've been the cause of the wrong behavior
     // of the AMM+Rewards migration; new pools should point to new LP tokens.
-    const NewRewards: API.Rewards.RewardsCtor = RewardPool[newVer]
+    const NewRewards: Rewards.RewardsCtor = RewardPool[newVer]
     const newRewards = await this.contracts({
       crate:    'sienna-rewards',
       revision: Pinned.Rewards[newVer],
       client:   NewRewards,
       inits:    async () => Object.fromEntries(oldRewards.map(old=>{
         const stakedToken = stakedTokens.get(old)
-        const newAmmVer: API.AMM.Version = API.Rewards.AMMVersions[newVer]
+        const newAmmVer: AMM.Version = Rewards.AMMVersions[newVer]
         const name = (stakedToken.address === rewardToken.address)
           ? `SIENNA.Rewards[${newVer}]`
           : `AMM[${newAmmVer}].${stakedTokenNames.get(stakedToken)}.LP.Rewards[${newVer}]`
@@ -205,15 +201,15 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
     reward: IntoLink,
     bonding: number = 86400,
     timekeeper?: Address
-  ): Promise<API.Rewards.RewardPool> {
-    return this.contract<API.Rewards.RewardPool>({
-      name, crate: 'sienna-rewards', client: API.Rewards[this.version] as any,
+  ): Promise<Rewards.RewardPool> {
+    return this.contract<Rewards.RewardPool>({
+      name, crate: 'sienna-rewards', client: Rewards[this.version] as any,
     }).deploy(() => ({
       admin: this.agent.address,
       config: {
         reward_vk:    null,
-        lp_token:     API.linkStruct(staked),
-        reward_token: API.linkStruct(reward),
+        lp_token:     linkStruct(staked),
+        reward_token: linkStruct(reward),
         timekeeper,
         bonding,
       }
