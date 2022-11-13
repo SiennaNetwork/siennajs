@@ -13,14 +13,14 @@
   "scripts": {
     "check":      "tsc --noEmit",
     "ubik":       "npm run check && ubik",
-    "test":       "jest",
+    "test":       "ensuite Vesting.spec.ts.md",
     "bundle:cjs": "rollup -c .rollup-cjs.config.mjs",
     "bundle:esm": "rollup -c .rollup-esm.config.mjs"
   },
   "files": [ "*.ts" ],
   "dependencies": {
     "@fadroma/scrt":   "^6",
-    "@fadroma/tokens": "^5.1.6",
+    "@fadroma/tokens": "^5.1",
     "@hackbg/konzola": "^2.1",
     "@hackbg/formati": "^5.1.1",
     "crypto-js":       "^4.1.1",
@@ -28,6 +28,8 @@
   },
   "devDependencies": {
     "@hackbg/ubik":                "^1.2",
+    "@hackbg/ensuite":             "^1.1",
+
     "rollup":                      "^2.79.1",
     "@rollup/plugin-node-resolve": "^15",
     "@rollup/plugin-commonjs":     "^23",
