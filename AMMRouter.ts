@@ -1,5 +1,5 @@
 import type { Uint128, Token, Address } from './Core'
-import { Snip20, getTokenId } from './Core'
+import { Client, Snip20, getTokenId } from './Core'
 
 interface Route {
   indices: number[],

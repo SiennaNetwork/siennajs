@@ -1,27 +1,6 @@
-import {
-  Address,
-  Client,
-  Contract,
-  CodeHash,
-  ContractLink,
-  IntoArray,
-  IntoLink,
-  Names,
-  Pagination,
-  Permit,
-  Signer,
-  VersionedSubsystem,
-  ViewingKey,
-  intoArray,
-  linkStruct,
-} from "./Core";
-import type { SiennaDeployment } from "./index";
-import { SiennaConsole } from "./index";
+import type { Address, ViewingKey, Permit, Signer } from './Core'
 
 export type Version = 'v1'
-
-
-export { AuthDeployment as Deployment, AuthProviderDeployment as ProviderDeployment }
 
 export type AuthStrategy =
   | { type: "permit"; signer: Signer }

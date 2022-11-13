@@ -14,6 +14,7 @@
     "check":      "tsc --noEmit",
     "ubik":       "npm run check && ubik",
     "test":       "ensuite Vesting.spec.ts.md",
+    "cov":        "ensuite-cov Vesting.spec.ts.md",
     "bundle:cjs": "rollup -c .rollup-cjs.config.mjs",
     "bundle:esm": "rollup -c .rollup-esm.config.mjs"
   },

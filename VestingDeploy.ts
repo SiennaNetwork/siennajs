@@ -8,8 +8,9 @@ import type { RPTConfig, TGEVersion, PFRVersion } from './VestingConfig'
 import { BaseMGMT, TGEMGMT, PFRMGMT } from './VestingMGMT'
 import { BaseRPT, TGERPT, PFRRPT } from './VestingRPT'
 
-import type { AMMVersion } from './AMMConfig'
-import type { RewardsVersion } from './RewardsConfig'
+import type { Version as AMMVersion } from './AMMConfig'
+import type { Version as RewardsVersion } from './RewardsConfig'
+import { RewardPool_v4_1 } from './Rewards'
 
 /** A vesting consists of a MGMT and one or more RPTs. */
 export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
@@ -66,6 +67,8 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
 
 }
 
+const settings = () => ({})
+
 /** Connect to an existing TGE. */
 export class TGEDeployment extends VestingDeployment<TGEVersion> {
 
@@ -76,14 +79,14 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
   revision = Versions.TGE[this.version]
 
   /** The deployed SIENNA SNIP20 token contract. */
-  token   = this.context.tokens.define(this.symbol)
+  token = this.context.tokens.define(this.symbol)
   /** The main SIENNA token. */
   token = this.context.tokens.define(this.symbol, {
     name:     'SIENNA',
     decimals: 18,
     admin:    this.admin,
     config:   { public_total_supply: true }
-  }).provide({
+  }).define({
     crate:    'snip20-sienna',
     revision: this.revision,
     client:   Snip20

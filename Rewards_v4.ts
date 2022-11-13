@@ -7,19 +7,10 @@ import {
   linkStruct,
   now,
 } from './Core'
-import {
-  AuthClient,
-  AuthMethod
-} from './Auth'
-import {
-  RewardPool,
-  InitParams
-} from './Rewards'
-import {
-  RewardPool_v3_1,
-  Rewards_v3_Account,
-  Rewards_v3_Total
-} from './Rewards_v3'
+import { AuthClient } from './Auth'
+import type { AuthMethod } from './Auth'
+import { RewardPool, InitParams } from './Rewards'
+import { RewardPool_v3_1, Rewards_v3_Account, Rewards_v3_Total } from './Rewards_v3'
 
 export class RewardPool_v4_1 extends RewardPool_v3_1 {
 
