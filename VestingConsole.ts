@@ -1,3 +1,7 @@
+import { ClientConsole, bold } from './Core'
+import type { Address } from './Core'
+import type { VestingDeployment } from './VestingDeploy'
+
 export class SiennaVestingConsole extends ClientConsole {
 
   name = 'Sienna Vesting'
@@ -30,4 +34,52 @@ export class SiennaVestingConsole extends ClientConsole {
     })
   }
 
+}
+
+export class VestingReporter {
+  constructor (
+    private readonly vesting: VestingDeployment<any>,
+    private readonly log: SiennaVestingConsole = vesting.log
+  ) {}
+
+  async showStatus (
+    address = this.vesting.agent?.address!
+  ) {
+    await this.showMgmtStatus()
+      .catch(({message})=>this.log.error("Can't show MGMT status:  ", message))
+    await this.showMgmtProgress(address)
+      .catch(({message})=>this.log.error("Can't show MGMT progress:", message))
+    await this.showRptStatus()
+      .catch(({message})=>this.log.error("Can't show RPT status:   ", message))
+  }
+
+  /** Show the current status of the MGMT */
+  async showMgmtStatus () {
+    const {address} = await this.vesting.mgmt
+    const status    = await this.vesting.getMgmtStatus()
+    this.log.mgmtStatus(status)
+    return status
+  }
+
+  async showMgmtProgress (user: Address) {
+    const {address} = await this.vesting.mgmt
+    const progress  = await this.vesting.getMgmtProgress(user)
+    this.log.mgmtProgress(user, address, progress)
+    return progress
+  }
+
+  /** Show the current status of the RPT. */
+  async showRptStatus () {
+    const rpt    = await this.vesting.rpt.expect()
+    const status = await rpt.status() as { config: any[] }
+    this.log.rptStatus(rpt, status)
+    this.log.rptRecipients((await Promise.all(status.config.map(
+      async ([address])=>({
+        address,
+        label:    await this.vesting.agent?.getLabel(address),
+        codeHash: await this.vesting.agent?.getHash(address)
+      })
+    ))))
+    return status
+  }
 }

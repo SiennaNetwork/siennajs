@@ -1,39 +1,83 @@
+import { Names, Versions } from './Core'
 import type { Version } from './AMMConfig'
 import { VersionedSubsystem } from './Core'
 import { Factory } from './AMMFactory'
 import { Exchange } from './AMMExchange'
 import { LPToken } from './AMMLPToken'
 import { Router } from './AMMRouter'
-import { Versions } from './Versions'
+import { SiennaConsole } from './Console'
 
 /** The AMM subsystem. */
 export class AMMDeployment extends VersionedSubsystem<Version> {
 
   log = new SiennaConsole(`AMM ${this.version}`)
 
+  /** Git revision corresponding to subsystem version. */
+  revision = Versions.AMM[this.version]
+
   /** The AMM factory is the hub of Sienna Swap.
     * It keeps track of all exchange pair contracts,
     * and allows anyone to create new ones. */
-  factory   = this.contract<Factory>({ client: Factory[this.version] })
+  factory = this.contract<Factory>({
+    crate:    'factory',
+    revision: this.revision,
+    client:   Factory[this.version],
+    name:     Names.Factory(this.version),
+    initMsg: async () => {
+      const config: any = {
+        admin:             this.agent.address,
+        pair_contract:     (await this.contract({ crate: 'exchange' }).uploaded).asInfo,
+        lp_token_contract: (await this.contract({ crate: 'lp-token' }).uploaded).asInfo,
+        ...this.config.amm,
+        prng_seed:         randomHex(64),
+      }
+      if (this.version === 'v1') {
+        config.token_contract =
+          config.launchpad_contract =
+          config.ido_contract =
+          config.lp_token_contract
+      }
+      return config
+    }
+  })
 
   /** All exchanges stored in the deployment. */
-  exchanges = this.contracts({ client: Exchange, match: Names.isExchange(this.version) })
+  exchanges = this.contracts({
+    client: Exchange,
+    match:  Names.isExchange(this.version)
+  })
 
   /** Each AMM exchange emits its Liquidity Provision token
     * to users who provide liquidity. Later, reward pools are
     * spawned for select LP tokens. */
-  lpTokens  = this.contracts({ client: LPToken, match: Names.isLPToken(this.version) })
+  lpTokens  = this.contracts({
+    client: LPToken,
+    match:  Names.isLPToken(this.version)
+  })
 
   /** The AMM router bounces transactions across multiple exchange
     * pools within the scode of a a single transaction, allowing
     * multi-hop swaps for tokens between which no direct pairing exists. */
-  router    = this.contract({ client: Router })
+  router    = this.contract({
+    crate:   'router',
+    revision: this.revision,
+    client:   Router,
+    name:     Names.Router(this.version),
+    initMsg: async () => {
+      const exchanges = await this.updateExchanges()
+      return { register_tokens: [/*TODO?*/] }
+    }
+  })
 
   constructor (context: SiennaDeployment, version: Version) {
     super(context, version)
     context.attach(this, `amm ${version}`, `Sienna Swap AMM ${version}`)
-    this.factory.provide({ name: Names.Factory(this.version) })
-    this.router.provide({ name: Names.Router(this.version) })
+    this.addCommand('deploy',  'deploy Sienna Swap',
+                    this.deploy.bind(this)) 
+        .addCommand('upgrade', 'upgrade Sienna Swap factory and exchanges',
+                    this.upgrade.bind(this)) 
+        .addCommand('update exchanges', 'update Sienna Swap exchange pairs',
+                    this.updateExchanges.bind(this))
   }
 
   async showStatus () {
@@ -100,48 +144,6 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     return result
   }
 
-}
-
-/** Deploy Sienna Swap AMM and create exchanges and LP tokens. */
-export class AMMDeployer extends API.AMM.Deployment {
-
-  constructor (
-    context,
-    version,
-    public config = settings(context.agent?.chain?.mode),
-  ) {
-    super(context, version)
-    this.addCommand('deploy',  'deploy Sienna Swap',
-                    this.deploy.bind(this)) 
-        .addCommand('upgrade', 'upgrade Sienna Swap factory and exchanges',
-                    this.upgrade.bind(this)) 
-        .addCommand('update exchanges', 'update Sienna Swap exchange pairs',
-                    this.updateExchanges.bind(this))
-  }
-
-  revision = Pinned.AMM[this.version]
-
-  factory = this.factory.provide({
-    crate: 'factory',
-    revision: this.revision,
-    initMsg: async () => {
-      const config: any = {
-        admin:             this.agent.address,
-        pair_contract:     (await this.contract({ crate: 'exchange' }).uploaded).asInfo,
-        lp_token_contract: (await this.contract({ crate: 'lp-token' }).uploaded).asInfo,
-        ...this.config.amm,
-        prng_seed:         randomHex(64),
-      }
-      if (this.version === 'v1') {
-        config.token_contract =
-          config.launchpad_contract =
-          config.ido_contract =
-          config.lp_token_contract
-      }
-      return config
-    }
-  })
-
   get exchangedTokens (): Record<TokenSymbol, Contract<Snip20>> {
     return this.context.tokens.defineMany(
       this.config.swapPairs.reduce((tokens, name)=>{
@@ -151,15 +153,6 @@ export class AMMDeployer extends API.AMM.Deployment {
       {})
     )
   }
-
-  router = this.router.provide({
-    crate: 'router',
-    revision: this.revision,
-    initMsg: async () => {
-      const exchanges = await this.updateExchanges()
-      return { register_tokens: [/*TODO?*/] }
-    }
-  })
 
   async deploy () {
     const factory   = await this.factory.deployed

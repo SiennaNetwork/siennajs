@@ -1,5 +1,7 @@
 import { Client } from './Core'
-import type { Class, Agent, Address, CodeHash, Contract } from './Core'
+import type {
+  Class, Agent, Address, CodeHash, Contract, ContractLink, Uint128, Snip20, Token, TokenPair
+} from './Core'
 import type { LPToken } from './AMMLPToken'
 
 /** Format: SYMBOL0-SYMBOL1 */

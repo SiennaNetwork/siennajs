@@ -1,28 +1,26 @@
+import { SiennaConsole } from './Console'
 import { VersionedSubsystem } from './Core'
 import type { Address, Contract } from './Core'
+
+import { VestingReporter } from './VestingConsole'
+import type { RPTConfig, TGEVersion, PFRVersion } from './VestingConfig'
 import type { BaseMGMT, TGEMGMT, PFRMGMT } from './VestingMGMT'
-import type { BaseRPT, TGERPT, PFRRPT, RPTConfig } from './VestingRPT'
+import type { BaseRPT, TGERPT, PFRRPT } from './VestingRPT'
 
 /** A vesting consists of a MGMT and one or more RPTs. */
 export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
 
   log = new SiennaConsole(`Vesting ${this.version}`)
 
+  show: VestingReporter = new VestingReporter(this)
+
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
   abstract mgmt:    Contract<BaseMGMT>
 
-  /** The deployed RPT contract, which claims tokens from MGMT
-    * and distributes them to the reward pools.  */
-  abstract rpt:     Contract<BaseRPT>
-
-  /** TODO: RPT vesting can be split between multiple contracts
-    * in order to vest to more addresses than the gas limit allows. */
-  abstract subRpts: Contracts<BaseRPT>
-
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
-    return this.mgmt.deployed.then((mgmt: BaseMGMT)=>mgmt.schedule())
+    return this.mgmt.expect().then((mgmt: BaseMGMT)=>mgmt.schedule())
   }
 
   setSchedule () {
@@ -35,64 +33,31 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
 
   /** Fetch the current schedule of MGMT. */
   getMgmtStatus () {
-    return this.mgmt.deployed.then((mgmt: BaseMGMT)=>mgmt.status())
+    return this.mgmt.expect().then((mgmt: BaseMGMT)=>mgmt.status())
   }
 
   /** Fetch the current progress of the vesting. */
   getMgmtProgress (addr: Address) {
-    return this.mgmt.deployed.then((mgmt: BaseMGMT)=>mgmt.progress(addr))
+    return this.mgmt.expect().then((mgmt: BaseMGMT)=>mgmt.progress(addr))
   }
+
+  /** The deployed RPT contract, which claims tokens from MGMT
+    * and distributes them to the reward pools.  */
+  abstract rpt:     Contract<BaseRPT>
+
+  /** TODO: RPT vesting can be split between multiple contracts
+    * in order to vest to more addresses than the gas limit allows. */
+  abstract subRpts: Contracts<BaseRPT>
 
   /** Fetch the current status of RPT. */
   async getRptStatus () {
-    const rpt = await this.rpt.deployed
+    const rpt = await this.rpt.expect()
     return await rpt.status()
   }
 
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) {
     console.warn('TGEDeployment#setRptConfig: TODO')
-  }
-
-  async showStatus (
-    address = this.agent?.address!
-  ) {
-    await this.showMgmtStatus()
-      .catch(({message})=>this.log.error("Can't show MGMT status:  ", message))
-    await this.showMgmtProgress(address)
-      .catch(({message})=>this.log.error("Can't show MGMT progress:", message))
-    await this.showRptStatus()
-      .catch(({message})=>this.log.error("Can't show RPT status:   ", message))
-  }
-
-  /** Show the current status of the MGMT */
-  async showMgmtStatus () {
-    const {address} = await this.mgmt
-    const status    = await this.getMgmtStatus()
-    this.log.mgmtStatus(status)
-    return status
-  }
-
-  async showMgmtProgress (user: Address) {
-    const {address} = await this.mgmt
-    const progress  = await this.getMgmtProgress(user)
-    this.log.mgmtProgress(user, address, progress)
-    return progress
-  }
-
-  /** Show the current status of the RPT. */
-  async showRptStatus () {
-    const rpt    = await this.rpt.deployed
-    const status = await rpt.status() as { config: any[] }
-    this.log.rptStatus(rpt, status)
-    this.log.rptRecipients((await Promise.all(status.config.map(
-      async ([address])=>({
-        address,
-        label:    await this.agent?.getLabel(address),
-        codeHash: await this.agent?.getHash(address)
-      })
-    ))))
-    return status
   }
 
 }
@@ -208,76 +173,6 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
       ]
     } ]
   })
-}
-
-/** Partner-funded rewards manager. */
-export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
-  log = new SiennaConsole(`PFR ${this.version}`)
-
-  /** The PFR for Alter. */
-  alter: PFRVesting = new PFRVesting(this.context, this.version, 'ALTER')
-
-  /** The PFR for Shade. */
-  shade: PFRVesting = new PFRVesting(this.context, this.version, 'SHD')
-
-  async showStatus () {}
-
-  constructor (context: SiennaDeployment, version: PFRVersion) {
-    super(context, version)
-    this.attach(this.alter, 'alter', 'ALTER rewards for LP-SIENNA-ALTER')
-    this.attach(this.shade, 'shade', 'SHD rewards for LP-SIENNA-SHD')
-  }
-}
-
-/** A partner-funded rewards vesting.
-  * Allows staking LP-TOKENX-SIENNA LP tokens
-  * into an alternate reward pool which distributes
-  * rewards in TOKENX instead of SIENNA. This pool
-  * is funded by its own TOKENX vesting. */
-export class PFRVesting extends VestingDeployment<PFRVersion> {
-  log = new SiennaConsole(`PFR ${this.version} ${this.symbol}`)
-
-  /** The incentivized token. */
-  token   = this.context.tokens.define(this.symbol)
-  /** The deployed MGMT contract, which unlocks tokens
-    * for claiming according to a pre-defined schedule.  */
-  mgmt    = this.contract<PFRMGMT>({ client: PFRMGMT })
-  /** The root RPT contract, which claims tokens from MGMT
-    * and distributes them to recipients either directly or via the subRPTs. */
-  rpt     = this.contract<PFRRPT>({ client: PFRRPT })
-  /** The other RPT contract(s), distributing tokens in multiple transactions
-    * in order to bypass the gas limit. */
-  subRpts = this.contracts<PFRRPT>({ client: PFRRPT, match: Names.isRPTPFR(this.symbol) })
-  /** The staked token, e.g. LP-SIENNA-SMTHNG. */
-  staked  = this.contract({ client: Snip20 })
-  /** The incentive token. */
-  reward  = this.token
-  /** The staking pool for this PFR instance.
-    * Stake `this.staked` to get rewarded in `this.reward`,
-    * either of which may or may not be `this.token` */
-  staking = this.contract({ client: RewardPool_v4_1 })
-
-  constructor (
-    context: SiennaDeployment,
-    version: Version,
-    public symbol:         TokenSymbol     = 'ALTER',
-    public ammVersion:     AMM.Version     = 'v2',
-    public rewardsVersion: Rewards.Version = 'v3',
-  ) {
-    super(context, version)
-    this.mgmt.provide({
-      name: Names.PFR_MGMT(this.symbol)
-    })
-    this.staked.provide({
-      name: Names.Exchange(this.ammVersion, 'SIENNA', this.symbol)
-    })
-    this.staking.provide({
-      name: Names.PFR_Pool(this.ammVersion, 'SIENNA', this.symbol, this.rewardsVersion)
-    })
-  }
-}
-/** Deploy the initital SIENNA Token Generation Event. */
-export class TGEDeployer extends API.TGE.Deployment {
 
   admin = this.agent?.address
 
@@ -363,6 +258,23 @@ export class TGEDeployer extends API.TGE.Deployment {
     }
   }
 
+}
+
+/** Partner-funded rewards manager. */
+export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
+  log = new SiennaConsole(`PFR ${this.version}`)
+
+  /** The PFR for Alter. */
+  alter: PFRVesting = new PFRVesting(this.context, this.version, 'ALTER')
+
+  /** The PFR for Shade. */
+  shade: PFRVesting = new PFRVesting(this.context, this.version, 'SHD')
+
+  constructor (context: SiennaDeployment, version: PFRVersion) {
+    super(context, version)
+    this.attach(this.alter, 'alter', 'ALTER rewards for LP-SIENNA-ALTER')
+    this.attach(this.shade, 'shade', 'SHD rewards for LP-SIENNA-SHD')
+  }
 }
 
 /** Vest and stake non-SIENNA tokens. */
@@ -481,4 +393,52 @@ export class PFRDeployer extends API.PFR.Deployment {
 
   //}
 
+}
+
+/** A partner-funded rewards vesting.
+  * Allows staking LP-TOKENX-SIENNA LP tokens
+  * into an alternate reward pool which distributes
+  * rewards in TOKENX instead of SIENNA. This pool
+  * is funded by its own TOKENX vesting. */
+export class PFRVesting extends VestingDeployment<PFRVersion> {
+  log = new SiennaConsole(`PFR ${this.version} ${this.symbol}`)
+
+  /** The incentivized token. */
+  token   = this.context.tokens.define(this.symbol)
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  mgmt    = this.contract<PFRMGMT>({ client: PFRMGMT })
+  /** The root RPT contract, which claims tokens from MGMT
+    * and distributes them to recipients either directly or via the subRPTs. */
+  rpt     = this.contract<PFRRPT>({ client: PFRRPT })
+  /** The other RPT contract(s), distributing tokens in multiple transactions
+    * in order to bypass the gas limit. */
+  subRpts = this.contracts<PFRRPT>({ client: PFRRPT, match: Names.isRPTPFR(this.symbol) })
+  /** The staked token, e.g. LP-SIENNA-SMTHNG. */
+  staked  = this.contract({ client: Snip20 })
+  /** The incentive token. */
+  reward  = this.token
+  /** The staking pool for this PFR instance.
+    * Stake `this.staked` to get rewarded in `this.reward`,
+    * either of which may or may not be `this.token` */
+  staking = this.contract({ client: RewardPool_v4_1 })
+
+  constructor (
+    context: SiennaDeployment,
+    version: Version,
+    public symbol:         TokenSymbol     = 'ALTER',
+    public ammVersion:     AMM.Version     = 'v2',
+    public rewardsVersion: Rewards.Version = 'v3',
+  ) {
+    super(context, version)
+    this.mgmt.provide({
+      name: Names.PFR_MGMT(this.symbol)
+    })
+    this.staked.provide({
+      name: Names.Exchange(this.ammVersion, 'SIENNA', this.symbol)
+    })
+    this.staking.provide({
+      name: Names.PFR_Pool(this.ammVersion, 'SIENNA', this.symbol, this.rewardsVersion)
+    })
+  }
 }

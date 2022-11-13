@@ -29,6 +29,66 @@ export abstract class VersionedSubsystem<V> extends Scrt.VersionedDeployment<V> 
 
 type Meta = Partial<ContractInstance>
 
+
+/** Get the current time in seconds since the Unix epoch. */
+export const now = () => Math.floor(+new Date() / 1000);
+
+export interface Pagination {
+  limit: number
+  start: number
+}
+
+export interface PaginatedResponse <T> {
+  /** The total number of entries stored by the contract. */
+  total: number
+  /** The entries on this page. */
+  entries: T[]
+}
+
+/** Per-user contract-to-contract migrations. */
+export class Emigration extends Scrt.Client {
+  enableTo(link: Scrt.ContractLink) {
+    return this.execute({ emigration: { enable_migration_to: link } });
+  }
+  disableTo(link: Scrt.ContractLink) {
+    return this.execute({ emigration: { disable_migration_to: link } });
+  }
+}
+
+/** Per-user contract-to-contract migrations. */
+export class Immigration extends Scrt.Client {
+  enableFrom(link: Scrt.ContractLink) {
+    return this.execute({ immigration: { enable_migration_from: link } });
+  }
+  disableFrom(link: Scrt.ContractLink) {
+    return this.execute({ immigration: { disable_migration_from: link } });
+  }
+  migrateFrom(link: Scrt.ContractLink) {
+    return this.execute({ immigration: { request_migration: link } });
+  }
+}
+
+export const Versions = {
+
+  TGE: {
+    'v1': 'legacy/amm-v2-rewards-v3'
+  },
+
+  AMM: {
+    'v1': 'legacy/amm-v1',
+    'v2': 'legacy/amm-v2-rewards-v3'
+  },
+
+  Rewards: {
+    'v2':   'legacy/rewards-v2',
+    'v3':   'legacy/amm-v2-rewards-v3',
+    'v3.1': 'legacy/rewards-3.1.0',
+    'v4.1': 'legacy/rewards-4.1.2',
+    'v4.2': 'legacy/rewards-4.2.0'
+  }
+
+}
+
 /** Deployment-internal names of contracts.
   * TODO deprecate. */
 export const Names = {
@@ -85,42 +145,4 @@ export const Names = {
     name?.startsWith(`${Names.Launchpad(v)}.IDO[`),
   isRewardPool: (v: Rewards.Version) => ({name}: Meta) =>
     name?.includes(`Rewards[${v}]`)
-}
-
-/** Get the current time in seconds since the Unix epoch. */
-export const now = () => Math.floor(+new Date() / 1000);
-
-export interface Pagination {
-  limit: number
-  start: number
-}
-
-export interface PaginatedResponse <T> {
-  /** The total number of entries stored by the contract. */
-  total: number
-  /** The entries on this page. */
-  entries: T[]
-}
-
-/** Per-user contract-to-contract migrations. */
-export class Emigration extends Scrt.Client {
-  enableTo(link: Scrt.ContractLink) {
-    return this.execute({ emigration: { enable_migration_to: link } });
-  }
-  disableTo(link: Scrt.ContractLink) {
-    return this.execute({ emigration: { disable_migration_to: link } });
-  }
-}
-
-/** Per-user contract-to-contract migrations. */
-export class Immigration extends Scrt.Client {
-  enableFrom(link: Scrt.ContractLink) {
-    return this.execute({ immigration: { enable_migration_from: link } });
-  }
-  disableFrom(link: Scrt.ContractLink) {
-    return this.execute({ immigration: { disable_migration_from: link } });
-  }
-  migrateFrom(link: Scrt.ContractLink) {
-    return this.execute({ immigration: { request_migration: link } });
-  }
 }

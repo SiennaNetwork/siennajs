@@ -1,3 +1,6 @@
+import type { Uint128, Token, Address } from './Core'
+import { Snip20, getTokenId } from './Core'
+
 interface Route {
   indices: number[],
   from_tokens: Token[]

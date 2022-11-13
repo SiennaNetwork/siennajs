@@ -22,4 +22,3 @@ export const PFR = Object.assign(PFRDeployment, {
   MGMT: PFRMGMT,
   RPT:  PFRRPT
 })
-

@@ -1,4 +1,8 @@
-class LaunchpadDeployment extends VersionedSubsystem<Version> {
+import { SiennaConsole } from './Console'
+import { VersionedSubsystem } from './Core'
+import { Version } from './LaunchpadConfig'
+
+export class LaunchpadDeployment extends VersionedSubsystem<Version> {
   log     = new SiennaConsole(`Launchpad ${this.version}`)
   /** The launchpad staking pool. */
   staking = this.context.tge['v1'].staking
@@ -26,10 +30,7 @@ class LaunchpadDeployment extends VersionedSubsystem<Version> {
     this.log.saleConstraints(await launchpad.saleConstraints())
     this.log.latestIdos(await launchpad.getIdos())
   }
-}
 
-/** Deploy Sienna Launchpad */
-export class LaunchpadDeployer extends API.Launchpad.Deployment {
   revision = Pinned.Rewards['v4.2']
   /** Launchpad settings. */
   config = settings(this.chain?.mode).launchpad

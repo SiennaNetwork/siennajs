@@ -1,5 +1,9 @@
 import { Address, CodeHash, Uint128, Duration } from './Core'
 
+export type TGEVersion = 'v1'
+
+export type PFRVersion = 'v1'
+
 export interface Config {
   name:         string
   rewards: {

@@ -1,3 +1,7 @@
+import type { Uint128, Address } from './Core'
+
+export type Version = 'v1'
+
 export interface SaleConfig {
     /**
      * The maximum amount of tokens a user can purchase.

@@ -19,7 +19,7 @@
   },
   "files": [ "*.ts" ],
   "dependencies": {
-    "@fadroma/scrt":   "^4.1",
+    "@fadroma/scrt":   "^6",
     "@fadroma/tokens": "^5.1.6",
     "@hackbg/konzola": "^2.1",
     "@hackbg/formati": "^5.1.1",

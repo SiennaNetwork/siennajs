@@ -4,7 +4,7 @@ importers:
 
   .:
     specifiers:
-      '@fadroma/scrt': ^4.1
+      '@fadroma/scrt': ^6
       '@fadroma/tokens': ^5.1.6
       '@hackbg/formati': ^5.1.1
       '@hackbg/konzola': ^2.1
@@ -22,7 +22,7 @@ importers:
       ts-jest: ^28.0.8
       typescript: ^4.7.4
     dependencies:
-      '@fadroma/scrt': 4.1.0
+      '@fadroma/scrt': 6.0.0
       '@fadroma/tokens': 5.1.6
       '@hackbg/formati': 5.1.1
       '@hackbg/konzola': 2.1.0
@@ -402,6 +402,15 @@ packages:
       - dotenv
     dev: false
 
+  /@fadroma/client/6.3.1:
+    resolution: {integrity: sha512-vCqCpniGLX2u4CCBN/0MIHFqMN3NPflfyQaSG5mvqD5OK95MuHNYIR7pODj9B03dIE9ER2/6geN+uyuDedOEEQ==}
+    dependencies:
+      '@hackbg/komandi': 6.1.2
+      '@hackbg/konzola': 2.1.0
+    transitivePeerDependencies:
+      - dotenv
+    dev: false
+
   /@fadroma/scrt/4.1.0:
     resolution: {integrity: sha512-QWs89Vxz9P8ty2OnaoVFrtigPShgmmoMeHn+6GkwgGDvb5AUWy2CNW9UZzbTQzaF69JAZdzOJWpLso8cD/tKnA==}
     dependencies:
@@ -414,6 +423,19 @@ packages:
     transitivePeerDependencies:
       - dotenv
       - google-protobuf
+    dev: false
+
+  /@fadroma/scrt/6.0.0:
+    resolution: {integrity: sha512-B0nSfVb7hG2/8W58NciZlkCczB/TVBxGzTNC65qjkA8eIxFdurky8Y3lNgHsuAxQE/UUVao44sWB6JPPHfMhXw==}
+    dependencies:
+      '@fadroma/client': 6.3.1
+      '@hackbg/formati': 5.1.1
+      '@hackbg/konfizi': 3.0.1
+      '@ungap/structured-clone': 1.0.1
+      secretjs: 1.5.0-beta.1
+    transitivePeerDependencies:
+      - dotenv
+      - encoding
     dev: false
 
   /@fadroma/tokens/5.1.6:
@@ -1568,6 +1590,14 @@ packages:
       sha.js: 2.4.11
     dev: false
 
+  /cross-fetch/3.1.5:
+    resolution: {integrity: sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==}
+    dependencies:
+      node-fetch: 2.6.7
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
   /cross-spawn/7.0.3:
     resolution: {integrity: sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==}
     engines: {node: '>= 8'}
@@ -2665,7 +2695,6 @@ packages:
         optional: true
     dependencies:
       whatwg-url: 5.0.0
-    dev: true
 
   /node-gyp-build/4.5.0:
     resolution: {integrity: sha512-2iGbaQBV+ITgCz76ZEjmhUKAKVf7xfY1sRl4UiKQspfZMH2h06SyhNsnSVy50cwkFQDGLyif6m/6uFXHkOZ6rg==}
@@ -3001,6 +3030,29 @@ packages:
       - google-protobuf
     dev: false
 
+  /secretjs/1.5.0-beta.1:
+    resolution: {integrity: sha512-l0ETXOfjqIzTvnyskJ+HIBT7kxJukOWaokqN4C/wL+Ltlg1VUvpBBij5Oei0+uU5jJVnOR3b3gwTsEohztrQzA==}
+    dependencies:
+      '@cosmjs/encoding': 0.27.1
+      '@cosmjs/math': 0.27.1
+      '@noble/hashes': 1.0.0
+      '@noble/secp256k1': 1.6.3
+      bech32: 2.0.0
+      big-integer: 1.6.51
+      bignumber.js: 9.0.2
+      bip32: 2.0.6
+      bip39: 3.0.4
+      cross-fetch: 3.1.5
+      curve25519-js: 0.0.4
+      is-gzip: 2.0.0
+      miscreant: 0.3.2
+      pako: 2.0.4
+      protobufjs: 6.11.3
+      secure-random: 1.1.2
+    transitivePeerDependencies:
+      - encoding
+    dev: false
+
   /secure-random/1.1.2:
     resolution: {integrity: sha512-H2bdSKERKdBV1SwoqYm6C0y+9EA94v6SUBOWO8kDndc4NoUih7Dv6Tsgma7zO1lv27wIvjlD0ZpMQk7um5dheQ==}
     dev: false
@@ -3256,7 +3308,6 @@ packages:
 
   /tr46/0.0.3:
     resolution: {integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==}
-    dev: true
 
   /tree-kill/1.2.2:
     resolution: {integrity: sha512-L0Orpi8qGpRG//Nd+H90vFB+3iHnue1zSSGmNOOCh1GLJ7rUKVwV2HvijphGQS2UmhUZewS9VgvxYIdgr+fG1A==}
@@ -3385,14 +3436,12 @@ packages:
 
   /webidl-conversions/3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
-    dev: true
 
   /whatwg-url/5.0.0:
     resolution: {integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==}
     dependencies:
       tr46: 0.0.3
       webidl-conversions: 3.0.1
-    dev: true
 
   /which/2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}

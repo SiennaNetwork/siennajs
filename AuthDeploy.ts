@@ -1,8 +1,19 @@
+import { VersionedSubsystem } from './Core'
+import { SiennaConsole } from './Console'
+import type { Version } from './AuthConfig'
+
 export class AuthDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Auth ${this.version}`)
 
-  /** The auth provider's RNG oracle. */
-  oracle = this.contract({ name: Names.AuthOracle(this.version) })
+  /** The auth provider's RNG oracle.
+    * TODO('how to find oracle on testnet/mainnet?')
+    * return Settings.default.settings(this.chain.mode).auth.oracle */
+  oracle = this.contract({
+    name: Names.AuthOracle(this.version),
+    ...(!this.devMode) ? {} : {
+      name: 'MockRNGOracle', crate: 'auth-mock-oracle', initMsg: {}
+    }
+  })
 
   constructor (context: SiennaDeployment, version: Version = 'v1',) {
     super(context, version)
@@ -22,10 +33,22 @@ export class AuthDeployment extends VersionedSubsystem<Version> {
   }
 }
 
+/** Manager class for multiple auth provider deployments. */
+
 export class AuthProviderDeployment extends VersionedSubsystem<Version> {
+
   log = new SiennaConsole(`Auth ${this.version}`)
 
-  provider = this.contract({ client: AuthProvider })
+  provider = this.contract({
+    client: AuthProvider,
+    crate: 'auth-provider',
+    initMsg: async () => {
+      const admin   = this.agent?.address
+      const entropy = randomBase64()
+      const oracle  = (await this.oracle.deployed).asLink
+      return { admin, entropy, oracle }
+    }
+  })
 
   constructor (
     context:             AuthDeployment,
@@ -47,41 +70,12 @@ export class AuthProviderDeployment extends VersionedSubsystem<Version> {
     })
   }
 
-  async showStatus () {
-    // TODO
-  }
-}
-
-/** Manager class for multiple auth provider deployments. */
-export class AuthDeployer extends API.Auth.Deployment {
-  /** The auth provider's RNG oracle.
-    * //TODO('how to find oracle on testnet/mainnet?')
-    * //return Settings.default.settings(this.chain.mode).auth.oracle */
-  oracle = this.devMode
-    ? this.contract({ name: 'MockRNGOracle', crate: 'auth-mock-oracle', initMsg: {} })
-    : null
-  /** The auth provider contract. */
-  provider (name: string, oracle: Contract<Client> = this.oracle): AuthProviderDeployer {
-    return new AuthProviderDeployer(this, this.version, name, oracle)
-  }
-}
-
-/** Deployer class for a single authorization provider. */
-export class AuthProviderDeployer extends API.Auth.ProviderDeployment {
-  constructor (...args: ConstructorParameters<typeof API.Auth.ProviderDeployment>) {
-    super(...args)
-    this.provider.provide({
-      crate: 'auth-provider',
-      initMsg: async () => {
-        const admin   = this.agent?.address
-        const entropy = randomBase64()
-        const oracle  = (await this.oracle.deployed).asLink
-        return { admin, entropy, oracle }
-      }
-    })
-  }
   async deploy () {
     await this.provider
     return this
+  }
+
+  async showStatus () {
+    // TODO
   }
 }

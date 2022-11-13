@@ -1,4 +1,11 @@
+import { SiennaConsole } from './Console'
+import { VersionedSubsystem } from './Core'
+import type { Uint128 } from './Core'
+import type { Uint128 } from './Core'
+import type { Version } from './GovernanceConfig'
+
 class GovernanceDeployment extends VersionedSubsystem<Version> {
+
   log = new SiennaConsole(`Governance ${this.version}`)
   /** The token staked in the governance pool for voting power. */
   token = this.context.tge['v1'].token
@@ -39,10 +46,7 @@ class GovernanceDeployment extends VersionedSubsystem<Version> {
     this.log.pollsConfig(await voting.getPollConfig())
     this.log.activePolls(await voting.getPolls(+ new Date() / 1000, 0, 10, 0))
   }
-}
 
-/** Deploy Sienna Governance: stake SIENNA to vote on proposals */
-export class GovernanceDeployer extends API.Governance.Deployment {
   revision = Pinned.Rewards['v4.2']
   /** Suffix to enable faster iteration in the same deployment. */
   suffix   = this.isTestnet ? `@${Math.floor(+ new Date/1000)}` : ''

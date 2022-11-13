@@ -1,5 +1,7 @@
 import { Client } from './Core'
-import type { Address, Uint128 } from './Core'
+import type { Address, Uint128, IntoLink } from './Core'
+import { linkTuple } from './VestingConfig'
+import type { RPTConfig, RPTStatus } from './VestingConfig'
 
 /** A RPT (redistribution) contract of each version. */
 export abstract class BaseRPT extends Client {
@@ -17,7 +19,7 @@ export class TGERPT extends BaseRPT {
   static init = (
     admin:   Address,
     portion: Uint128,
-    config:  Vesting.RPTConfig,
+    config:  RPTConfig,
     token:   IntoLink,
     mgmt:    IntoLink
   ) => ({
@@ -29,7 +31,7 @@ export class TGERPT extends BaseRPT {
   })
   /** query contract status */
   async status () {
-    const { status }: { status: Vesting.RPTStatus } = await this.query({ status: {} })
+    const { status }: { status: RPTStatus } = await this.query({ status: {} })
     return status
   }
   /** set the vesting recipients */

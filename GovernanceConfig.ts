@@ -1,3 +1,5 @@
+import type { Uint128, Decimal, Moment, ContractLink, Address } from './Core'
+
 export type Version = 'v1';
 
 export type PollId = number;
@@ -115,6 +117,3 @@ export interface PollUser {
   created_polls: Array<PollId>;
   active_polls: Array<PollId>;
 }
-
-
-
