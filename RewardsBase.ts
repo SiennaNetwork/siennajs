@@ -1,3 +1,11 @@
+import { Client, ClientConsole, ViewingKeyClient } from './Core'
+import type { Uint128, Emigration, Immigration, ContractLink } from './Core'
+import type { AuthClient } from './AuthClient'
+import type { RewardPool_v2 } from './Rewards_v2'
+import type { RewardPool_v3, RewardPool_v3_1 } from './Rewards_v3'
+import type { RewardPool_v4_1 } from './Rewards_v4'
+import type { LPToken } from './AMMLPToken'
+
 /** A reward pool. */
 export abstract class RewardPool extends Client {
 

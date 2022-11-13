@@ -1,3 +1,5 @@
+import { Snip20 } from './Core'
+
 export class LPToken extends Snip20 {
   async getPairName(): Promise<string> {
     const { name } = await this.getTokenInfo();

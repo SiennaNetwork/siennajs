@@ -1,21 +1,52 @@
+import type { Address } from './Core'
+import { bold, Names, Versions, VersionedSubsystem } from './Core'
+import { SiennaConsole } from './Console'
+import type { Version } from './RewardsConfig'
+import type { AuthProviderDeployment } from './AuthDeploy'
+import { RewardPool } from './RewardsBase'
+
 export class RewardsDeployment extends VersionedSubsystem<Version> {
+
   log = new SiennaConsole(`Rewards ${this.version}`)
+
   /** Which version of Auth Provider should these rewards use. */
   authVersion? = AuthVersions[this.version]
+
   /** The name of the auth provider, if used. */
   authProviderName = this.authVersion
     ? `Rewards[${this.version}]`
     : undefined
+
   /** The auth provider, if used. */
   auth = this.authVersion
     ? this.context.auth[this.authVersion].provider(this.authProviderName!)
     : null
+
   /** Which version of the AMM are these rewards for. */
   ammVersion = AMMVersions[this.version]
+
   /** The version of the Rewards client to use. */
   client: RewardsCtor = RewardPool[this.version] as unknown as RewardsCtor
+
   /** The reward pools in this deployment. */
   pools = this.contracts({ client: this.client, match: Names.isRewardPool(this.version) })
+
+  /** Whether to emit a multisig TX instead of broadcasting. */
+  multisig: boolean  = false
+
+  /** Address to set as admin of newly created pools. */
+  admin: Address = this.agent?.address
+
+  /** Auth provider to use if required. */
+  auth: AuthProviderDeployment = this.authVersion
+    ? this.context.auth[this.authVersion].provider(`Rewards[${this.version}]`)
+    : null
+
+  /** Which reward pairs should exist, and what portion of rewards should they receive. */
+  pairs: [Name, number][] = Object.entries(settings(this.chain?.mode).rewardPairs??{})
+
+  /** Git reference to source code version. */
+  revision: string = Versions.Rewards[this.version]
 
   constructor (
     context: SiennaDeployment,
@@ -26,26 +57,17 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
     super(context, version)
     context.attach(this, `rewards ${version}`, `Sienna Rewards ${version}`)
   }
+  constructor (context, version: API.Rewards.Version, reward: Contract<Snip20>) {
+    super(context, version, reward ?? context.tge['v1'].token)
+    this.addCommand('deploy one',  'deploy one reward pool',   this.deployOne.bind(this))
+        .addCommand('deploy all',  'deploy all reward pools',  this.deployAll.bind(this))
+        .addCommand('upgrade all', 'upgrade all reward pools', this.upgradeAll.bind(this))
+  }
 
   async showStatus () {
     this.log.rewardPools(this.name, this.state)
   }
-}
 
-/** Deploy Sienna Rewards to stake SIENNA and LP tokens .*/
-export class RewardsDeployer extends API.Rewards.Deployment {
-  /** Whether to emit a multisig TX instead of broadcasting. */
-  multisig: boolean  = false
-  /** Address to set as admin of newly created pools. */
-  admin: Address = this.agent?.address
-  /** Auth provider to use if required. */
-  auth: AuthProviderDeployer = this.authVersion
-    ? this.context.auth[this.authVersion].provider(`Rewards[${this.version}]`)
-    : null
-  /** Which reward pairs should exist, and what portion of rewards should they receive. */
-  pairs: [Name, number][] = Object.entries(settings(this.chain?.mode).rewardPairs??{})
-  /** Git reference to source code version. */
-  revision: string = Pinned.Rewards[this.version]
   /** The reward pools to create. */
   pools = this.pools.provide({
     crate: 'sienna-rewards',
@@ -76,10 +98,13 @@ export class RewardsDeployer extends API.Rewards.Deployment {
       return inits
     }
   })
+
   /** Whether to update the RPT contract's config after deploying the new pools. */
   adjustRpt: boolean = true
+
   /** The RPT contract that will fund the reward pools. */
   rpt: Contract<API.Vesting.RPT> = this.context.tge['v1'].rpt
+
   /** Having deployed the pools, get the [Address, Uint128] pairs representing the RPT config. */
   async getRptConfig (pairs = this.pairs): Promise<API.Vesting.RPTConfig> {
     const rewards = await this.pools.deployed
@@ -90,6 +115,7 @@ export class RewardsDeployer extends API.Rewards.Deployment {
       return [address, amount]
     })
   }
+
   /** Get token and pool name from what's written in the config.
     * FIXME use deployment names in the config */
   getNames (name: string) {
@@ -101,21 +127,14 @@ export class RewardsDeployer extends API.Rewards.Deployment {
     return { tokenName, poolName }
   }
 
-  constructor (context, version: API.Rewards.Version, reward: Contract<Snip20>) {
-    super(context, version, reward ?? context.tge['v1'].token)
-    this.addCommand('deploy one',  'deploy one reward pool',   this.deployOne.bind(this))
-        .addCommand('deploy all',  'deploy all reward pools',  this.deployAll.bind(this))
-        .addCommand('upgrade all', 'upgrade all reward pools', this.upgradeAll.bind(this))
-  }
-
   async deployAll () {
     const pools   = await this.pools.deployed
     const rptConf = await this.getRptConfig()
     if (this.adjustRpt) {
       if (this.isMainnet) {
-        log.info('Now set this config in RPT by multisig:')
-        log.log()
-        log.log(JSON.stringify(rptConf))
+        this.log.info('Now set this config in RPT by multisig:')
+        this.log.log()
+        this.log.log(JSON.stringify(rptConf))
         //this.deployment.save({config: rptConf}, 'RPTConfig.json')
         //this.log.info('Wrote RPT config to:', this.deployment.prefix)
       } else {
@@ -130,11 +149,7 @@ export class RewardsDeployer extends API.Rewards.Deployment {
     return { pools, rewardsRPTConfig: rptConf }
   }
 
-  async upgradeAll (
-    oldVer:   API.Rewards.Version,
-    newVer:   API.Rewards.Version,
-    multisig: boolean = false
-  ) {
+  async upgradeAll (oldVer: Version, newVer: Version, multisig: boolean = false) {
     /** Find list of old rewards pool from the deployment.
       * Rewards pool not recorded in the receipt will be unaffected by the upgrade. */
     const oldRewards = await this.contracts<API.Rewards.RewardPool>({
@@ -161,7 +176,7 @@ export class RewardsDeployer extends API.Rewards.Deployment {
 
     // !!! WARNING: This might've been the cause of the wrong behavior
     // of the AMM+Rewards migration; new pools should point to new LP tokens.
-    const NewRewards: API.Rewards.RewardsCtor = API.Rewards.RewardPool[newVer]
+    const NewRewards: API.Rewards.RewardsCtor = RewardPool[newVer]
     const newRewards = await this.contracts({
       crate:    'sienna-rewards',
       revision: Pinned.Rewards[newVer],
@@ -206,13 +221,10 @@ export class RewardsDeployer extends API.Rewards.Deployment {
   }
 
   /** Enable inter-contract migrations between old and new pool. */
-  async enableMigrationOne (
-    oldPool: API.Rewards.RewardPool,
-    newPool: API.Rewards.RewardPool
-  ) {
+  async enableMigrationOne (oldPool: RewardPool, newPool: RewardPool) {
     this.log.info(`Enabling user migration`)
-    this.log.info(`  from ${bold(oldPool.address)}`)
-    this.log.info(`  into ${bold(newPool.address)}`)
+    this.log.info(`  from ${bold(oldPool.address!)}`)
+    this.log.info(`  into ${bold(newPool.address!)}`)
     await this.agent.bundle().wrap(async bundle=>{
       await oldPool.as(bundle).emigration.enableTo(newPool.asLink)
       await newPool.as(bundle).immigration.enableFrom(oldPool.asLink)

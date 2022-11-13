@@ -1,11 +1,15 @@
 import { SiennaConsole } from './Console'
-import { VersionedSubsystem } from './Core'
-import type { Address, Contract } from './Core'
+import { Names, Versions, VersionedSubsystem, Snip20 } from './Core'
+import type { Address, Contract, ViewingKey, TokenSymbol } from './Core'
 
 import { VestingReporter } from './VestingConsole'
+import { Schedule, findInSchedule } from './VestingConfig'
 import type { RPTConfig, TGEVersion, PFRVersion } from './VestingConfig'
-import type { BaseMGMT, TGEMGMT, PFRMGMT } from './VestingMGMT'
-import type { BaseRPT, TGERPT, PFRRPT } from './VestingRPT'
+import { BaseMGMT, TGEMGMT, PFRMGMT } from './VestingMGMT'
+import { BaseRPT, TGERPT, PFRRPT } from './VestingRPT'
+
+import type { AMMVersion } from './AMMConfig'
+import type { RewardsVersion } from './RewardsConfig'
 
 /** A vesting consists of a MGMT and one or more RPTs. */
 export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
@@ -65,32 +69,74 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
 /** Connect to an existing TGE. */
 export class TGEDeployment extends VestingDeployment<TGEVersion> {
 
-  log     = new SiennaConsole(`TGE ${this.version}`)
+  log = new SiennaConsole(`TGE ${this.version}`)
+
+  admin = this.agent?.address
+
+  revision = Versions.TGE[this.version]
 
   /** The deployed SIENNA SNIP20 token contract. */
   token   = this.context.tokens.define(this.symbol)
+  /** The main SIENNA token. */
+  token = this.context.tokens.define(this.symbol, {
+    name:     'SIENNA',
+    decimals: 18,
+    admin:    this.admin,
+    config:   { public_total_supply: true }
+  }).provide({
+    crate:    'snip20-sienna',
+    revision: this.revision,
+    client:   Snip20
+  })
 
   /** The initial single-sided staking pool.
     * Stake TOKEN to get rewarded more TOKEN from the RPT. */
-  staking = this.contract({ name: Names.Staking(this.symbol), client: RewardPool_v4_1 })
+  staking = this.contract({ 
+    name:   Names.Staking(this.symbol),
+    client: RewardPool_v4_1
+  })
 
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt    = this.contract<TGEMGMT>({ name: Names.MGMT(this.symbol), client: TGEMGMT })
+  mgmt = this.contract<TGEMGMT>({
+    name:     Names.MGMT(this.symbol),
+    client:   TGEMGMT,
+    crate:    'sienna-mgmt',
+    revision: this.revision,
+    initMsg: async () => this.mgmt.client.init(
+      this.admin,
+      (await this.token.deployed).asLink,
+      this.schedule
+    )
+  })
 
   /** The deployed RPT contracts, which claim tokens from MGMT
     * and distributes them to the reward pools.  */
-  rpt     = this.contract<TGERPT>({ name: Names.RPT(this.symbol), client: TGERPT })
+  rpt = this.contract<TGERPT>({
+    client: TGERPT,
+    crate: 'sienna-rpt',
+    revision: this.revision,
+    name: Names.RPT(this.symbol),
+    initMsg: async () => this.rpt.client.init(
+      this.agent.address,
+      this.rptAccount.portion_size,
+      [[this.agent.address, this.rptAccount.portion_size]],
+      (await this.token.deployed).asLink,
+      (await this.mgmt.deployed).asLink
+    )
+  })
 
   /** TODO: RPT vesting can be split between multiple contracts
     * in order to vest to more addresses than the gas limit allows. */
   subRpts = this.contracts<TGERPT>({ match: Names.isRPT(this.symbol), client: TGERPT })
 
+  schedule: Schedule = settings(this.chain?.mode).schedule
+
   constructor (
     context: SiennaDeployment,
     version: Version,
     /** The vesting schedule to be loaded in MGMT. */
-    public schedule?: Vesting.Schedule,
+    public schedule?: Schedule,
     /** The token to be created. */
     public symbol:    TokenSymbol = 'SIENNA',
   ) {
@@ -103,7 +149,7 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
     * - Loads final schedule into MGMT
     * - Irreversibly launches the vesting.
     * After launching, you can only modify the config of the RPT. */
-  async launch (schedule: Vesting.Schedule) {
+  async launch (schedule: Schedule) {
     const [token, mgmt, rpt] = await Promise.all([
       this.token.deployed,
       this.mgmt.deployed,
@@ -145,7 +191,7 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
     * is briefly mutated to point to the deployer's address (before any funds are vested). */
   get rptAccount () {
     const { mintingPoolName, rptAccountName } = this.constructor as typeof TGEDeployment
-    return Vesting.findInSchedule(this.schedule, mintingPoolName, rptAccountName)
+    return findInSchedule(this.schedule, mintingPoolName, rptAccountName)
   }
 
   /** The **LPF account** (Liquidity Provision Fund) is an entry in MGMT's vesting schedule
@@ -154,7 +200,7 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
     * mint operation in `deployTGE`. */
   get lpfAccount () {
     const { mintingPoolName, lpfAccountName } = this.constructor as typeof TGEDeployment
-    return Vesting.findInSchedule(this.schedule, mintingPoolName, lpfAccountName)
+    return findInSchedule(this.schedule, mintingPoolName, lpfAccountName)
   }
 
   static rptAccountName  = 'RPT'
@@ -173,46 +219,6 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
       ]
     } ]
   })
-
-  admin = this.agent?.address
-
-  revision = Pinned.TGE[this.version]
-
-  /** The main SIENNA token. */
-  token = this.context.tokens.define('SIENNA', {
-    name:     'SIENNA',
-    decimals: 18,
-    admin:    this.admin,
-    config:   { public_total_supply: true }
-  }).provide({
-    crate:    'snip20-sienna',
-    revision: this.revision,
-    client:   API.Snip20
-  })
-
-  mgmt = this.mgmt.provide({
-    crate:    'sienna-mgmt',
-    revision: this.revision,
-    initMsg: async () => this.mgmt.client.init(
-      this.admin,
-      (await this.token.deployed).asLink,
-      this.schedule
-    )
-  })
-
-  rpt = this.rpt.provide({
-    crate: 'sienna-rpt',
-    revision: this.revision,
-    initMsg: async () => this.rpt.client.init(
-      this.agent.address,
-      this.rptAccount.portion_size,
-      [[this.agent.address, this.rptAccount.portion_size]],
-      (await this.token.deployed).asLink,
-      (await this.mgmt.deployed).asLink
-    )
-  })
-
-  schedule: API.Vesting.Schedule = settings(this.chain?.mode).schedule
 
   deploy = this.command('deploy', 'deploy and launch a token generation event', async () => {
     if (!this.agent) throw new Error('no deploy agent')
@@ -270,23 +276,15 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
   /** The PFR for Shade. */
   shade: PFRVesting = new PFRVesting(this.context, this.version, 'SHD')
 
-  constructor (context: SiennaDeployment, version: PFRVersion) {
-    super(context, version)
-    this.attach(this.alter, 'alter', 'ALTER rewards for LP-SIENNA-ALTER')
-    this.attach(this.shade, 'shade', 'SHD rewards for LP-SIENNA-SHD')
-  }
-}
-
-/** Vest and stake non-SIENNA tokens. */
-export class PFRDeployer extends API.PFR.Deployment {
-
   constructor (
-    context,
-    version,
+    context: SiennaDeployment,
+    version: PFRVersion,
     public rewardsVersion: API.Rewards.Version = '3.1' as API.Rewards.Version
   ) {
     super(context, version)
     context.attach(this, 'pfr', 'Sienna Partner-Funded Rewards')
+    this.attach(this.alter, 'alter', 'ALTER rewards for LP-SIENNA-ALTER')
+    this.attach(this.shade, 'shade', 'SHD rewards for LP-SIENNA-SHD')
   }
 
   deploy = this.command('deploy', 'deploy and launch a partner-funded vesting', async () => {
@@ -426,18 +424,18 @@ export class PFRVesting extends VestingDeployment<PFRVersion> {
   constructor (
     context: SiennaDeployment,
     version: Version,
-    public symbol:         TokenSymbol     = 'ALTER',
-    public ammVersion:     AMM.Version     = 'v2',
-    public rewardsVersion: Rewards.Version = 'v3',
+    public symbol:         TokenSymbol    = 'ALTER',
+    public ammVersion:     AMMVersion     = 'v2',
+    public rewardsVersion: RewardsVersion = 'v3',
   ) {
     super(context, version)
-    this.mgmt.provide({
+    this.mgmt.define({
       name: Names.PFR_MGMT(this.symbol)
     })
-    this.staked.provide({
+    this.staked.define({
       name: Names.Exchange(this.ammVersion, 'SIENNA', this.symbol)
     })
-    this.staking.provide({
+    this.staking.define({
       name: Names.PFR_Pool(this.ammVersion, 'SIENNA', this.symbol, this.rewardsVersion)
     })
   }

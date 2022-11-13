@@ -1,5 +1,5 @@
 import type { Contract } from './Core'
-import { Names, Versions, VersionedSubsystem } from './Core'
+import { Names, Versions, VersionedSubsystem, randomBase64 } from './Core'
 import { SiennaConsole } from './Console'
 
 import type { Version } from './LendConfig'

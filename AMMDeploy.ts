@@ -1,5 +1,5 @@
+import { Names, Versions, VersionedSubsystem, randomHex } from './Core'
 import type { Contract } from './Core'
-import { Names, Versions, VersionedSubsystem } from './Core'
 import type { Version } from './AMMConfig'
 import { Factory } from './AMMFactory'
 import { Exchange } from './AMMExchange'

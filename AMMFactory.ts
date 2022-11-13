@@ -1,6 +1,7 @@
-import { Client } from './Core'
-import type { Address, Token } from './Core'
-import type { Version } from './AMMConfig'
+import { Client, randomBase64, Snip20 } from './Core'
+import type { Address, Token, TokenPair, ContractInfo } from './Core'
+import type { Version, PairName } from './AMMConfig'
+import { Exchange } from './AMMExchange'
 
 export abstract class Factory extends Client {
 
