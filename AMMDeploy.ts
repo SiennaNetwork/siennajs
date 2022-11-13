@@ -1,6 +1,6 @@
-import { Names, Versions } from './Core'
+import type { Contract } from './Core'
+import { Names, Versions, VersionedSubsystem } from './Core'
 import type { Version } from './AMMConfig'
-import { VersionedSubsystem } from './Core'
 import { Factory } from './AMMFactory'
 import { Exchange } from './AMMExchange'
 import { LPToken } from './AMMLPToken'
@@ -18,7 +18,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
   /** The AMM factory is the hub of Sienna Swap.
     * It keeps track of all exchange pair contracts,
     * and allows anyone to create new ones. */
-  factory = this.contract<Factory>({
+  factory: Contract<Factory> = this.contract<Factory>({
     crate:    'factory',
     revision: this.revision,
     client:   Factory[this.version],

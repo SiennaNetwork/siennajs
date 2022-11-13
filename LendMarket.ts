@@ -1,3 +1,7 @@
+import type { Uint256, Address, ContractLink, Decimal256 } from './Core'
+import { Fee, Client, ViewingKeyClient, Snip20 } from './Core'
+import { LendAuth } from './LendAuth'
+
 export class Market extends Client {
 
   fees = {

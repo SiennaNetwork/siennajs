@@ -1,3 +1,6 @@
+import type { Address, Pagination, PaginatedResponse } from './Core'
+import { Client, Fee } from './Core'
+
 export class Overseer extends Client {
 
   fees = {

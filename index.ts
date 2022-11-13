@@ -3,14 +3,11 @@ import type { Address, Snip20, TokenInfo, TokenOptions, Contract } from './Core'
 import { Deployment, TokenManager, ClientConsole } from './Core'
 
 import * as Vesting     from './Vesting'
-import * as TGE         from './Vesting_TGE'
-import * as PFR         from './Vesting_PFR'
-
 import * as Auth        from './Auth'
 import * as AMM         from './AMM'
 import * as Multicall   from './Multicall'
 import * as Governance  from './Governance'
-import * as Lending     from './Lending'
+import * as Lending     from './Lend'
 import * as Launchpad   from './Launchpad'
 import * as Rewards     from './Rewards'
 import { RewardPool_v2 }   from './Rewards_v2'
@@ -36,8 +33,8 @@ export class SiennaDeployment extends Deployment {
   }
 
   /** The SIENNA Token Generation Event. */
-  tge: Record<TGE.Version, TGE.Deployment> = {
-    'v1':   new TGE.Deployment(this, 'v1')
+  tge: Record<Vesting.TGEVersion, Vesting.TGEDeployment> = {
+    'v1':   new Vesting.TGEDeployment(this, 'v1')
   }
 
   /** The Sienna token. */
@@ -61,7 +58,7 @@ export class SiennaDeployment extends Deployment {
 
   /** Partner-Funded Rewards: vesting of non-SIENNA tokens. */
   pfr = {
-    'v1':   new PFR.Deployment(this, 'v1')
+    'v1':   new Vesting.PFRDeployment(this, 'v1')
   }
 
   /** The Sienna Lend lending platform. */
@@ -102,8 +99,6 @@ export {
   AMM,
   Multicall,
   Vesting,
-  TGE,
-  PFR,
   Rewards,
   Governance,
   Lending,

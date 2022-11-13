@@ -4,7 +4,7 @@ import type { Uint128 } from './Core'
 import type { Uint128 } from './Core'
 import type { Version } from './GovernanceConfig'
 
-class GovernanceDeployment extends VersionedSubsystem<Version> {
+export class GovernanceDeployment extends VersionedSubsystem<Version> {
 
   log = new SiennaConsole(`Governance ${this.version}`)
   /** The token staked in the governance pool for voting power. */

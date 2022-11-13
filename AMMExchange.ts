@@ -1,8 +1,9 @@
-import { Client } from './Core'
+import { Client, Fee, TokenAmount, TokenPair, TokenPairAmount } from './Core'
 import type {
-  Class, Agent, Address, CodeHash, Contract, ContractLink, Uint128, Snip20, Token, TokenPair
+  Class, Agent, Address, CodeHash, Contract, ContractLink, Uint128, Snip20, Token,
+  Decimal, ExecOpts,
 } from './Core'
-import type { LPToken } from './AMMLPToken'
+import { LPToken } from './AMMLPToken'
 
 /** Format: SYMBOL0-SYMBOL1 */
 export type PairName = string;

@@ -1,3 +1,7 @@
+import { Client } from './Core'
+import type { Address, Token } from './Core'
+import type { Version } from './AMMConfig'
+
 export abstract class Factory extends Client {
 
   abstract readonly version: Version
