@@ -1,6 +1,6 @@
 import { SiennaConsole } from './Console'
 import { Names, Versions, VersionedSubsystem, Snip20 } from './Core'
-import type { Address, Contract, ViewingKey, TokenSymbol } from './Core'
+import type { Address, Contract, DeployContract, ViewingKey, TokenSymbol } from './Core'
 
 import { VestingReporter } from './VestingConsole'
 import { Schedule, findInSchedule } from './VestingConfig'
@@ -79,7 +79,7 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
   revision = Versions.TGE[this.version]
 
   /** The main SIENNA token. */
-  token: Contract<Snip20>
+  token: DeployContract<Snip20>
 
   /** The initial single-sided staking pool.
     * Stake TOKEN to get rewarded more TOKEN from the RPT. */
@@ -122,18 +122,28 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
     * in order to vest to more addresses than the gas limit allows. */
   subRpts = this.contracts<TGERPT>({ match: Names.isRPT(this.symbol), client: TGERPT })
 
-  schedule: Schedule = settings(this.chain?.mode).schedule
+  symbol:   TokenSymbol
+
+  schedule: Schedule
 
   constructor (
     context: SiennaDeployment,
-    version: TGEVersion,
-    /** The vesting schedule to be loaded in MGMT. */
-    public schedule?: Schedule,
-    /** The token to be created. */
-    public symbol:    TokenSymbol = 'SIENNA',
+    options: Partial<{
+      /** The version of the subsystem. */
+      version:  TGEVersion,
+      /** The token to be created. */
+      symbol:   TokenSymbol
+      /** The vesting schedule to be loaded in MGMT. */
+      schedule: Schedule,
+    }> = {
+      version: 'v1',
+      symbol:  'SIENNA',
+    }
   ) {
-    super(context, version)
-    this.token = this.tokens.define(this.symbol, {
+    super(context, options.version!)
+    this.symbol   = options.symbol!
+    this.schedule = options.schedule ?? settings(this.chain?.mode).schedule
+    this.token = this.tokens.define(options.symbol, {
       name:     'SIENNA',
       decimals: 18,
       admin:    this.admin,
@@ -210,24 +220,45 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
   static mintingPoolName = 'MintingPool'
   static emptySchedule   = (address: Address) => ({
     total: "0",
-    pools: [ { 
-      name: this.mintingPoolName, total: "0", partial: false, accounts: [
-        { name: this.lpfAccountName, amount: "0", address,
-          start_at: 0, interval: 0, duration: 0,
-          cliff: "0", portion_size: "0", remainder: "0" },
-        { name: this.rptAccountName, amount: "0", address,
-          start_at: 0, interval: 0, duration: 0,
-          cliff: "0", portion_size: "0", remainder: "0" }
-      ]
-    } ]
+    pools: [
+      {
+        name:     this.mintingPoolName,
+        total:    "0",
+        partial:  false,
+        accounts: [
+          {
+            name:         this.lpfAccountName,
+            amount:       "0",
+            address,
+            start_at:      0,
+            interval:      0,
+            duration:      0,
+            cliff:        "0",
+            portion_size: "0",
+            remainder:    "0"
+          },
+          {
+            name:         this.rptAccountName,
+            amount:       "0",
+            address,
+            start_at:      0,
+            interval:      0,
+            duration:      0,
+            cliff:        "0",
+            portion_size: "0",
+            remainder:    "0"
+          }
+        ]
+      }
+    ]
   })
 
   deploy = this.command('deploy', 'deploy and launch a token generation event', async () => {
     if (!this.agent) throw new Error('no deploy agent')
-    const token = await this.token.deployed
+    const token = await this.token()
     this.rptAccount.address = this.agent.address // mutates this.schedule
-    const mgmt  = await this.mgmt.deployed
-    const rpt   = await this.rpt.deployed
+    const mgmt  = await this.mgmt()
+    const rpt   = await this.rpt()
     this.rptAccount.address = rpt.address // mutates this.schedule
     const { status: { launched } } = await mgmt.status()
     if (launched) {
