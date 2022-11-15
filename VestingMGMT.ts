@@ -52,12 +52,8 @@ export abstract class BaseMGMT extends Client {
 
 export class TGEMGMT extends BaseMGMT {
 
-  /** Generate an init message for Origina MGMT */
-  static init = (
-    admin:    Address,
-    token:    IntoLink,
-    schedule: Schedule
-  ) => ({
+  /** Generate an init message for Original MGMT */
+  static init = (admin: Address, token: IntoLink, schedule: Schedule) => ({
     admin,
     token: linkTuple(token),
     schedule
