@@ -1,9 +1,13 @@
 import { SiennaConsole } from './Console'
-import { Names, Versions, VersionedSubsystem, Snip20 } from './Core'
-import type { Address, Contract, DeployContract, ViewingKey, TokenSymbol } from './Core'
+import { Names, Versions, VersionedSubsystem, Snip20, bold, randomBase64 } from './Core'
+import type {
+  Agent, Uint128, Address, Contract, DeployContract, ViewingKey, TokenSymbol
+} from './Core'
 
 import { VestingReporter } from './VestingConsole'
-import { Schedule, findInSchedule } from './VestingConfig'
+import {
+  Schedule, findInSchedule, mintingPoolName, rptAccountName, lpfAccountName, mintTestBudget
+} from './VestingConfig'
 import type { RPTConfig, TGEVersion, PFRVersion } from './VestingConfig'
 import { BaseMGMT, TGEMGMT, PFRMGMT } from './VestingMGMT'
 import { BaseRPT, TGERPT, PFRRPT } from './VestingRPT'
@@ -19,13 +23,9 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
 
   show: VestingReporter = new VestingReporter(this)
 
-  /** The deployed MGMT contract, which unlocks tokens
-    * for claiming according to a pre-defined schedule.  */
-  abstract mgmt:    Contract<BaseMGMT>
-
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
-    return this.mgmt.expect().then((mgmt: BaseMGMT)=>mgmt.schedule())
+    return this.mgmt.get().schedule()
   }
 
   setSchedule () {
@@ -38,32 +38,38 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
 
   /** Fetch the current schedule of MGMT. */
   getMgmtStatus () {
-    return this.mgmt.expect().then((mgmt: BaseMGMT)=>mgmt.status())
+    return this.mgmt.get().status()
   }
 
   /** Fetch the current progress of the vesting. */
   getMgmtProgress (addr: Address) {
-    return this.mgmt.expect().then((mgmt: BaseMGMT)=>mgmt.progress(addr))
+    return this.mgmt.get().progress(addr)
   }
-
-  /** The deployed RPT contract, which claims tokens from MGMT
-    * and distributes them to the reward pools.  */
-  abstract rpt:     Contract<BaseRPT>
-
-  /** TODO: RPT vesting can be split between multiple contracts
-    * in order to vest to more addresses than the gas limit allows. */
-  abstract subRpts: Contracts<BaseRPT>
 
   /** Fetch the current status of RPT. */
   async getRptStatus () {
-    const rpt = await this.rpt.expect()
-    return await rpt.status()
+    return await this.rpt.get().status()
   }
 
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) {
     console.warn('TGEDeployment#setRptConfig: TODO')
   }
+
+  /** The token that will be distributed. */
+  abstract token:   DeployContract<Snip20>
+
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  abstract mgmt:    DeployContract<BaseMGMT>
+
+  /** The deployed RPT contract, which claims tokens from MGMT
+    * and distributes them to the reward pools.  */
+  abstract rpt:     DeployContract<BaseRPT>
+
+  /** TODO: RPT vesting can be split between multiple contracts
+    * in order to vest to more addresses than the gas limit allows. */
+  abstract subRpts: DeployContracts<BaseRPT>
 
 }
 
@@ -74,108 +80,128 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
 
   log = new SiennaConsole(`TGE ${this.version}`)
 
-  admin = this.agent?.address
+  revision: string
 
-  revision = Versions.TGE[this.version]
+  admin: Address
+
+  symbol: TokenSymbol
 
   /** The main SIENNA token. */
   token: DeployContract<Snip20>
 
-  /** The initial single-sided staking pool.
-    * Stake TOKEN to get rewarded more TOKEN from the RPT. */
-  staking = this.contract({ 
-    name:   Names.Staking(this.symbol),
-    client: RewardPool_v4_1
-  })
-
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt = this.contract<TGEMGMT>({
-    name:     Names.MGMT(this.symbol),
-    client:   TGEMGMT,
-    crate:    'sienna-mgmt',
-    revision: this.revision,
-    initMsg: async () => this.mgmt.client.init(
-      this.admin,
-      (await this.token.deployed).asLink,
-      this.schedule
-    )
-  })
-
-  /** The deployed RPT contracts, which claim tokens from MGMT
-    * and distributes them to the reward pools.  */
-  rpt = this.contract<TGERPT>({
-    client: TGERPT,
-    crate: 'sienna-rpt',
-    revision: this.revision,
-    name: Names.RPT(this.symbol),
-    initMsg: async () => this.rpt.client.init(
-      this.agent.address,
-      this.rptAccount.portion_size,
-      [[this.agent.address, this.rptAccount.portion_size]],
-      (await this.token.deployed).asLink,
-      (await this.mgmt.deployed).asLink
-    )
-  })
-
-  /** TODO: RPT vesting can be split between multiple contracts
-    * in order to vest to more addresses than the gas limit allows. */
-  subRpts = this.contracts<TGERPT>({ match: Names.isRPT(this.symbol), client: TGERPT })
-
-  symbol:   TokenSymbol
+  mgmt: DeployContract<TGEMGMT>
 
   schedule: Schedule
 
+  /** The deployed RPT contracts, which claim tokens from MGMT
+    * and distributes them to the reward pools.  */
+  rpt: DeployContract<TGERPT>
+
+  /** TODO: RPT vesting can be split between multiple contracts
+    * in order to vest to more addresses than the gas limit allows. */
+  subRPTs: DeployContracts<TGERPT>
+
+  /** The initial single-sided staking pool.
+    * Stake TOKEN to get rewarded more TOKEN from the RPT. */
+  staking: DeployContract<RewardPool_v4_1>
+
   constructor (
     context: SiennaDeployment,
-    options: Partial<{
+    options: {
       /** The version of the subsystem. */
-      version:  TGEVersion,
+      version:   TGEVersion,
+      /** The Git reference from which to build. */
+      revision?: string,
       /** The token to be created. */
-      symbol:   TokenSymbol
+      symbol:    TokenSymbol
       /** The vesting schedule to be loaded in MGMT. */
-      schedule: Schedule,
-    }> = {
-      version: 'v1',
-      symbol:  'SIENNA',
+      schedule?: Schedule,
+      /** The address that will own the contracts. */
+      admin?:    Address
+    } = {
+      version:  'v1',
+      symbol:   'SIENNA',
     }
   ) {
     super(context, options.version!)
-    this.symbol   = options.symbol!
-    this.schedule = options.schedule ?? settings(this.chain?.mode).schedule
-    this.token = this.tokens.define(options.symbol, {
-      name:     'SIENNA',
-      decimals: 18,
-      admin:    this.admin,
-      config:   { public_total_supply: true }
-    }).define({
-      crate:    'snip20-sienna',
+    this.version  = options.version
+    this.symbol   = options.symbol
+    this.admin    = options.admin ?? context.agent?.address
+    this.schedule = options.schedule ?? settings(context.chain?.mode).schedule
+    this.revision = options.revision ?? Versions.TGE[this.version]
+    this.token = this.contract<Snip20>({
+      id: options.symbol,
+      crate: 'snip20-sienna',
       revision: this.revision,
-      client:   Snip20
+      client: Snip20,
+      initMsg: {
+        name: options.symbol,
+        symbol: options.symbol,
+        decimals: 18,
+        admin: this.admin,
+        config: { public_total_supply: true },
+        prng_seed: randomBase64()
+      }
     })
-    //context.attach(this, 'tge', 'SIENNA token generation event')
+    this.mgmt = this.contract<TGEMGMT>({
+      id:       Names.MGMT(this.symbol),
+      client:   TGEMGMT,
+      crate:    'sienna-mgmt',
+      revision: this.revision,
+      initMsg: async () => this.mgmt.client!.init(
+        this.admin,
+        (await this.token()).asLink,
+        this.schedule
+      )
+    })
+    this.rpt = this.contract<TGERPT>({
+      id:       Names.RPT(this.symbol),
+      client:   TGERPT,
+      crate:    'sienna-rpt',
+      revision: this.revision,
+      initMsg: async () => this.rpt.client!.init(
+        this.agent!.address,
+        this.rptAccount!.portion_size,
+        [[this.agent!.address, this.rptAccount!.portion_size]],
+        (await this.token()).asLink,
+        (await this.mgmt()).asLink
+      )
+    })
+    this.subRPTs = this.contracts<TGERPT>({
+      match:    Names.isRPT(this.symbol),
+      client:   TGERPT
+    })
+    this.staking = this.contract({
+      id:       Names.Staking(this.symbol),
+      client:   RewardPool_v4_1
+    })
   }
 
-  /** Launch the TGE.
-    * - Makes MGMT admin of token
-    * - Loads final schedule into MGMT
-    * - Irreversibly launches the vesting.
-    * After launching, you can only modify the config of the RPT. */
-  async launch (schedule: Schedule) {
-    const [token, mgmt, rpt] = await Promise.all([
-      this.token.deployed,
-      this.mgmt.deployed,
-      this.rpt.deployed
-    ])
-    await this.agent!.bundle().wrap(async bundle => {
-      // Make MGMT admin and sole minter of token;
-      await mgmt.as(bundle).acquire(token)
-      // Set final vesting config in MGMT;
-      await mgmt.as(bundle).configure(schedule)
-      // Irreversibly launch MGMT.
-      await mgmt.as(bundle).launch()
+  deploy = this.command<(this: TGEDeployment)=>Promise<TGEDeployment>>(
+    'deploy',
+    'deploy and launch a token generation event',
+    async (): Promise<TGEDeployment> => {
+      if (!this.agent) throw new Error('no deploy agent')
+      const token = await this.token()        // find or deploy vested token
+      this.rptAccount!.address = this.admin   // fix rpt account pt. 1 (mutates this.schedule)
+      const mgmt  = await this.mgmt()         // find or deploy mgmt
+      const rpt   = await this.rpt()          // find or deploy rpt
+      this.rptAccount!.address = rpt.address! // fix rpt account pt. 2 (mutates this.schedule)
+      const { status: { launched } } = await mgmt.status() // check if vesting is launched
+      if (launched) {
+        this.log.info('TGE already launched.')
+      } else {
+        if (this.isTestnet || this.devMode) await mintTestBudget(this)
+        await this.agent!.bundle().wrap(async bundle => { // irrevocably launch vesting
+          await mgmt.as(bundle).acquire(token)            // make MGMT admin and sole minter
+          await mgmt.as(bundle).configure(this.schedule)  // set final vesting config in MGMT
+          await mgmt.as(bundle).launch()                  // launch MGMT
+        })
+      }
+      return this
     })
-  }
 
   /** Get the balance of an address in the vested token. */
   async getBalance (addr: Address, vk: ViewingKey) {
@@ -194,108 +220,14 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
     return await (await this.token.deployed).vk.set(vk)
   }
 
-  /** The **RPT account** (Remaining Pool Tokens) is a special entry
-    * in MGMT's vesting schedule; its funds are vested to **the RPT contract's address**,
-    * and the RPT contract uses them to fund the Reward pools.
-    * However, the RPT address is only available after deploying the RPT contract,
-    * which in turn nees MGMT's address, therefore establishing a
-    * circular dependency. To resolve it, the RPT account in the schedule
-    * is briefly mutated to point to the deployer's address (before any funds are vested). */
   get rptAccount () {
-    const { mintingPoolName, rptAccountName } = this.constructor as typeof TGEDeployment
     return findInSchedule(this.schedule, mintingPoolName, rptAccountName)
   }
 
-  /** The **LPF account** (Liquidity Provision Fund) is an entry in MGMT's vesting schedule
-    * which is vested immediately in full. On devnet and testnet, this can be used
-    * to provide funding for tester accounts. In practice, testers are funded with an extra
-    * mint operation in `deployTGE`. */
   get lpfAccount () {
-    const { mintingPoolName, lpfAccountName } = this.constructor as typeof TGEDeployment
     return findInSchedule(this.schedule, mintingPoolName, lpfAccountName)
   }
 
-  static rptAccountName  = 'RPT'
-  static lpfAccountName  = 'LPF'
-  static mintingPoolName = 'MintingPool'
-  static emptySchedule   = (address: Address) => ({
-    total: "0",
-    pools: [
-      {
-        name:     this.mintingPoolName,
-        total:    "0",
-        partial:  false,
-        accounts: [
-          {
-            name:         this.lpfAccountName,
-            amount:       "0",
-            address,
-            start_at:      0,
-            interval:      0,
-            duration:      0,
-            cliff:        "0",
-            portion_size: "0",
-            remainder:    "0"
-          },
-          {
-            name:         this.rptAccountName,
-            amount:       "0",
-            address,
-            start_at:      0,
-            interval:      0,
-            duration:      0,
-            cliff:        "0",
-            portion_size: "0",
-            remainder:    "0"
-          }
-        ]
-      }
-    ]
-  })
-
-  deploy = this.command('deploy', 'deploy and launch a token generation event', async () => {
-    if (!this.agent) throw new Error('no deploy agent')
-    const token = await this.token()
-    this.rptAccount.address = this.agent.address // mutates this.schedule
-    const mgmt  = await this.mgmt()
-    const rpt   = await this.rpt()
-    this.rptAccount.address = rpt.address // mutates this.schedule
-    const { status: { launched } } = await mgmt.status()
-    if (launched) {
-      this.log.info('TGE already launched.')
-    } else {
-      if (this.isTestnet || this.devMode) await this.mintTestBudget()
-      await this.launch(this.schedule)
-    }
-    return this
-  })
-
-  /** In test deployments, extra budget can be minted for easier testing. */
-  async mintTestBudget (
-    agent:   Agent   = this.agent,
-    amount:  Uint128 = "5000000000000000000000",
-    admin:   Address = agent.address,
-    testers: Address[] = [
-      admin,
-      "secret13nkfwfp8y9n226l9sy0dfs0sls8dy8f0zquz0y",
-      "secret1xcywp5smmmdxudc7xgnrezt6fnzzvmxqf7ldty",
-    ]
-  ) {
-    this.log.warn(`Dev mode: minting initial balances for ${testers.length} testers.`)
-    this.log.warn(`Minting will not be possible after launch.`)
-    const token = (await this.token.deployed).as(agent)
-    try {
-      await token.setMinters([admin])
-      await agent.bundle().wrap(async bundle => {
-        for (const addr of testers) {
-          this.log.warn(bold('Minting'), bold(`${amount}u`), 'to', bold(addr))
-          await token.as(bundle).mint(amount, admin)
-        }
-      })
-    } catch (e) {
-      this.log.warn('Could not mint test tokens. Maybe the TGE is already launched.')
-    }
-  }
 
 }
 
@@ -312,7 +244,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
   constructor (
     context: SiennaDeployment,
     version: PFRVersion,
-    public rewardsVersion: API.Rewards.Version = '3.1' as API.Rewards.Version
+    public rewardsVersion: RewardsVersion = '3.1' as RewardsVersion
   ) {
     super(context, version)
     context.attach(this, 'pfr', 'Sienna Partner-Funded Rewards')
@@ -387,7 +319,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
   //inits = {
 
     //tokens: ({ name }) => ({
-      //name:             `PFR.Mock.${name}`,
+      //id:             `PFR.Mock.${name}`,
       //symbol:           name.toUpperCase(),
       //decimals:         18,
       //config:           { public_total_supply: true, enable_deposit: true, },
@@ -463,13 +395,13 @@ export class PFRVesting extends VestingDeployment<PFRVersion> {
   ) {
     super(context, version)
     this.mgmt.define({
-      name: Names.PFR_MGMT(this.symbol)
+      id: Names.PFR_MGMT(this.symbol)
     })
     this.staked.define({
-      name: Names.Exchange(this.ammVersion, 'SIENNA', this.symbol)
+      id: Names.Exchange(this.ammVersion, 'SIENNA', this.symbol)
     })
     this.staking.define({
-      name: Names.PFR_Pool(this.ammVersion, 'SIENNA', this.symbol, this.rewardsVersion)
+      id: Names.PFR_Pool(this.ammVersion, 'SIENNA', this.symbol, this.rewardsVersion)
     })
   }
 }
