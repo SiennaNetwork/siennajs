@@ -1,1 +1,2 @@
-export class InterestModel extends Client { }
+import { Client } from './Core'
+export class InterestModel extends Client {}

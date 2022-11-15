@@ -1,3 +1,9 @@
+import type {
+  Class, Agent, Address, CodeHash, Contract, Token, Snip20, Uint128, ContractLink, TokenPair
+} from './Core'
+import type { Exchange } from './AMMExchange'
+import type { LPToken } from './AMMLPToken'
+
 /** Supported versions of the AMM subsystem. */
 export type Version = 'v1'|'v2'
 

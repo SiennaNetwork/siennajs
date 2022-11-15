@@ -1,4 +1,5 @@
 import * as Scrt from '@fadroma/scrt'
+import { TokenManager } from '@fadroma/tokens'
 import { SecureRandom } from '@hackbg/formati'
 
 export { randomBase64, SecureRandom } from '@hackbg/formati'
@@ -8,12 +9,12 @@ export * from '@fadroma/tokens'
 
 import type { SiennaDeployment } from './index'
 
-import type { ContractInstance, TokenSymbol } from './Core'
+import type { TokenSymbol } from './Core'
 import type * as Auth       from './Auth'
 import type * as AMM        from './AMM'
 import type * as Rewards    from './Rewards'
 import type * as Governance from './Governance'
-import type * as Lend       from './Lending'
+import type * as Lend       from './Lend'
 import type * as Launchpad  from './Launchpad'
 
 /** All subsystems of the Sienna DeFi system are versioned. */
@@ -21,14 +22,13 @@ export abstract class VersionedSubsystem<V> extends Scrt.VersionedDeployment<V> 
   constructor (public context: SiennaDeployment, public version: V) {
     super(context, version)
   }
-  abstract showStatus (): Promise<void>
+  get config () { return this.context.config }
+  workspace = this.config?.build?.project
+  tokens = new TokenManager(this)
   async deploy (): Promise<this> {
     throw new Error('This method must be implemented by the subclass.')
   }
 }
-
-type Meta = Partial<ContractInstance>
-
 
 /** Get the current time in seconds since the Unix epoch. */
 export const now = () => Math.floor(+new Date() / 1000);

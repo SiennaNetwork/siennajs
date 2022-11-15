@@ -78,19 +78,8 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
 
   revision = Versions.TGE[this.version]
 
-  /** The deployed SIENNA SNIP20 token contract. */
-  token = this.context.tokens.define(this.symbol)
   /** The main SIENNA token. */
-  token = this.context.tokens.define(this.symbol, {
-    name:     'SIENNA',
-    decimals: 18,
-    admin:    this.admin,
-    config:   { public_total_supply: true }
-  }).define({
-    crate:    'snip20-sienna',
-    revision: this.revision,
-    client:   Snip20
-  })
+  token: Contract<Snip20>
 
   /** The initial single-sided staking pool.
     * Stake TOKEN to get rewarded more TOKEN from the RPT. */
@@ -137,14 +126,24 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
 
   constructor (
     context: SiennaDeployment,
-    version: Version,
+    version: TGEVersion,
     /** The vesting schedule to be loaded in MGMT. */
     public schedule?: Schedule,
     /** The token to be created. */
     public symbol:    TokenSymbol = 'SIENNA',
   ) {
     super(context, version)
-    context.attach(this, 'tge', 'SIENNA token generation event')
+    this.token = this.tokens.define(this.symbol, {
+      name:     'SIENNA',
+      decimals: 18,
+      admin:    this.admin,
+      config:   { public_total_supply: true }
+    }).define({
+      crate:    'snip20-sienna',
+      revision: this.revision,
+      client:   Snip20
+    })
+    //context.attach(this, 'tge', 'SIENNA token generation event')
   }
 
   /** Launch the TGE.
