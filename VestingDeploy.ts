@@ -82,30 +82,30 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
 
   revision: string
 
-  admin: Address
+  admin:    Address
 
-  symbol: TokenSymbol
+  symbol:   TokenSymbol
 
   /** The main SIENNA token. */
-  token: DeployContract<Snip20>
+  token:    DeployContract<Snip20>
 
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt: DeployContract<TGEMGMT>
+  mgmt:     DeployContract<TGEMGMT>
 
   schedule: Schedule
 
   /** The deployed RPT contracts, which claim tokens from MGMT
     * and distributes them to the reward pools.  */
-  rpt: DeployContract<TGERPT>
+  rpt:      DeployContract<TGERPT>
 
   /** TODO: RPT vesting can be split between multiple contracts
     * in order to vest to more addresses than the gas limit allows. */
-  subRPTs: DeployContracts<TGERPT>
+  subRPTs:  DeployContracts<TGERPT>
 
   /** The initial single-sided staking pool.
     * Stake TOKEN to get rewarded more TOKEN from the RPT. */
-  staking: DeployContract<RewardPool_v4_1>
+  staking:  DeployContract<RewardPool_v4_1>
 
   constructor (
     context: SiennaDeployment,
@@ -230,227 +230,161 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
 
 }
 
+/** A partner-funded rewards vesting.
+  * Allows staking LP-TOKENX-SIENNA LP tokens
+  * into an alternate reward pool which distributes
+  * rewards in TOKENX instead of SIENNA. This pool
+  * is funded by its own TOKENX vesting. */
+interface PFRVesting {
+  /** The incentivized token. */
+  token:   Snip20
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  mgmt:    PFRMGMT
+  /** The root RPT contract, which claims tokens from MGMT
+    * and distributes them to recipients either directly or via the subRPTs. */
+  rpt:     PFRRPT
+  /** The other RPT contract(s), distributing tokens in multiple transactions
+    * in order to bypass the gas limit. */
+  subRPTs: PFRRPT
+  /** The staked token, e.g. LP-SIENNA-SMTHNG. */
+  staked:  Snip20
+  /** The incentive token. */
+  reward:  Snip20
+  /** The staking pool for this PFR instance.
+    * Stake `this.staked` to get rewarded in `this.reward`,
+    * either of which may or may not be `this.token` */
+  staking: RewardPool_v4_1
+}
+
 type DeployContractGroup<T> = T
-type DeployContractGroups<T> = Record<string, T>
+
+type DeployContractGroups<T, U extends DeployContractGroup<T>> = Record<string, T>
 
 /** Partner-funded rewards manager. */
 export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
 
   log = new SiennaConsole(`PFR ${this.version}`)
 
+  admin?:         Address
+
+  ammVersion:     AMMVersion
+
+  rewardsVersion: RewardsVersion
+
+  vesting:        DeployContractGroup<PFRVesting>
+
+  vestings:       DeployContractGroups<PFRVesting>
+
   constructor (
     context: SiennaDeployment,
     options?: Partial<{
+      admin:          Address,
       version:        PFRVersion,
       ammVersion:     AMMVersion,
       rewardsVersion: RewardsVersion,
+      schedules:      unknown
     }>
   ) {
-    options ??= {}
-    options.version        ??= 'v1'
-    options.ammVersion     ??= 'v2'
-    options.rewardsVersion ??= 'v3.1'
-
-    super(context, options.version)
+    super(context, options?.version ?? 'v1')
+    this.ammVersion     = options?.ammVersion ?? 'v2'
+    this.rewardsVersion = options?.rewardsVersion ?? 'v3.1'
+    this.admin          = options?.admin ?? this.agent?.address
+    this.schedules      = options?.schedules ?? settings(this.chain?.mode).vesting
 
     this.vesting = this.contracts((symbol: TokenSymbol)=>{
+
       const { ammVersion, rewardsVersion } = this
+
       const token = this.contract({
-        client: Snip20,
-        id:     symbol
+        id:      symbol,
+        client:  Snip20,
+        initMsg: {
+          name:     `PFR.Mock.${symbol}`,
+          symbol:   symbol,
+          decimals: 18,
+          config: {
+            public_total_supply: true,
+            enable_deposit: true
+          },
+          initial_balances: [
+            { address: this.admin, amount: "9999999999999" }
+          ],
+          prngSeed: randomBase64()
+        }
       })
+
       const mgmt = this.contract({
-        client: PFRMGMT,
-        id:     Names.PFR_MGMT(symbol)
+        id:      Names.PFR_MGMT(symbol),
+        client:  PFRMGMT,
+        initMsg: async () => ({
+          admin:   this.admin,
+          token:   (await reward()).asLink,
+          prefund: true,
+          schedule
+        })
       })
+
       const rpt = this.contract({
         client: PFRRPT
+        initMsg: async () => ({
+          mgmt:         (await mgmt()).asLink,
+          token:        (await reward()).asLink,
+          portion:      account.portion_size,
+          distribution: [(await staking()).address, account.portion_size]
+        })
       })
-      const subRpts = this.contracts({ client: PFRRPT })
+
+      const subRpts = this.contracts({
+        client: PFRRPT
+      })
+
       const staked  = this.contract({
+        id:     Names.Exchange(this.ammVersion, 'SIENNA', symbol),
         client: Snip20,
-        id:     Names.Exchange(this.ammVersion, 'SIENNA', symbol)
       })
+
       const reward  = token
+
       const staking = this.contract({
+        id:     Names.PFR_Pool(this.ammVersion, 'SIENNA', symbol, this.rewardsVersion),
         client: RewardPool_v4_1,
-        id:     Names.PFR_Pool(this.ammVersion, 'SIENNA', symbol, this.rewardsVersion)
+        initMsg: async () => ({
+          admin:       this.admin,
+          timekeeper:  this.admin,
+          stakedToken: (await staked()).asLink,
+          rewardToken: (await reward()).asLink
+        })
       })
+
       return { token, mgmt, rpt, subRpts, staked, reward, staking }
+
     })
 
-    this.vestings = {
-      alter: this.vesting('ALTER'),
-      shade: this.vesting('SHADE')
-    }
+    this.vestings = this.vesting({
+      alter: 'ALTER',
+      shade: 'SHADE'
+    })
 
     //context.attach(this, 'pfr', 'Sienna Partner-Funded Rewards')
     //this.attach(this.alter, 'alter', 'ALTER rewards for LP-SIENNA-ALTER')
     //this.attach(this.shade, 'shade', 'SHD rewards for LP-SIENNA-SHD')
   }
 
-  vesting: DeployContractGroup<{
-    token:   Snip20
-    mgmt:    PFRMGMT
-    rpt:     PFRRPT
-    subRPTs: PFRRPT
-    staked:  Snip20
-    reward:  Snip20
-    staking: RewardPool_v4_1
-  }>
-
-  vestings: DeployContractGroups<PFRDeployment["vesting"]> = {}
-
   deploy = this.command('deploy', 'deploy and launch a partner-funded vesting', async () => {
-    this.log.warn('TODO')
-    //this.log.info('Vestings:', this.vestings)
-    //const tokens  = await this.tokenPairs
-    //const mgmts   = await this.mgmts
-    //const rewards = await this.rewardPools
-    //const rpts    = await this.rpts
-    //// Set RPT addresses in MGMTs
-    //await this.agent.bundle().wrap(async bundle => {
-      //const mgmtBundleClients = mgmts.map(mgmt => mgmt.as(bundle))
-      //await Promise.all(this.vestings.map(async ({ schedule, account }, i) => {
-        //account.address = rpts[i].address
-        //await mgmtBundleClients[i].add(schedule.pools[0].name, account)
-      //}))
-    //})
-    //// Return grouped vestings
-    //const toVesting = (token, i)=>({token, mgmt: mgmts[i], rpt: rpts[i], rewards: rewards[i]})
-    //const deployedVestings = tokens.map(toVesting)
-    //return deployedVestings
+    const vestings = await this.vestings()
+    await this.agent!.bundle().wrap(async bundle => {
+      for (const [vesting, { mgmt, rpt }] of Object.entries(vestings)) {
+        //await this.agent.bundle().wrap(async bundle => {
+          //const mgmtBundleClients = mgmts.map(mgmt => mgmt.as(bundle))
+          //await Promise.all(this.vestings.map(async ({ schedule, account }, i) => {
+            //account.address = rpts[i].address
+            //await mgmtBundleClients[i].add(schedule.pools[0].name, account)
+          //}))
+        //})
+      }
+    })
     return this
   })
 
-  //admin = this.agent?.address
-
-  //vestings = settings(this.chain?.mode).vesting
-
-  //Rewards = API.Rewards[this.rewardsVersion]
-
-  //mgmts = this.contract({
-    //crate:  'sienna-mgmt',
-    //client: API.PFR.MGMT
-  //}).deployMany(async () => {
-    //const tokens = await this.tokenPairs
-    //return this.vestings.map((vesting, i)=>[
-      //this.names.mgmts(vesting),
-      //this.inits.mgmts(tokens)(vesting, i)
-    //])
-  //})
-
-  //rewardPools = this.contract({
-    //crate:    'sienna-rewards',
-    //revision: Pinned.Rewards[this.rewardsVersion],
-    //client:   this.Rewards as any
-  //}).deployMany(async () => {
-    //const tokens = await this.tokenPairs
-    //return this.vestings.map((vesting, i)=>[
-      //this.names.rewards(vesting),
-      //this.inits.rewards(tokens)(vesting, i)
-    //])
-  //}) as Promise<API.Rewards[]>
-
-  //rpts = this.contract({
-    //crate:  'sienna-rpt',
-    //client: API.PFR.RPT
-  //}).deployMany(async () => {
-    //const tokens  = await this.tokenPairs
-    //const mgmts   = await this.mgmts
-    //const rewards = await this.rewardPools
-    //return this.vestings.map((vesting, i)=>[
-      //this.names.rpts(vesting),
-      //this.inits.rpts(tokens, mgmts, rewards)(vesting, i)
-    //])
-  //})
-
-  //inits = {
-
-    //tokens: ({ name }) => ({
-      //id:             `PFR.Mock.${name}`,
-      //symbol:           name.toUpperCase(),
-      //decimals:         18,
-      //config:           { public_total_supply: true, enable_deposit: true, },
-      //initial_balances: [{address: this.admin, amount: "9999999999999"}],
-      //prng_seed:        randomHex(36),
-    //}),
-
-    //mgmts:
-      //(tokens: API.StakingTokens[]) =>
-      //({schedule, rewards, lp}, i) => ({
-        //admin:   this.admin,
-        //token:   tokens[i].rewardToken.asLink,
-        //prefund: true,
-        //schedule,
-      //}),
-
-    //rewards:
-      //(tokens: API.StakingTokens[]) =>
-      //({schedule}, i) => this.Rewards.init({
-        //admin:       this.admin,
-        //timekeeper:  this.admin,
-        //stakedToken: tokens[i].stakedToken.asLink,
-        //rewardToken: tokens[i].rewardToken.asLink
-      //}),
-
-    //rpts:
-      //(tokens: API.StakingTokens[], mgmts: API.MGMT_PFR[], rewardPools: API.Rewards[]) =>
-      //({name, schedule, account}, i) => ({
-        //mgmt:         mgmts[i].asLink,
-        //token:        tokens[i].rewardToken.asLink,
-        //portion:      account.portion_size,
-        //distribution: [[rewardPools[i].address, account.portion_size]],
-      //})
-
-  //}
-
-}
-
-/** A partner-funded rewards vesting.
-  * Allows staking LP-TOKENX-SIENNA LP tokens
-  * into an alternate reward pool which distributes
-  * rewards in TOKENX instead of SIENNA. This pool
-  * is funded by its own TOKENX vesting. */
-export class PFRVesting extends VestingDeployment<PFRVersion> {
-  log = new SiennaConsole(`PFR ${this.version} ${this.symbol}`)
-
-  /** The incentivized token. */
-  token   = this.context.tokens.define(this.symbol)
-  /** The deployed MGMT contract, which unlocks tokens
-    * for claiming according to a pre-defined schedule.  */
-  mgmt    = this.contract<PFRMGMT>({ client: PFRMGMT })
-  /** The root RPT contract, which claims tokens from MGMT
-    * and distributes them to recipients either directly or via the subRPTs. */
-  rpt     = this.contract<PFRRPT>({ client: PFRRPT })
-  /** The other RPT contract(s), distributing tokens in multiple transactions
-    * in order to bypass the gas limit. */
-  subRpts = this.contracts<PFRRPT>({ client: PFRRPT, match: Names.isRPTPFR(this.symbol) })
-  /** The staked token, e.g. LP-SIENNA-SMTHNG. */
-  staked  = this.contract({ client: Snip20 })
-  /** The incentive token. */
-  reward  = this.token
-  /** The staking pool for this PFR instance.
-    * Stake `this.staked` to get rewarded in `this.reward`,
-    * either of which may or may not be `this.token` */
-  staking = this.contract({ client: RewardPool_v4_1 })
-
-  constructor (
-    context: SiennaDeployment,
-    version: Version,
-    public symbol:         TokenSymbol    = 'ALTER',
-    public ammVersion:     AMMVersion     = 'v2',
-    public rewardsVersion: RewardsVersion = 'v3',
-  ) {
-    super(context, version)
-    this.mgmt.define({
-      id: Names.PFR_MGMT(this.symbol)
-    })
-    this.staked.define({
-      id: Names.Exchange(this.ammVersion, 'SIENNA', this.symbol)
-    })
-    this.staking.define({
-      id: Names.PFR_Pool(this.ammVersion, 'SIENNA', this.symbol, this.rewardsVersion)
-    })
-  }
 }
