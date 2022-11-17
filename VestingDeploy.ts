@@ -75,7 +75,7 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
 
 const settings = () => ({})
 
-/** Connect to an existing TGE. */
+/** Deploy the TGE. */
 export class TGEDeployment extends VestingDeployment<TGEVersion> {
 
   log = new SiennaConsole(`TGE ${this.version}`)
@@ -262,7 +262,7 @@ type DeployContractGroup<T> = T
 
 type DeployContractGroups<T, U extends DeployContractGroup<T>> = Record<string, T>
 
-/** Partner-funded rewards manager. */
+/** Partner-funded rewards manager. Deploys multiple PFR vestings. */
 export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
 
   log = new SiennaConsole(`PFR ${this.version}`)
