@@ -269,12 +269,13 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
 
   admin?:         Address
 
+  /** The version of the AMM to integrate with (for incentivizing swap pairs) */
   ammVersion:     AMMVersion
 
+  /** The version of the rewards contract to use. */
   rewardsVersion: RewardsVersion
 
-  vesting:        DeployContractGroup<PFRVesting>
-
+  /** A collection of all currently defined PFR vestings. */
   vestings:       DeployContractGroups<PFRVesting>
 
   constructor (
@@ -288,96 +289,95 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
     }>
   ) {
     super(context, options?.version ?? 'v1')
-    this.ammVersion     = options?.ammVersion ?? 'v2'
+    this.ammVersion = options?.ammVersion ?? 'v2'
     this.rewardsVersion = options?.rewardsVersion ?? 'v3.1'
-    this.admin          = options?.admin ?? this.agent?.address
-    this.schedules      = options?.schedules ?? settings(this.chain?.mode).vesting
-
-    this.vesting = this.contractGroup((symbol: TokenSymbol)=>{
-
-      const { ammVersion, rewardsVersion } = this
-
-      const token = this.contract({
-        id:      symbol,
-        client:  Snip20,
-        crate:   'amm-snip20',
-        initMsg: {
-          name:     `PFR.Mock.${symbol}`,
-          symbol:   symbol,
-          decimals: 18,
-          config: {
-            public_total_supply: true,
-            enable_deposit: true
-          },
-          initial_balances: [
-            { address: this.admin, amount: "9999999999999" }
-          ],
-          prngSeed: randomBase64()
-        }
-      })
-
-      const mgmt = this.contract({
-        id:      Names.PFR_MGMT(symbol),
-        client:  PFRMGMT,
-        crate:   'mgmt',
-        initMsg: async () => ({
-          admin:   this.admin,
-          token:   (await reward()).asLink,
-          prefund: true,
-          schedule
-        })
-      })
-
-      const rpt = this.contract({
-        client: PFRRPT,
-        crate:  'rpt',
-        initMsg: async () => ({
-          mgmt:         (await mgmt()).asLink,
-          token:        (await reward()).asLink,
-          portion:      account.portion_size,
-          distribution: [(await staking()).address, account.portion_size]
-        })
-      })
-
-      //const subRPTs = this.contract({
-        //id: () => '',
-        //client: PFRRPT,
-        //crate:  'rpt-child',
-      //}).many({})
-
-      const staked  = this.contract({
-        id:     Names.Exchange(this.ammVersion, 'SIENNA', symbol),
-        crate:  'snip20-sienna',
-        client: Snip20,
-      })
-
-      const reward  = token
-
-      const staking = this.contract({
-        id:     Names.PFR_Pool(this.ammVersion, 'SIENNA', symbol, this.rewardsVersion),
-        crate:  'rewards',
-        client: RewardPool_v4_1,
-        initMsg: async () => ({
-          admin:       this.admin,
-          timekeeper:  this.admin,
-          stakedToken: (await staked()).asLink,
-          rewardToken: (await reward()).asLink
-        })
-      })
-
-      return { token, mgmt, rpt, staked, reward, staking }
-
-    })
-
+    this.admin = options?.admin ?? this.agent?.address
+    this.schedules = options?.schedules ?? settings(this.chain?.mode).vesting
     this.vestings = this.vesting.many({
       alter: 'ALTER',
       shade: 'SHADE'
     })
-
     //context.attach(this, 'pfr', 'Sienna Partner-Funded Rewards')
     //this.attach(this.alter, 'alter', 'ALTER rewards for LP-SIENNA-ALTER')
     //this.attach(this.shade, 'shade', 'SHD rewards for LP-SIENNA-SHD')
   }
+
+  /** The template for a partner-funded rewards vesting. */
+  vesting = this.contractGroup((symbol: TokenSymbol)=>{
+
+    const { ammVersion, rewardsVersion } = this
+
+    const token = this.contract({
+      id:      symbol,
+      client:  Snip20,
+      crate:   'amm-snip20',
+      initMsg: {
+        name:     `PFR.Mock.${symbol}`,
+        symbol:   symbol,
+        decimals: 18,
+        config: {
+          public_total_supply: true,
+          enable_deposit: true
+        },
+        initial_balances: [
+          { address: this.admin, amount: "9999999999999" }
+        ],
+        prngSeed: randomBase64()
+      }
+    })
+
+    const mgmt = this.contract({
+      id:      Names.PFR_MGMT(symbol),
+      client:  PFRMGMT,
+      crate:   'mgmt',
+      initMsg: async () => ({
+        admin:   this.admin,
+        token:   (await reward()).asLink,
+        prefund: true,
+        schedule
+      })
+    })
+
+    const rpt = this.contract({
+      client: PFRRPT,
+      crate:  'rpt',
+      initMsg: async () => ({
+        mgmt:         (await mgmt()).asLink,
+        token:        (await reward()).asLink,
+        portion:      account.portion_size,
+        distribution: [(await staking()).address, account.portion_size]
+      })
+    })
+
+    //const subRPTs = this.contract({
+      //id: () => '',
+      //client: PFRRPT,
+      //crate:  'rpt-child',
+    //}).many({})
+
+    const staked  = this.contract({
+      id:     Names.Exchange(this.ammVersion, 'SIENNA', symbol),
+      crate:  'snip20-sienna',
+      client: Snip20,
+    })
+
+    const reward  = token
+
+    const staking = this.contract({
+      id:     Names.PFR_Pool(this.ammVersion, 'SIENNA', symbol, this.rewardsVersion),
+      crate:  'rewards',
+      client: RewardPool_v4_1,
+      initMsg: async () => ({
+        admin:       this.admin,
+        timekeeper:  this.admin,
+        stakedToken: (await staked()).asLink,
+        rewardToken: (await reward()).asLink
+      })
+    })
+
+    return { token, mgmt, rpt, staked, reward, staking }
+
+  })
 
   deploy = this.command('deploy', 'deploy and launch a partner-funded vesting', async () => {
     const vestings = await this.vestings()
