@@ -9,14 +9,14 @@ import { Fadroma } from '@hackbg/fadroma'
 const context = await new Fadroma({ chain: 'Mocknet_CW0' }).ready
 ```
 
-Minimal test schedule:
+Minimal vesting schedule:
 
 ```typescript
 import { emptySchedule } from './VestingConfig'
 const schedule = emptySchedule()
 schedule.total = "2"
 schedule.pools[0].total = "2"
-schedule.pools[0].accounts[0].amount = schedule.pools[0].accounts[1].amount = "1"
+schedule.pools[0].accounts[0].amount  = schedule.pools[0].accounts[1].amount  = "1"
 schedule.pools[0].accounts[0].address = schedule.pools[0].accounts[1].address = context.agent.address
 ```
 

@@ -21,7 +21,20 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
 
   log = new SiennaConsole(`Vesting ${this.version}`)
 
-  show: VestingReporter = new VestingReporter(this)
+  /** The token that will be distributed. */
+  abstract token:   DeployContract<Snip20>
+
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  abstract mgmt:    DeployContract<BaseMGMT>
+
+  /** The deployed RPT contract, which claims tokens from MGMT
+    * and distributes them to the reward pools.  */
+  abstract rpt:     DeployContract<BaseRPT>
+
+  /** TODO: RPT vesting can be split between multiple contracts
+    * in order to vest to more addresses than the gas limit allows. */
+  //abstract subRPTs: DeployContracts<BaseRPT>
 
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
@@ -53,23 +66,10 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
 
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) {
-    console.warn('TGEDeployment#setRptConfig: TODO')
+    this.log.warn('TGEDeployment#setRptConfig: TODO')
   }
 
-  /** The token that will be distributed. */
-  abstract token:   DeployContract<Snip20>
-
-  /** The deployed MGMT contract, which unlocks tokens
-    * for claiming according to a pre-defined schedule.  */
-  abstract mgmt:    DeployContract<BaseMGMT>
-
-  /** The deployed RPT contract, which claims tokens from MGMT
-    * and distributes them to the reward pools.  */
-  abstract rpt:     DeployContract<BaseRPT>
-
-  /** TODO: RPT vesting can be split between multiple contracts
-    * in order to vest to more addresses than the gas limit allows. */
-  abstract subRpts: DeployContracts<BaseRPT>
+  show: VestingReporter = new VestingReporter(this)
 
 }
 
@@ -93,6 +93,7 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
     * for claiming according to a pre-defined schedule.  */
   mgmt:     DeployContract<TGEMGMT>
 
+  /** The vesting schedule for the TGE. */
   schedule: Schedule
 
   /** The deployed RPT contracts, which claim tokens from MGMT
@@ -101,7 +102,7 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
 
   /** TODO: RPT vesting can be split between multiple contracts
     * in order to vest to more addresses than the gas limit allows. */
-  subRPTs:  DeployContracts<TGERPT>
+  //subRPTs:  DeployContracts<TGERPT>
 
   /** The initial single-sided staking pool.
     * Stake TOKEN to get rewarded more TOKEN from the RPT. */
@@ -169,10 +170,10 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
         (await this.mgmt()).asLink
       )
     })
-    this.subRPTs = this.contracts<TGERPT>({
-      match:    Names.isRPT(this.symbol),
-      client:   TGERPT
-    })
+    //this.subRPTs = this.contract<TGERPT>({
+      //match:    Names.isRPT(this.symbol),
+      //client:   TGERPT
+    //}).many([])
     this.staking = this.contract({
       id:       Names.Staking(this.symbol),
       client:   RewardPool_v4_1
@@ -246,7 +247,7 @@ interface PFRVesting {
   rpt:     PFRRPT
   /** The other RPT contract(s), distributing tokens in multiple transactions
     * in order to bypass the gas limit. */
-  subRPTs: PFRRPT
+  //subRPTs: PFRRPT
   /** The staked token, e.g. LP-SIENNA-SMTHNG. */
   staked:  Snip20
   /** The incentive token. */
@@ -292,13 +293,14 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
     this.admin          = options?.admin ?? this.agent?.address
     this.schedules      = options?.schedules ?? settings(this.chain?.mode).vesting
 
-    this.vesting = this.contracts((symbol: TokenSymbol)=>{
+    this.vesting = this.contractGroup((symbol: TokenSymbol)=>{
 
       const { ammVersion, rewardsVersion } = this
 
       const token = this.contract({
         id:      symbol,
         client:  Snip20,
+        crate:   'amm-snip20',
         initMsg: {
           name:     `PFR.Mock.${symbol}`,
           symbol:   symbol,
@@ -317,6 +319,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
       const mgmt = this.contract({
         id:      Names.PFR_MGMT(symbol),
         client:  PFRMGMT,
+        crate:   'mgmt',
         initMsg: async () => ({
           admin:   this.admin,
           token:   (await reward()).asLink,
@@ -326,7 +329,8 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
       })
 
       const rpt = this.contract({
-        client: PFRRPT
+        client: PFRRPT,
+        crate:  'rpt',
         initMsg: async () => ({
           mgmt:         (await mgmt()).asLink,
           token:        (await reward()).asLink,
@@ -335,12 +339,15 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
         })
       })
 
-      const subRpts = this.contracts({
-        client: PFRRPT
-      })
+      //const subRPTs = this.contract({
+        //id: () => '',
+        //client: PFRRPT,
+        //crate:  'rpt-child',
+      //}).many({})
 
       const staked  = this.contract({
         id:     Names.Exchange(this.ammVersion, 'SIENNA', symbol),
+        crate:  'snip20-sienna',
         client: Snip20,
       })
 
@@ -348,6 +355,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
 
       const staking = this.contract({
         id:     Names.PFR_Pool(this.ammVersion, 'SIENNA', symbol, this.rewardsVersion),
+        crate:  'rewards',
         client: RewardPool_v4_1,
         initMsg: async () => ({
           admin:       this.admin,
@@ -357,11 +365,11 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
         })
       })
 
-      return { token, mgmt, rpt, subRpts, staked, reward, staking }
+      return { token, mgmt, rpt, staked, reward, staking }
 
     })
 
-    this.vestings = this.vesting({
+    this.vestings = this.vesting.many({
       alter: 'ALTER',
       shade: 'SHADE'
     })
