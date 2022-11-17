@@ -129,6 +129,8 @@ export const Names = {
     `Auth[${v}].Oracle`,
   PFR_MGMT: (t: TokenSymbol) =>
     `${t}.MGMT[v3]`,
+  PFR_RPT: (t: TokenSymbol) =>
+    `${t}.RPT[v3]`,
   PFR_Pool: (v: AMM.Version, t0: TokenSymbol, t1: TokenSymbol, r: Rewards.Version) =>
     `${Names.Rewards(v, t0, t1, r)}.${t1}`,
 

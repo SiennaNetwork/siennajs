@@ -311,6 +311,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
       id:      symbol,
       client:  Snip20,
       crate:   'amm-snip20',
+      revision: 'dev',
       initMsg: {
         name:     `PFR.Mock.${symbol}`,
         symbol:   symbol,
@@ -329,7 +330,8 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
     const mgmt = this.contract({
       id:      Names.PFR_MGMT(symbol),
       client:  PFRMGMT,
-      crate:   'mgmt',
+      crate:   'sienna-mgmt',
+      revision: 'dev',
       initMsg: async () => ({
         admin:   this.admin,
         token:   (await reward()).asLink,
@@ -339,8 +341,10 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
     })
 
     const rpt = this.contract({
+      id:     Names.PFR_RPT(symbol),
       client: PFRRPT,
-      crate:  'rpt',
+      crate:  'sienna-rpt',
+      revision: 'dev',
       initMsg: async () => ({
         mgmt:         (await mgmt()).asLink,
         token:        (await reward()).asLink,
@@ -352,12 +356,13 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
     //const subRPTs = this.contract({
       //id: () => '',
       //client: PFRRPT,
-      //crate:  'rpt-child',
+      //crate:  'sienna-rpt-child',
     //}).many({})
 
     const staked  = this.contract({
-      id:     Names.Exchange(this.ammVersion, 'SIENNA', symbol),
-      crate:  'snip20-sienna',
+      id:     Names.LPToken(this.ammVersion, 'SIENNA', symbol),
+      crate:  'lp-token',
+      revision: 'dev',
       client: Snip20,
     })
 
@@ -365,8 +370,9 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
 
     const staking = this.contract({
       id:     Names.PFR_Pool(this.ammVersion, 'SIENNA', symbol, this.rewardsVersion),
-      crate:  'rewards',
+      crate:  'sienna-rewards',
       client: RewardPool_v4_1,
+      revision: 'dev',
       initMsg: async () => ({
         admin:       this.admin,
         timekeeper:  this.admin,
