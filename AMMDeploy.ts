@@ -1,6 +1,6 @@
 import { randomHex } from '@hackbg/formati'
-import { Names, Versions, VersionedSubsystem } from './Core'
-import type { Contract } from './Core'
+import { Names, Versions, VersionedSubsystem, randomBase64 } from './Core'
+import type { Address, Contract } from './Core'
 import type { Version } from './AMMConfig'
 import { Factory } from './AMMFactory'
 import { Exchange } from './AMMExchange'
@@ -16,63 +16,89 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
   /** Git revision corresponding to subsystem version. */
   revision = Versions.AMM[this.version]
 
+  swapFee:   [number, number]
+
+  siennaFee: [number, number]
+
+  burner:    Address|null = null
+
   /** The AMM factory is the hub of Sienna Swap.
     * It keeps track of all exchange pair contracts,
     * and allows anyone to create new ones. */
   factory: Contract<Factory> = this.contract<Factory>({
+    id:       Names.Factory(this.version),
     crate:    'factory',
     revision: this.revision,
     client:   Factory[this.version],
-    name:     Names.Factory(this.version),
     initMsg: async () => {
+      const exchange = await this.exchanges.uploaded
+      const lpToken  = await this.lpTokens.uploaded
       const config: any = {
-        admin:             this.agent.address,
-        pair_contract:     (await this.contract({ crate: 'exchange' }).uploaded).asInfo,
-        lp_token_contract: (await this.contract({ crate: 'lp-token' }).uploaded).asInfo,
-        ...this.config.amm,
-        prng_seed:         randomHex(64),
+        admin: this.agent!.address,
+        prng_seed: randomBase64(64),
+        pair_contract: { id: Number(exchange.codeId), code_hash: exchange.codeHash },
+        lp_token_contract: { id: Number(lpToken.codeId), code_hash: lpToken.codeHash },
+        exchange_settings: {
+          swap_fee: { nom: this.swapFee[0], denom: this.swapFee[1] },
+          sienna_fee: { nom: this.siennaFee[0], denom: this.siennaFee[1] },
+          sienna_burner: this.burner,
+        },
       }
+      // Plug in the dummy templates for v1
       if (this.version === 'v1') {
-        config.token_contract =
-          config.launchpad_contract =
-          config.ido_contract =
-          config.lp_token_contract
+        config.token_contract = config.launchpad_contract = config.ido_contract = {
+          code_id:    "0",
+          code_hash: "0000000000000000000000000000000000000000000000000000000000000000",
+        }
       }
       return config
     }
   })
 
   /** All exchanges stored in the deployment. */
-  exchanges = this.contracts({
+  exchanges = this.contract({
     client: Exchange,
-    match:  Names.isExchange(this.version)
-  })
+    crate: 'exchange',
+    revision: this.revision,
+  })//.find(Names.isExchange(this.version))
 
   /** Each AMM exchange emits its Liquidity Provision token
     * to users who provide liquidity. Later, reward pools are
     * spawned for select LP tokens. */
-  lpTokens  = this.contracts({
+  lpTokens  = this.contract({
     client: LPToken,
-    match:  Names.isLPToken(this.version)
-  })
+    crate: 'lp-token',
+    revision: this.revision
+  })//.find(Names.isExchange(this.version))
 
   /** The AMM router bounces transactions across multiple exchange
     * pools within the scode of a a single transaction, allowing
     * multi-hop swaps for tokens between which no direct pairing exists. */
   router    = this.contract({
+    id:      Names.Router(this.version),
     crate:   'router',
     revision: this.revision,
     client:   Router,
-    name:     Names.Router(this.version),
     initMsg: async () => {
       const exchanges = await this.updateExchanges()
       return { register_tokens: [/*TODO?*/] }
     }
   })
 
-  constructor (context: SiennaDeployment, version: Version) {
-    super(context, version)
-    context.attach(this, `amm ${version}`, `Sienna Swap AMM ${version}`)
+  constructor (
+    context: SiennaDeployment,
+    options: {
+      version:   Version,
+      swapFee:   [number, number],
+      siennaFee: [number, number],
+      burner:    Address
+    }
+  ) {
+    super(context, options.version)
+    this.swapFee   = options.swapFee
+    this.siennaFee = options.siennaFee
+    this.burner    = options.burner
+    context.attach(this, `amm ${options.version}`, `Sienna Swap AMM ${options.version}`)
     this.addCommand('deploy',  'deploy Sienna Swap',
                     this.deploy.bind(this)) 
         .addCommand('upgrade', 'upgrade Sienna Swap factory and exchanges',

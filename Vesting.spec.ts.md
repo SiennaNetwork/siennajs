@@ -28,7 +28,11 @@ and the MGMT and RPT contracts.
 ```typescript
 import { TGE } from './Vesting'
 
-const tge = new TGE(context, { version: 'v1', symbol: 'SIENNA', schedule })
+const tge = new TGE(context, {
+  version: 'v1',
+  symbol: 'SIENNA',
+  schedule
+})
 
 await tge.deploy()
 ```
@@ -44,7 +48,21 @@ In test mode, they use the Fadroma Token Manager to provide a mock token.
 ```typescript
 import { PFR } from './Vesting'
 
-const pfr = new PFR(context, { version: 'v1' })
+const pfr = new PFR(context, {
+  version: 'v1',
+  vestings: {
+    ALTER: {
+      staked: 'LP-SIENNA-ALTER',
+      reward: 'ALTER',
+      schedule
+    },
+    SHADE: {
+      staked: 'LP-SIENNA-SHD',
+      reward: 'SHADE',
+      schedule
+    }
+  }
+})
 
 await pfr.deploy()
 ```
