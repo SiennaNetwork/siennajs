@@ -17,13 +17,15 @@ Deploying the AMM involves instatiating the factory and the router.
   * The legacy (v1) factory also requires templates for three other contracts;
     those are not used.
 * The factory then takes care of instantiating an AMMExchange and LPToken for each
-  supported pair of swappable tokens.
+  supported pair of swappable tokens. When deploying, you can specify an initial
+  list of swap pairs to create.
 
 ```typescript
 import { AMM } from 'siennajs'
 
 const amm = new AMM.Deployment(context, {
   version:   'v2',
+  swapPairs: [],
   swapFee:   [ 28, 10000 ],
   siennaFee: [ 2, 10000 ],
   burner:    null

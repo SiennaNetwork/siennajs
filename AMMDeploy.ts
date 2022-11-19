@@ -1,5 +1,7 @@
 import { randomHex } from '@hackbg/formati'
-import { Names, Versions, VersionedSubsystem, randomBase64 } from './Core'
+import {
+  Snip20, Names, Versions, VersionedSubsystem, randomBase64, getMaxLength, bold
+} from './Core'
 import type { Address, Contract } from './Core'
 import type { Version } from './AMMConfig'
 import { Factory } from './AMMFactory'
@@ -15,6 +17,8 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
 
   /** Git revision corresponding to subsystem version. */
   revision = Versions.AMM[this.version]
+
+  swapPairs: PairName[]
 
   swapFee:   [number, number]
 
@@ -89,15 +93,17 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     context: SiennaDeployment,
     options: {
       version:   Version,
+      swapPairs: PairName[],
       swapFee:   [number, number],
       siennaFee: [number, number],
-      burner:    Address
+      burner:    Address,
     }
   ) {
     super(context, options.version)
     this.swapFee   = options.swapFee
     this.siennaFee = options.siennaFee
     this.burner    = options.burner
+    this.swapPairs = options.swapPairs
     context.attach(this, `amm ${options.version}`, `Sienna Swap AMM ${options.version}`)
     this.addCommand('deploy',  'deploy Sienna Swap',
                     this.deploy.bind(this)) 
@@ -172,13 +178,15 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
   }
 
   get exchangedTokens (): Record<TokenSymbol, Contract<Snip20>> {
-    return this.context.tokens.defineMany(
-      this.config.swapPairs.reduce((tokens, name)=>{
-        for (const symbol of name.split('-')) tokens[symbol] = {}
-        return tokens
-      },
-      {})
-    )
+    const tokens: Record<TokenSymbol, Contract<Snip20>> = {}
+    for (const pair of this.swapPairs) {
+      const [symbol1, symbol2] = pair.split('-')
+      const token1 = this.contract().find(contract=>contract.id === symbol1)
+      if (token1) tokens[symbol1] = token1 as Contract<Snip20>
+      const token2 = this.contract().find(contract=>contract.id === symbol2)
+      if (token2) tokens[symbol2] = token2 as Contract<Snip20>
+    }
+    return tokens
   }
 
   async deploy () {
@@ -222,8 +230,8 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     const create = new Set<API.AMM.PairName>()
     this.log.br()
     this.log.info(`Exchange pairs:`)
-    const align = getMaxLength(this.config.swapPairs)
-    for (const name of this.config.swapPairs) {
+    const align = getMaxLength(this.swapPairs)
+    for (const name of this.swapPairs) {
       if (name in exchanges) {
         this.log.info('Pair:    ', bold(name.padEnd(align)), '(found)')
       } else {
