@@ -5,6 +5,7 @@
 Test instance of Fadroma:
 
 ```typescript
+import assert from 'node:assert'
 import { Fadroma } from '@hackbg/fadroma'
 const context = await new Fadroma({ chain: 'Mocknet_CW0' }).ready
 ```
@@ -12,13 +13,13 @@ const context = await new Fadroma({ chain: 'Mocknet_CW0' }).ready
 ## Deploying the AMM
 
 Deploying the AMM involves instatiating the factory and the router.
-* The factory contract must be provided with templates (code id + code hash)
-  for the exchange and LP token contracts.
-  * The legacy (v1) factory also requires templates for three other contracts;
-    those are not used.
-* The factory then takes care of instantiating an AMMExchange and LPToken for each
-  supported pair of swappable tokens. When deploying, you can specify an initial
-  list of swap pairs to create.
+
+The factory contract contains templates (references to code id + code hash)
+for the exchange and LP token contracts.
+
+The factory then takes care of instantiating an AMMExchange and LPToken for each
+supported pair of swappable tokens. When deploying, you can specify an initial
+list of swap pairs to create.
 
 ```typescript
 import { AMM } from 'siennajs'
@@ -32,6 +33,19 @@ const amm = new AMM.Deployment(context, {
 })
 
 await amm.deploy()
+```
+
+## Creating new swap pairs
+
+Having deployed the AMM or connected to it, you can create new exchanges:
+
+```typescript
+assert.ok(await amm.createExchange('FOO-BAR'))
+
+assert.ok(await amm.createExchanges([
+  'BAR-BAZ',
+  'BAZ-FOO'
+]))
 ```
 
 ## Configuring the router

@@ -1,15 +1,9 @@
 import * as Scrt from '@fadroma/scrt'
-import { TokenManager } from '@fadroma/tokens'
+import { TokenManager, Snip20 } from '@fadroma/tokens'
+import type { TokenSymbol } from '@fadroma/tokens'
 import { SecureRandom } from '@hackbg/formati'
-
-export { randomBase64, SecureRandom } from '@hackbg/formati'
-export { CustomConsole, bold, colors } from '@hackbg/konzola'
-export * from '@fadroma/scrt'
-export * from '@fadroma/tokens'
-
 import type { SiennaDeployment } from './index'
 
-import type { TokenSymbol } from './Core'
 import type * as Auth       from './Auth'
 import type * as AMM        from './AMM'
 import type * as Rewards    from './Rewards'
@@ -19,12 +13,22 @@ import type * as Launchpad  from './Launchpad'
 
 /** All subsystems of the Sienna DeFi system are versioned. */
 export abstract class VersionedSubsystem<V> extends Scrt.VersionedDeployment<V> {
+
   constructor (public context: SiennaDeployment, public version: V) {
     super(context, version)
+    this.context.tokens.template = this.context.contract({
+      client:   Snip20,
+      crate:    'amm-snip20',
+      revision: 'dev'
+    })
   }
-  get config () { return this.context.config }
+
+  get config () {
+    return this.context.config
+  }
+
   workspace = this.config?.build?.project
-  tokens = new TokenManager(this)
+
   async deploy (): Promise<this> {
     throw new Error('This method must be implemented by the subclass.')
   }
@@ -148,3 +152,8 @@ export const Names = {
   isRewardPool: (v: Rewards.Version) => ({name}: Meta) =>
     name?.includes(`Rewards[${v}]`)
 }
+
+export { randomBase64, SecureRandom } from '@hackbg/formati'
+export { CustomConsole, bold, colors } from '@hackbg/konzola'
+export * from '@fadroma/scrt'
+export * from '@fadroma/tokens'
