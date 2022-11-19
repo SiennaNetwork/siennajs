@@ -50,10 +50,10 @@ export class SiennaDeployment extends Deployment {
 
   /** The Sienna Rewards staking system. */
   rewards = {
-    'v2':   new Rewards.Deployment(this, 'v2'),
-    'v3':   new Rewards.Deployment(this, 'v3'),
-    'v3.1': new Rewards.Deployment(this, 'v3.1'),
-    'v4.1': new Rewards.Deployment(this, 'v4.1'),
+    'v2':   new Rewards.Deployment(this, { version: 'v2'   }),
+    'v3':   new Rewards.Deployment(this, { version: 'v3'   }),
+    'v3.1': new Rewards.Deployment(this, { version: 'v3.1' }),
+    'v4.1': new Rewards.Deployment(this, { version: 'v4.1' }),
   }
 
   /** Partner-Funded Rewards: vesting of non-SIENNA tokens. */

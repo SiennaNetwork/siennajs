@@ -196,11 +196,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     return this
   }
 
-  async upgrade (
-    oldVer: API.AMM.Version = 'v1',
-    newVer: API.AMM.Version = 'v2',
-    multisig: boolean = false
-  ) {
+  async upgrade (oldVer: Version = 'v1', newVer: Version = 'v2', multisig: boolean = false) {
     throw new Error('Upgrade me')
     const oldFactory   = await this.factory.deployed
     const oldTemplates = await oldFactory.getTemplates()
@@ -227,7 +223,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     // the current list of exchanges
     const exchanges = await factory.getAllExchanges()
     // collect exchanges that don't exist yet and will be created after 1st loop
-    const create = new Set<API.AMM.PairName>()
+    const create = new Set<PairName>()
     this.log.br()
     this.log.info(`Exchange pairs:`)
     const align = getMaxLength(this.swapPairs)

@@ -15,7 +15,9 @@ const context = await new Fadroma({ chain: 'Mocknet_CW0' }).ready
 ```typescript
 import { Rewards } from 'siennajs'
 
-const rewards = new Rewards.Deployment(context)
+const rewards = new Rewards.Deployment(context, {
+  version: 'v4'
+})
 
 await rewards.deploy()
 ```

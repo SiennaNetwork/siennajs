@@ -2,6 +2,7 @@ import type { Address } from './Core'
 import { bold, Names, Versions, VersionedSubsystem } from './Core'
 import { SiennaConsole } from './Console'
 import type { Version } from './RewardsConfig'
+import { AuthVersions, AMMVersions } from './RewardsConfig'
 import type { AuthProviderDeployment } from './AuthDeploy'
 import { RewardPool } from './RewardsBase'
 
@@ -9,8 +10,14 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
 
   log = new SiennaConsole(`Rewards ${this.version}`)
 
+  /** Git reference to source code version. */
+  revision: string = Versions.Rewards[this.version]
+
   /** Address to set as admin of newly created pools. */
-  admin: Address = this.agent?.address
+  admin: Address = this.agent!.address!
+
+  /** The token distributed by the reward pools. */
+  reward: DeployContract<Snip20>
 
   /** Which version of Auth Provider should these rewards use. */
   authVersion? = AuthVersions[this.version]
@@ -32,7 +39,37 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   client: RewardsCtor = RewardPool[this.version] as unknown as RewardsCtor
 
   /** The reward pools in this deployment. */
-  pools = this.contracts({ client: this.client, match: Names.isRewardPool(this.version) })
+  pools = this.contract({
+    client: this.client,
+    match: Names.isRewardPool(this.version),
+    crate: 'sienna-rewards',
+    revision: this.revision,
+    inits: async () => {
+      // resolve dependencies
+      const authProvider = this.auth ? (await this.auth.provider.deployed).asLink : undefined
+      const rewardToken  = (await this.reward.deployed).asLink
+      const template     = await this.pools.asTemplate.uploaded
+      // collect deploy-ready init configurations
+      const inits: Record<string, any> = {}
+      for (const [name] of this.pairs) {
+        // define the name of the reward pool from the staked token
+        const { tokenName, poolName } = this.getNames(name)
+        // collect
+        inits[poolName] = template.instance({
+          name: poolName,
+          initMsg: async () => {
+            const stakedToken = (await this.context.tokens.define(tokenName).deployed).asLink
+            const admin       = this.admin
+            const timekeeper  = this.admin
+            return RewardPool[this.version].init({
+              rewardToken, stakedToken, admin, timekeeper, authProvider
+            })
+          }
+        })
+      }
+      return inits
+    }
+  }).findMany()
 
   /** Whether to emit a multisig TX instead of broadcasting. */
   multisig: boolean  = false
@@ -45,16 +82,21 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   /** Which reward pairs should exist, and what portion of rewards should they receive. */
   pairs: [Name, number][] = Object.entries(settings(this.chain?.mode).rewardPairs??{})
 
-  /** Git reference to source code version. */
-  revision: string = Versions.Rewards[this.version]
+  /** Whether to update the RPT contract's config after deploying the new pools. */
+  adjustRpt: boolean = true
+
+  /** The RPT contract that will fund the reward pools. */
+  rpt: Contract<API.Vesting.RPT> = this.context.tge['v1'].rpt
 
   constructor (
     context: SiennaDeployment,
-    version: Version,
-    /** The token distributed by the reward pools. */
-    public reward: Contract<Snip20> = context.tge['v1'].token
+    options: {
+      version: Version,
+      reward:  DeployContract<Snip20>
+    }
   ) {
-    super(context, version)
+    super(context, options.version)
+    this.reward = options.reward
     this.addCommand('deploy one',  'deploy one reward pool',   this.deployOne.bind(this))
         .addCommand('deploy all',  'deploy all reward pools',  this.deployAll.bind(this))
         .addCommand('upgrade all', 'upgrade all reward pools', this.upgradeAll.bind(this))
@@ -63,43 +105,6 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   async showStatus () {
     this.log.rewardPools(this.name, this.state)
   }
-
-  /** The reward pools to create. */
-  pools = this.pools.provide({
-    crate: 'sienna-rewards',
-    revision: this.revision,
-    inits: async () => {
-      // resolve dependencies
-      const authProvider = this.auth ? (await this.auth.provider.deployed).asLink : undefined
-      const rewardToken  = (await this.reward.deployed).asLink
-      const template     = await this.pools.asTemplate.uploaded
-      // collect deploy-ready init configurations
-      const inits = {}
-      for (const [name] of this.pairs) {
-        // define the name of the reward pool from the staked token
-        const { tokenName, poolName } = this.getNames(name)
-        // collect
-        inits[poolName] = template.instance({
-          name: poolName,
-          initMsg: async () => {
-            const stakedToken = (await this.context.tokens.define(tokenName).deployed).asLink
-            const admin       = this.admin
-            const timekeeper  = this.admin
-            return API.Rewards.RewardPool[this.version].init({
-              rewardToken, stakedToken, admin, timekeeper, authProvider
-            })
-          }
-        })
-      }
-      return inits
-    }
-  })
-
-  /** Whether to update the RPT contract's config after deploying the new pools. */
-  adjustRpt: boolean = true
-
-  /** The RPT contract that will fund the reward pools. */
-  rpt: Contract<API.Vesting.RPT> = this.context.tge['v1'].rpt
 
   /** Having deployed the pools, get the [Address, Uint128] pairs representing the RPT config. */
   async getRptConfig (pairs = this.pairs): Promise<API.Vesting.RPTConfig> {
