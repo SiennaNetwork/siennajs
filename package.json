@@ -13,8 +13,8 @@
   "scripts": {
     "check":      "tsc --noEmit",
     "ubik":       "npm run check && ubik",
-    "test":       "FADROMA_PROJECT=.. ensuite AMM.spec.ts.md",
-    "cov":        "FADROMA_PROJECT=.. ensuite-cov Vesting.spec.ts.md",
+    "test":       "FADROMA_PROJECT=.. ensuite SPEC.ts.md",
+    "cov":        "FADROMA_PROJECT=.. ensuite-cov SPEC.ts.md",
     "bundle:cjs": "rollup -c .rollup-cjs.config.mjs",
     "bundle:esm": "rollup -c .rollup-esm.config.mjs"
   },

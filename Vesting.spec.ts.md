@@ -51,7 +51,7 @@ import { PFR } from './Vesting'
 const pfr = new PFR(context, {
   version: 'v1',
   vestings: {
-    ALTER: {
+    /*ALTER: {
       staked: 'LP-SIENNA-ALTER',
       reward: 'ALTER',
       schedule
@@ -60,7 +60,7 @@ const pfr = new PFR(context, {
       staked: 'LP-SIENNA-SHD',
       reward: 'SHADE',
       schedule
-    }
+    }*/
   }
 })
 

@@ -294,8 +294,8 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
     this.admin = options?.admin ?? this.agent?.address
     this.schedules = options?.schedules ?? settings(this.chain?.mode).vesting
     this.vestings = this.vesting.many({
-      alter: 'ALTER',
-      shade: 'SHADE'
+      //alter: 'ALTER',
+      //shade: 'SHADE'
     })
     //context.attach(this, 'pfr', 'Sienna Partner-Funded Rewards')
     //this.attach(this.alter, 'alter', 'ALTER rewards for LP-SIENNA-ALTER')
