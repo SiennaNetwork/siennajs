@@ -1,3 +1,5 @@
+import { ViewingKeyClient } from './Core'
+
 export class IDO extends ViewingKeyClient {
     /**
      *

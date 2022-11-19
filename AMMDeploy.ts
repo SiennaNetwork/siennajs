@@ -3,7 +3,7 @@ import {
   Snip20, Names, Versions, VersionedSubsystem, randomBase64, getMaxLength, bold
 } from './Core'
 import type { Address, Contract } from './Core'
-import type { Version } from './AMMConfig'
+import type { Version, PairName } from './AMMConfig'
 import { Factory } from './AMMFactory'
 import { Exchange } from './AMMExchange'
 import { LPToken } from './AMMLPToken'

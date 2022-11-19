@@ -1,3 +1,5 @@
+import { ViewingKeyClient } from './Core'
+
 export class Launchpad extends ViewingKeyClient {
 
     get auth () { return new Auth.AuthClient(this.agent, this.address, this.codeHash) }

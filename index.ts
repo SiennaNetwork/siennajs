@@ -7,7 +7,7 @@ import * as Auth        from './Auth'
 import * as AMM         from './AMM'
 import * as Multicall   from './Multicall'
 import * as Governance  from './Governance'
-import * as Lending     from './Lend'
+import * as Lend     from './Lend'
 import * as Launchpad   from './Launchpad'
 import * as Rewards     from './Rewards'
 import { RewardPool_v2 }   from './Rewards_v2'
@@ -34,7 +34,7 @@ export class SiennaDeployment extends Deployment {
 
   /** The SIENNA Token Generation Event. */
   tge: Record<Vesting.TGEVersion, Vesting.TGEDeployment> = {
-    'v1':   new Vesting.TGEDeployment(this, 'v1')
+    'v1':   new Vesting.TGEDeployment(this, { version: 'v1' })
   }
 
   /** The Sienna token. */
@@ -44,8 +44,8 @@ export class SiennaDeployment extends Deployment {
 
   /** The Sienna Swap AMM. */
   amm: Record<AMM.Version, AMM.Deployment> = {
-    'v1':   new AMM.Deployment(this, 'v1'),
-    'v2':   new AMM.Deployment(this, 'v2')
+    'v1':   new AMM.Deployment(this, { version: 'v1' }),
+    'v2':   new AMM.Deployment(this, { version: 'v2' })
   }
 
   /** The Sienna Rewards staking system. */
@@ -58,12 +58,12 @@ export class SiennaDeployment extends Deployment {
 
   /** Partner-Funded Rewards: vesting of non-SIENNA tokens. */
   pfr = {
-    'v1':   new Vesting.PFRDeployment(this, 'v1')
+    'v1':   new Vesting.PFRDeployment(this, { version: 'v1' })
   }
 
   /** The Sienna Lend lending platform. */
   lend = {
-    'v1':   new Lending.Deployment(this, 'v1')
+    'v1':   new Lend.Deployment(this, 'v1')
   }
 
   /** Sienna Governance system. */
@@ -101,6 +101,6 @@ export {
   Vesting,
   Rewards,
   Governance,
-  Lending,
+  Lend,
   Launchpad
 }

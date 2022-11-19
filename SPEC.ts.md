@@ -19,3 +19,21 @@ that hold user-provided liquidity in a pair of tokens, and perform exchanges.
 ```typescript
 import './AMM.spec.ts.md'
 ```
+
+## [Sienna Rewards](./Rewards.spec.ts.md)
+
+```typescript
+import './Rewards.spec.ts.md'
+```
+
+## [Sienna Lend](./Lend.spec.ts.md)
+
+```typescript
+import './Lend.spec.ts.md'
+```
+
+## [Sienna Launchpad](./Launchpad.spec.ts.md)
+
+```typescript
+import './Launchpad.spec.ts.md'
+```
