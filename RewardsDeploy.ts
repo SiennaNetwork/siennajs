@@ -1,10 +1,11 @@
-import type { Address } from './Core'
+import type { Address, DeployContract } from './Core'
 import { bold, Names, Versions, VersionedSubsystem } from './Core'
 import { SiennaConsole } from './Console'
 import type { Version } from './RewardsConfig'
 import { AuthVersions, AMMVersions } from './RewardsConfig'
 import type { AuthProviderDeployment } from './AuthDeploy'
 import { RewardPool } from './RewardsBase'
+import type { TGERPT } from './VestingRPT'
 
 export class RewardsDeployment extends VersionedSubsystem<Version> {
 
@@ -18,6 +19,15 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
 
   /** The token distributed by the reward pools. */
   reward: DeployContract<Snip20>
+
+  /** The RPT contract that will fund the reward pools. */
+  rpt: DeployContract<TGERPT>
+
+  /** Whether to update the RPT contract's config after deploying the new pools. */
+  adjustRpt: boolean = true
+
+  /** Whether to emit a multisig TX instead of broadcasting. */
+  multisig: boolean  = false
 
   /** Which version of Auth Provider should these rewards use. */
   authVersion? = AuthVersions[this.version]
@@ -38,8 +48,16 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   /** The version of the Rewards client to use. */
   client: RewardsCtor = RewardPool[this.version] as unknown as RewardsCtor
 
+  /** Auth provider to use if required. */
+  auth: AuthProviderDeployment = this.authVersion
+    ? this.context.auth[this.authVersion].provider(`Rewards[${this.version}]`)
+    : null
+
+  /** Which reward pairs should exist, and what portion of rewards should they receive. */
+  pairs: [Name, number][] = []//Object.entries(settings(this.chain?.mode).rewardPairs??{})
+
   /** The reward pools in this deployment. */
-  pools = this.contract({
+  pools = this.defineContract({
     client: this.client,
     match: Names.isRewardPool(this.version),
     crate: 'sienna-rewards',
@@ -69,24 +87,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
       }
       return inits
     }
-  }).findMany()
-
-  /** Whether to emit a multisig TX instead of broadcasting. */
-  multisig: boolean  = false
-
-  /** Auth provider to use if required. */
-  auth: AuthProviderDeployment = this.authVersion
-    ? this.context.auth[this.authVersion].provider(`Rewards[${this.version}]`)
-    : null
-
-  /** Which reward pairs should exist, and what portion of rewards should they receive. */
-  pairs: [Name, number][] = Object.entries(settings(this.chain?.mode).rewardPairs??{})
-
-  /** Whether to update the RPT contract's config after deploying the new pools. */
-  adjustRpt: boolean = true
-
-  /** The RPT contract that will fund the reward pools. */
-  rpt: Contract<API.Vesting.RPT> = this.context.tge['v1'].rpt
+  })//.findMany()
 
   constructor (
     context: SiennaDeployment,
@@ -153,12 +154,12 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   async upgradeAll (oldVer: Version, newVer: Version, multisig: boolean = false) {
     /** Find list of old rewards pool from the deployment.
       * Rewards pool not recorded in the receipt will be unaffected by the upgrade. */
-    const oldRewards = await this.contracts<Rewards.RewardPool>({
+    const oldRewards = await this.defineContracts<Rewards.RewardPool>({
       match:  ({name})=>name.endsWith(`.Rewards[${oldVer}]`),
       client: Rewards.RewardPool[oldVer]
     })
 
-    const rewardToken      = await this.contract({ name: 'SIENNA', client: Snip20 })
+    const rewardToken      = await this.defineContract({ name: 'SIENNA', client: Snip20 })
     const stakedTokens     = new Map()
     const stakedTokenNames = new Map()
     await Promise.all(oldRewards.map(async pool=>{
@@ -178,7 +179,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
     // !!! WARNING: This might've been the cause of the wrong behavior
     // of the AMM+Rewards migration; new pools should point to new LP tokens.
     const NewRewards: Rewards.RewardsCtor = RewardPool[newVer]
-    const newRewards = await this.contracts({
+    const newRewards = await this.defineContracts({
       crate:    'sienna-rewards',
       revision: Pinned.Rewards[newVer],
       client:   NewRewards,
@@ -207,7 +208,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
     bonding: number = 86400,
     timekeeper?: Address
   ): Promise<Rewards.RewardPool> {
-    return this.contract<Rewards.RewardPool>({
+    return this.defineContract<RewardPool>({
       name, crate: 'sienna-rewards', client: Rewards[this.version] as any,
     }).deploy(() => ({
       admin: this.agent.address,

@@ -16,7 +16,7 @@ export abstract class VersionedSubsystem<V> extends Scrt.VersionedDeployment<V> 
 
   constructor (public context: SiennaDeployment, public version: V) {
     super(context, version)
-    this.context.tokens.template = this.context.contract({
+    this.context.tokens.template = this.context.defineContract({
       client:   Snip20,
       crate:    'amm-snip20',
       revision: 'dev'

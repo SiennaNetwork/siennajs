@@ -15,7 +15,9 @@ const context = await new Fadroma({ chain: 'Mocknet_CW0' }).ready
 ```typescript
 import { Lend } from 'siennajs'
 
-const lend = new Lend.Deployment(context)
+const lend = new Lend.Deployment(context, {
+  version: 'v1'
+})
 
 await lend.deploy()
 ```

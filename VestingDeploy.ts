@@ -132,7 +132,7 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
     this.admin    = options.admin ?? context.agent?.address
     this.schedule = options.schedule ?? settings(context.chain?.mode).schedule
     this.revision = options.revision ?? Versions.TGE[this.version]
-    this.token = this.contract<Snip20>({
+    this.token = this.defineContract<Snip20>({
       id: options.symbol,
       crate: 'snip20-sienna',
       revision: this.revision,
@@ -146,7 +146,7 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
         prng_seed: randomBase64()
       }
     })
-    this.mgmt = this.contract<TGEMGMT>({
+    this.mgmt = this.defineContract<TGEMGMT>({
       id:       Names.MGMT(this.symbol),
       client:   TGEMGMT,
       crate:    'sienna-mgmt',
@@ -157,7 +157,7 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
         this.schedule
       )
     })
-    this.rpt = this.contract<TGERPT>({
+    this.rpt = this.defineContract<TGERPT>({
       id:       Names.RPT(this.symbol),
       client:   TGERPT,
       crate:    'sienna-rpt',
@@ -170,11 +170,11 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
         (await this.mgmt()).asLink
       )
     })
-    //this.subRPTs = this.contract<TGERPT>({
+    //this.subRPTs = this.defineContract<TGERPT>({
       //match:    Names.isRPT(this.symbol),
       //client:   TGERPT
     //}).many([])
-    this.staking = this.contract({
+    this.staking = this.defineContract({
       id:       Names.Staking(this.symbol),
       client:   RewardPool_v4_1
     })
@@ -303,11 +303,11 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
   }
 
   /** The template for a partner-funded rewards vesting. */
-  vesting = this.contractGroup((symbol: TokenSymbol)=>{
+  vesting = this.defineContractGroup((symbol: TokenSymbol)=>{
 
     const { ammVersion, rewardsVersion } = this
 
-    const token = this.contract({
+    const token = this.defineContract({
       id:      symbol,
       client:  Snip20,
       crate:   'amm-snip20',
@@ -327,7 +327,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
       }
     })
 
-    const mgmt = this.contract({
+    const mgmt = this.defineContract({
       id:      Names.PFR_MGMT(symbol),
       client:  PFRMGMT,
       crate:   'sienna-mgmt',
@@ -340,7 +340,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
       })
     })
 
-    const rpt = this.contract({
+    const rpt = this.defineContract({
       id:     Names.PFR_RPT(symbol),
       client: PFRRPT,
       crate:  'sienna-rpt',
@@ -353,22 +353,22 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
       })
     })
 
-    //const subRPTs = this.contract({
+    //const subRPTs = this.defineContract({
       //id: () => '',
       //client: PFRRPT,
       //crate:  'sienna-rpt-child',
     //}).many({})
 
-    const staked  = this.contract({
-      id:     Names.LPToken(this.ammVersion, 'SIENNA', symbol),
-      crate:  'lp-token',
+    const staked  = this.defineContract({
+      id: Names.LPToken(this.ammVersion, 'SIENNA', symbol),
+      crate: 'lp-token',
       revision: 'dev',
       client: Snip20,
     })
 
     const reward  = token
 
-    const staking = this.contract({
+    const staking = this.defineContract({
       id:     Names.PFR_Pool(this.ammVersion, 'SIENNA', symbol, this.rewardsVersion),
       crate:  'sienna-rewards',
       client: RewardPool_v4_1,

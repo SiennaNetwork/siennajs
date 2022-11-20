@@ -15,7 +15,9 @@ const context = await new Fadroma({ chain: 'Mocknet_CW0' }).ready
 ```typescript
 import { Launchpad } from 'siennajs'
 
-const launchpad = new Launchpad.Deployment(context)
+const launchpad = new Launchpad.Deployment(context, {
+  version: 'v1'
+})
 
 await launchpad.deploy()
 ```

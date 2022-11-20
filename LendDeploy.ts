@@ -1,4 +1,4 @@
-import type { Contract } from './Core'
+import type { DeployContract } from './Core'
 import { Names, Versions, VersionedSubsystem, randomBase64 } from './Core'
 import { SiennaConsole } from './Console'
 
@@ -12,7 +12,7 @@ export class LendDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Lend ${this.version}`)
 
   /** The lend interest model contract. */
-  interestModel: Contract<InterestModel> = this.contract({
+  interestModel: DeployContract<InterestModel> = this.defineContract({
     client:  InterestModel,
     name:    Names.InterestModel(this.version),
     crate:   'lend-interest-model',
@@ -20,14 +20,14 @@ export class LendDeployment extends VersionedSubsystem<Version> {
   })
 
   /** The lend overseer factory. */
-  overseer: Contract<Overseer> = this.contract({
+  overseer: DeployContract<Overseer> = this.defineContract({
     client: Overseer,
     name:   Names.LendOverseer(this.version),
     crate: 'lend-overseer',
     initMsg: async () => ({
       ...this.overseerSettings,
-      market_contract: ((await this.contract({ crate: 'lend-market' }).uploaded)).asInfo,
-      oracle_contract: ((await this.contract({ crate: 'lend-oracle' }).uploaded)).asInfo,
+      market_contract: ((await this.defineContract({ crate: 'lend-market' }).uploaded)).asInfo,
+      oracle_contract: ((await this.defineContract({ crate: 'lend-oracle' }).uploaded)).asInfo,
       oracle_source:   (await this.oracle.deployed).asLink,
       rewards_token:   (await this.reward.deployed).asLink,
       rewards_rate: "1"
@@ -38,7 +38,7 @@ export class LendDeployment extends VersionedSubsystem<Version> {
   markets = Promise.resolve([])
 
   /** The lend oracle. */
-  oracle: Contract<any> = this.contract({
+  oracle: Contract<any> = this.defineContract({
     client: MockOracle,
     name:   Names.LendOracle(this.version),
     crate:  this.devMode ? 'lend-mock-oracle' : 'lend-oracle'
@@ -49,7 +49,7 @@ export class LendDeployment extends VersionedSubsystem<Version> {
 
   constructor (context: SiennaDeployment, version: Version) {
     super(context, version)
-    context.attach(this, `lend ${version}`, `Sienna Lend ${version}`)
+    context.attachSubsystem(this, `lend ${version}`, `Sienna Lend ${version}`)
   }
 
   async showStatus () {
@@ -97,8 +97,8 @@ export class LendDeployment extends VersionedSubsystem<Version> {
   }
 
   overseerSettings = {
-    entropy:      randomHex(36),
-    prng_seed:    randomHex(36),
+    entropy:      randomBase64(64),
+    prng_seed:    randomBase64(64),
     close_factor: "0.5",
     premium:      "1.08",
   }

@@ -2,7 +2,7 @@ import { randomHex } from '@hackbg/formati'
 import {
   Snip20, Names, Versions, VersionedSubsystem, randomBase64, getMaxLength, bold
 } from './Core'
-import type { Address, Contract } from './Core'
+import type { Address, Contract, TokenSymbol } from './Core'
 import type { Version, PairName } from './AMMConfig'
 import { Factory } from './AMMFactory'
 import { Exchange } from './AMMExchange'
@@ -29,7 +29,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
   /** The AMM factory is the hub of Sienna Swap.
     * It keeps track of all exchange pair contracts,
     * and allows anyone to create new ones. */
-  factory: Contract<Factory> = this.contract<Factory>({
+  factory: Contract<Factory> = this.defineContract<Factory>({
     id:       Names.Factory(this.version),
     crate:    'factory',
     revision: this.revision,
@@ -60,7 +60,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
   })
 
   /** All exchanges stored in the deployment. */
-  exchanges = this.contract({
+  exchanges = this.defineContract({
     client: Exchange,
     crate: 'exchange',
     revision: this.revision,
@@ -69,7 +69,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
   /** Each AMM exchange emits its Liquidity Provision token
     * to users who provide liquidity. Later, reward pools are
     * spawned for select LP tokens. */
-  lpTokens  = this.contract({
+  lpTokens  = this.defineContract({
     client: LPToken,
     crate: 'lp-token',
     revision: this.revision
@@ -78,7 +78,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
   /** The AMM router bounces transactions across multiple exchange
     * pools within the scode of a a single transaction, allowing
     * multi-hop swaps for tokens between which no direct pairing exists. */
-  router    = this.contract({
+  router    = this.defineContract({
     id:      Names.Router(this.version),
     crate:   'router',
     revision: this.revision,
@@ -104,7 +104,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     this.siennaFee = options.siennaFee
     this.burner    = options.burner
     this.swapPairs = options.swapPairs
-    context.attach(this, `amm ${options.version}`, `Sienna Swap AMM ${options.version}`)
+    context.attachSubsystem(this, `amm ${options.version}`, `Sienna Swap AMM ${options.version}`)
     this.addCommand('deploy',  'deploy Sienna Swap',
                     this.deploy.bind(this)) 
         .addCommand('upgrade', 'upgrade Sienna Swap factory and exchanges',
@@ -181,10 +181,10 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     const tokens: Record<TokenSymbol, Contract<Snip20>> = {}
     for (const pair of this.swapPairs) {
       const [symbol1, symbol2] = pair.split('-')
-      const token1 = this.contract().find(contract=>contract.id === symbol1)
-      if (token1) tokens[symbol1] = token1 as Contract<Snip20>
-      const token2 = this.contract().find(contract=>contract.id === symbol2)
-      if (token2) tokens[symbol2] = token2 as Contract<Snip20>
+      const token1 = this.findContract<Snip20>(contract=>contract.id === symbol1)
+      if (token1) tokens[symbol1] = token1
+      const token2 = this.findContract<Snip20>(contract=>contract.id === symbol2)
+      if (token2) tokens[symbol2] = token2
     }
     return tokens
   }
