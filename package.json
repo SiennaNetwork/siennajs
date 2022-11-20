@@ -28,8 +28,9 @@
     "merkletreejs":    "^0.2.32"
   },
   "devDependencies": {
-    "@hackbg/ubik":                "^1.2",
-    "@hackbg/ensuite":             "^1.1",
+    "@hackbg/ubik":    "^1.2",
+    "@hackbg/ensuite": "^1.1",
+    "@hackbg/komandi": "^6.2",
 
     "rollup":                      "^2.79.1",
     "@rollup/plugin-node-resolve": "^15",
