@@ -7,7 +7,7 @@ import * as Auth        from './Auth'
 import * as AMM         from './AMM'
 import * as Multicall   from './Multicall'
 import * as Governance  from './Governance'
-import * as Lend     from './Lend'
+import * as Lend        from './Lend'
 import * as Launchpad   from './Launchpad'
 import * as Rewards     from './Rewards'
 import { RewardPool_v2 }   from './Rewards_v2'
@@ -21,50 +21,25 @@ Rewards.RewardPool['v4.1'] = RewardPool_v4_1
 
 export class SiennaDeployment extends Deployment {
 
-  constructor (public context: Deployment) {
-    super(context)
-  }
-
-  tokens: TokenManager = new TokenManager(this as Deployment)
+  tokens:  TokenManager
 
   /** Sienna Auth: Authentication provider. */
-  auth = {
-    'v1':   new Auth.Deployment(this, 'v1')
-  }
+  auth:    Record<Auth.Version,       Auth.Deployment>
 
   /** The SIENNA Token Generation Event. */
-  tge: Record<Vesting.TGEVersion, Vesting.TGEDeployment> = {
-    'v1':   new Vesting.TGEDeployment(this, { version: 'v1' })
-  }
-
-  /** The Sienna token. */
-  get SIENNA (): Contract<Snip20> {
-    return this.tge['v1'].token
-  }
+  tge:     Record<Vesting.TGEVersion, Vesting.TGEDeployment>
 
   /** The Sienna Swap AMM. */
-  amm: Record<AMM.Version, AMM.Deployment> = {
-    'v1':   new AMM.Deployment(this, { version: 'v1' }),
-    'v2':   new AMM.Deployment(this, { version: 'v2' })
-  }
+  amm:     Record<AMM.Version,        AMM.Deployment>
 
   /** The Sienna Rewards staking system. */
-  rewards = {
-    'v2':   new Rewards.Deployment(this, { version: 'v2'   }),
-    'v3':   new Rewards.Deployment(this, { version: 'v3'   }),
-    'v3.1': new Rewards.Deployment(this, { version: 'v3.1' }),
-    'v4.1': new Rewards.Deployment(this, { version: 'v4.1' }),
-  }
+  rewards: Record<Rewards.Version,    Rewards.Deployment>
 
   /** Partner-Funded Rewards: vesting of non-SIENNA tokens. */
-  pfr = {
-    'v1':   new Vesting.PFRDeployment(this, { version: 'v1' })
-  }
+  pfr:     Record<Vesting.PFRVersion, Vesting.PFRDeployment>
 
   /** The Sienna Lend lending platform. */
-  lend = {
-    'v1':   new Lend.Deployment(this, 'v1')
-  }
+  lend:    Record<Lend.Version,       Lend.Deployment>
 
   /** Sienna Governance system. */
   governance = {
@@ -74,6 +49,56 @@ export class SiennaDeployment extends Deployment {
   /** Sienna Launch: Launchpad/IDO system. */
   launchpad = {
     'v1':   new Launchpad.Deployment(this, 'v1')
+  }
+
+  constructor (public context: Deployment) {
+    super(context)
+    this.tokens = new TokenManager(this as Deployment)
+    this.auth = {
+      'v1': new Auth.Deployment(this, 'v1')
+    }
+    this.tge = {
+      'v1': new Vesting.TGEDeployment(this, {
+        version: 'v1'
+      })
+    }
+    this.amm = {
+      'v1': new AMM.Deployment(this, {
+        version: 'v1'
+      }),
+      'v2': new AMM.Deployment(this, {
+        version: 'v2'
+      })
+    }
+    this.rewards = {
+      'v2':   new Rewards.Deployment(this, {
+        version: 'v2'
+      }),
+      'v3':   new Rewards.Deployment(this, {
+        version: 'v3'
+      }),
+      'v3.1': new Rewards.Deployment(this, {
+        version: 'v3.1'
+      }),
+      'v4.1': new Rewards.Deployment(this, {
+        version: 'v4.1'
+      }),
+    }
+    this.pfr = {
+      'v1': new Vesting.PFRDeployment(this, {
+        version: 'v1'
+      })
+    }
+    this.lend = {
+      'v1': new Lend.Deployment(this, {
+        version: 'v1'
+      })
+    }
+  }
+
+  /** The Sienna token. */
+  get SIENNA (): Contract<Snip20> {
+    return this.tge['v1'].token
   }
 
   async showStatus () {
