@@ -293,6 +293,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
     this.rewardsVersion = options?.rewardsVersion ?? 'v3.1'
     this.admin = options?.admin ?? this.agent?.address
     this.schedules = options?.schedules ?? settings(this.chain?.mode).vesting
+    console.log(this.vesting)
     this.vestings = this.vesting.many({
       //alter: 'ALTER',
       //shade: 'SHADE'
@@ -303,7 +304,9 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
   }
 
   /** The template for a partner-funded rewards vesting. */
-  vesting = this.defineContractGroup((symbol: TokenSymbol)=>{
+  vesting = this.defineContractGroup(function pfrVestingContracts (
+    this: PFRDeployment, symbol: TokenSymbol
+  ) {
 
     const { ammVersion, rewardsVersion } = this
 

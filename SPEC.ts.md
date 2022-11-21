@@ -1,18 +1,31 @@
 # Sienna specification
 
-This file is the entry point of the Sienna specification.
+This document is the entry point of the Sienna specification.
 
 It merges architectural documentation with a high-level test suite
 using literate programming, as provided by the `@hackbg/ensuite` and
 `@hackbg/ganesha` libraries.
 
-You can run the test suite with the command `pnpm test`.
+## Running the tests
+
+You can run the whole test suite with the command `pnpm test all`:
 
 ```typescript
 import { CommandContext } from '@hackbg/komandi'
 const context = new CommandContext()
+context.command('all', 'run all tests', async()=>{
+  await import('./Vesting.spec.ts.md')
+  await import('./AMM.spec.ts.md')
+  await import('./Rewards.spec.ts.md')
+  await import('./Lend.spec.ts.md')
+  await import('./Launchpad.spec.ts.md')
+})
 ```
 
+Alternatively, you can run the tests for a particular subsystem
+using one of the commands defined below.
+
+Also, to measure code coverage, use `pnpm cov`.
 
 ## [Vestings](./Vesting.spec.ts.md)
 

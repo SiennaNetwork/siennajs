@@ -7,6 +7,15 @@ import type { LPToken } from './AMMLPToken'
 /** Supported versions of the AMM subsystem. */
 export type Version = 'v1'|'v2'
 
+export interface AMMSettings {
+  admin: Address|null
+  exchange_settings: {
+    swap_fee:      { nom: number, denom: number }
+    sienna_fee:    { nom: number, denom: number }
+    sienna_burner: Address|null
+  }
+}
+
 /** Format: SYMBOL0-SYMBOL1 */
 export type PairName = string;
 

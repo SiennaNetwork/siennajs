@@ -21,37 +21,33 @@ Rewards.RewardPool['v4.1'] = RewardPool_v4_1
 
 export class SiennaDeployment extends Deployment {
 
-  tokens:  TokenManager
+  tokens:     TokenManager
 
   /** Sienna Auth: Authentication provider. */
-  auth:    Record<Auth.Version,       Auth.Deployment>
+  auth:       Record<Auth.Version,       Auth.Deployment>
 
   /** The SIENNA Token Generation Event. */
-  tge:     Record<Vesting.TGEVersion, Vesting.TGEDeployment>
+  tge:        Record<Vesting.TGEVersion, Vesting.TGEDeployment>
 
   /** The Sienna Swap AMM. */
-  amm:     Record<AMM.Version,        AMM.Deployment>
+  amm:        Record<AMM.Version,        AMM.Deployment>
 
   /** The Sienna Rewards staking system. */
-  rewards: Record<Rewards.Version,    Rewards.Deployment>
+  rewards:    Record<Rewards.Version,    Rewards.Deployment>
 
   /** Partner-Funded Rewards: vesting of non-SIENNA tokens. */
-  pfr:     Record<Vesting.PFRVersion, Vesting.PFRDeployment>
+  pfr:        Record<Vesting.PFRVersion, Vesting.PFRDeployment>
 
   /** The Sienna Lend lending platform. */
-  lend:    Record<Lend.Version,       Lend.Deployment>
+  lend:       Record<Lend.Version,       Lend.Deployment>
 
   /** Sienna Governance system. */
-  governance = {
-    'v1':   new Governance.Deployment(this, 'v1')
-  }
+  governance: Record<Governance.Version, Governance.Deployment>
 
   /** Sienna Launch: Launchpad/IDO system. */
-  launchpad = {
-    'v1':   new Launchpad.Deployment(this, 'v1')
-  }
+  launchpad:  Record<Launchpad.Version,  Launchpad.Deployment>
 
-  constructor (public context: Deployment) {
+  constructor (public context: Deployment, public settings: SiennaSettings) {
     super(context)
     this.tokens = new TokenManager(this as Deployment)
     this.auth = {
@@ -94,6 +90,12 @@ export class SiennaDeployment extends Deployment {
         version: 'v1'
       })
     }
+    this.governance = {
+      'v1': new Governance.Deployment(this, 'v1')
+    }
+    this.launchpad = {
+      'v1': new Launchpad.Deployment(this, 'v1')
+    }
   }
 
   /** The Sienna token. */
@@ -128,4 +130,18 @@ export {
   Governance,
   Lend,
   Launchpad
+}
+
+export interface SiennaSettings {
+  amm:         AMMSettings
+  auth:        AuthSettings
+  governance:  GovernanceSettings
+  rewardPairs: Record<string, number>
+  schedule:    Vesting.Schedule
+  swapPairs:   Array<string>
+  swapTokens:  Record<string, Partial<Snip20>>
+  swapRoutes:  { tokens: Array<Token> }
+  vesting:     PFR.Config[]
+  timekeeper:  Address
+  launchpad:   LaunchpadSettings
 }

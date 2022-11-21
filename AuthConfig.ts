@@ -2,6 +2,11 @@ import type { Address, ViewingKey, Permit, Signer } from './Core'
 
 export type Version = 'v1'
 
+export interface AuthSettings {
+  oracle: ContractLink
+  admin:  Address
+}
+
 export type AuthStrategy =
   | { type: "permit"; signer: Signer }
   | { type: "vk"; viewing_key: { address: Address; key: ViewingKey } };

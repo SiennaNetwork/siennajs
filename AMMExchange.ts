@@ -1,6 +1,8 @@
-import { Client, Fee, TokenAmount, TokenPair, TokenPairAmount } from './Core'
+import {
+  Client, Fee, Snip20, TokenAmount, TokenPair, TokenPairAmount, assertAgent, isNativeToken, isCustomToken
+} from './Core'
 import type {
-  Class, Agent, Address, CodeHash, Contract, ContractLink, Uint128, Snip20, Token,
+  Class, Agent, Address, CodeHash, Contract, ContractLink, Uint128, Token,
   Decimal, ExecOpts,
 } from './Core'
 import { LPToken } from './AMMLPToken'

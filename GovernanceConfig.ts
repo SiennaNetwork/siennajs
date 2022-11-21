@@ -2,6 +2,22 @@ import type { Uint128, Decimal, Moment, ContractLink, Address } from './Core'
 
 export type Version = 'v1';
 
+export interface GovernanceSettings {
+  config: {
+    threshold:        Uint128
+    voting_threshold: Uint128
+    quorum:           Uint128
+    deadline:         Duration
+    rewards:          ContractLink
+  }
+  rewards: {
+    unbonding_period: Duration
+    lp_token:         ContractLink
+    rewards_token:    ContractLink
+  }
+  provider:           ContractLink
+}
+
 export type PollId = number;
 
 /** Supports any number of additions, saved as a string in the contract.

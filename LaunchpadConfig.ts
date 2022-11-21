@@ -2,6 +2,15 @@ import type { Uint128, Address } from './Core'
 
 export type Version = 'v1'
 
+export interface LaunchpadSettings {
+  tokenContract: ContractLink
+  tiers: Array<{ entries: number, amount: Uint128 }>
+  constraints: { min_prelock_duration: number, min_sale_duration: number },
+  rewards_pool: ContractLink,
+  auth_provider?: ContractLink,
+  prng_seed: String,
+}
+
 export interface SaleConfig {
     /**
      * The maximum amount of tokens a user can purchase.

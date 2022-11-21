@@ -1,6 +1,7 @@
 import { randomHex } from '@hackbg/formati'
 import {
-  Snip20, Names, Versions, VersionedSubsystem, randomBase64, getMaxLength, bold
+  Snip20, Names, Versions, VersionedSubsystem, randomBase64, getMaxLength, bold,
+  fetchLabel, fetchCodeHash, fetchCodeId
 } from './Core'
 import type { Address, Contract, TokenSymbol } from './Core'
 import type { Version, PairName } from './AMMConfig'
@@ -255,7 +256,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
       this.log.log(`Creating ${create.size} pair(s)`)
       const result = await this.agent.bundle().wrap(async bundle=>{
         for (const name of [...create]) {
-          const { token_0, token_1 } = this.context.tokens.pair(name)
+          const { token_0, token_1 } = await this.context.tokens.pair(name)
           await factory.as(bundle).createExchange(token_0, token_1)
         }
       })
@@ -299,7 +300,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     await fetchLabel(meta, this.agent)
     await fetchCodeHash(meta, this.agent, codeHash)
     await fetchCodeId(meta, this.agent, codeId&&String(codeId))
-    this.add(`AMM[${this.version}].${name}`, meta)
+    this.addContract(`AMM[${this.version}].${name}`, meta)
   }
 
   async addLPToken (lpMeta, name, prefix, codeId?, codeHash?) {
@@ -307,7 +308,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     await fetchLabel(lpMeta, this.agent)
     await fetchCodeHash(lpMeta, this.agent, codeHash)
     await fetchCodeId(lpMeta, this.agent, codeId&&String(codeId))
-    this.add(`AMM[${this.version}].${name}.LP`, lpMeta)
+    this.addContract(`AMM[${this.version}].${name}.LP`, lpMeta)
   }
 
 }

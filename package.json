@@ -14,7 +14,7 @@
     "check":      "tsc --noEmit",
     "ubik":       "npm run check && ubik",
     "test":       "FADROMA_PROJECT=.. ensuite SPEC.ts.md",
-    "cov":        "FADROMA_PROJECT=.. ensuite-cov SPEC.ts.md",
+    "cov":        "FADROMA_PROJECT=.. ensuite-cov SPEC.ts.md all",
     "bundle:cjs": "rollup -c .rollup-cjs.config.mjs",
     "bundle:esm": "rollup -c .rollup-esm.config.mjs"
   },

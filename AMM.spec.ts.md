@@ -1,4 +1,4 @@
-# Sienna Swap AMM
+# Sienna AMM
 
 ## Preparation
 
@@ -26,7 +26,7 @@ import { AMM } from 'siennajs'
 
 const amm = new AMM.Deployment(context, {
   version:   'v2',
-  swapPairs: [ 'TOKEN1-TOKEN2', 'TOKEN2-TOKEN3' ],
+  swapPairs: [ 'TOKENA-TOKENB', 'TOKENB-TOKENC' ],
   swapFee:   [ 28, 10000 ],
   siennaFee: [ 2, 10000 ],
   burner:    null
@@ -40,11 +40,11 @@ await amm.deploy()
 Having deployed the AMM or connected to it, you can create new exchanges:
 
 ```typescript
-assert.ok(await amm.createExchange('TOKEN3-TOKEN4'))
+assert.ok(await amm.createExchange('TOKENC-TOKEND'))
 
 assert.ok(await amm.createExchanges([
-  'TOKEN4-TOKEN5',
-  'TOKEN4-TOKEN1'
+  'TOKEND-TOKENE',
+  'TOKEND-TOKENA'
 ]))
 ```
 
