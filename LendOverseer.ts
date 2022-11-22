@@ -1,5 +1,9 @@
-import type { Address, Pagination, PaginatedResponse } from './Core'
 import { Client, Fee } from './Core'
+import type { Address, Pagination, PaginatedResponse, Uint256, ContractLink } from './Core'
+import type {
+  OverseerConfig, OverseerMarket, OverseerPermissions, AccountLiquidity
+} from './LendConfig'
+import type { LendAuth } from './LendAuth'
 
 export class Overseer extends Client {
 

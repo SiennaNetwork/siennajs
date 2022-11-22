@@ -1,11 +1,15 @@
 import {
-  Client, Fee, Snip20, TokenAmount, TokenPair, TokenPairAmount, assertAgent, isNativeToken, isCustomToken
+  Client, Fee, Snip20,
+  TokenAmount, TokenPair, TokenPairAmount,
+  assertAgent,
+  isNativeToken, isCustomToken
 } from './Core'
 import type {
-  Class, Agent, Address, CodeHash, Contract, ContractLink, Uint128, Token,
+  Class, Agent, Address, CodeHash, Contract, ContractLink, Uint128, Token, CustomToken,
   Decimal, ExecOpts,
 } from './Core'
 import { LPToken } from './AMMLPToken'
+import type { ExchangeClass, PairName } from './AMMConfig'
 
 export class Exchange extends Client {
 
@@ -14,7 +18,7 @@ export class Exchange extends Client {
     address: Address
   ): Promise<Exchange> {
     const Self: ExchangeClass = Exchange as unknown as ExchangeClass
-    const self: Exchange      = new Self(agent, address)
+    const self: Exchange = new Self(agent, address)
     await self.populate()
     return self
   }

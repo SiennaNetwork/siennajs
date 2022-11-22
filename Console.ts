@@ -1,4 +1,6 @@
-import { ClientConsole } from './Core'
+import type { Address, Snip20, TokenInfo } from './Core'
+import { ClientConsole, bold, colors } from './Core'
+import * as AMM from './AMM'
 
 export class SiennaConsole extends ClientConsole {
   balance (addr: any, balance: any) {

@@ -1,5 +1,5 @@
 import {
-  bold, assertAddress, codeHashOf, Agent, Address, CodeHash, Uint128, Duration
+  bold, assertAddress, codeHashOf, Agent, Address, CodeHash, Uint128, Duration, IntoLink
 } from './Core'
 import type { TGEDeployment } from './VestingDeploy'
 
@@ -7,7 +7,7 @@ export type TGEVersion = 'v1'
 
 export type PFRVersion = 'v1'
 
-export interface Config {
+export interface PFRConfig {
   name:         string
   rewards: {
     name:       string

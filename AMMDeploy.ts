@@ -33,7 +33,6 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
   factory: Contract<Factory> = this.defineContract<Factory>({
     id:       Names.Factory(this.version),
     crate:    'factory',
-    revision: this.revision,
     client:   Factory[this.version],
     initMsg: async () => {
       const exchange = await this.exchanges.uploaded
@@ -60,35 +59,33 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     }
   })
 
-  /** All exchanges stored in the deployment. */
-  exchanges = this.defineContract({
-    client: Exchange,
-    crate: 'exchange',
-    revision: this.revision,
-  })//.find(Names.isExchange(this.version))
-
-  /** Each AMM exchange emits its Liquidity Provision token
-    * to users who provide liquidity. Later, reward pools are
-    * spawned for select LP tokens. */
-  lpTokens  = this.defineContract({
-    client: LPToken,
-    crate: 'lp-token',
-    revision: this.revision
-  })//.find(Names.isExchange(this.version))
-
   /** The AMM router bounces transactions across multiple exchange
     * pools within the scode of a a single transaction, allowing
     * multi-hop swaps for tokens between which no direct pairing exists. */
-  router    = this.defineContract({
-    id:      Names.Router(this.version),
-    crate:   'router',
-    revision: this.revision,
-    client:   Router,
+  router = this.defineContract({
+    id: Names.Router(this.version),
+    crate: 'router',
+    client: Router,
     initMsg: async () => {
       const exchanges = await this.updateExchanges()
       return { register_tokens: [/*TODO?*/] }
     }
   })
+
+  /** Template for an exchange contract. */
+  exchanges = this.defineTemplate({
+    client: Exchange,
+    crate: 'exchange',
+  })//.find(Names.isExchange(this.version))
+
+  /** Template for a LP token contract.
+    * Each AMM exchange emits its Liquidity Provision token
+    * to users who provide liquidity. Later, reward pools are
+    * spawned for select LP tokens. */
+  lpTokens = this.defineTemplate({
+    client: LPToken,
+    crate: 'lp-token',
+  })//.find(Names.isExchange(this.version))
 
   constructor (
     context: SiennaDeployment,

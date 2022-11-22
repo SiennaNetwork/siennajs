@@ -2,7 +2,7 @@ import type { Address, ViewingKey, Permit, Signer } from './Core'
 
 export type Version = 'v1'
 
-export interface AuthSettings {
+export interface Settings {
   oracle: ContractLink
   admin:  Address
 }

@@ -138,18 +138,18 @@ export const Names = {
   PFR_Pool: (v: AMM.Version, t0: TokenSymbol, t1: TokenSymbol, r: Rewards.Version) =>
     `${Names.Rewards(v, t0, t1, r)}.${t1}`,
 
-  isExchange: (v: AMM.Version) => ({name}: Meta) =>
+  isExchange: (v: AMM.Version) => ({name}: any) =>
     name?.startsWith(`AMM[${v}]`) && !name.endsWith(`.LP`) || false,
-  isLPToken:  (v: AMM.Version) => ({name}: Meta) =>
+  isLPToken:  (v: AMM.Version) => ({name}: any) =>
     name?.startsWith(`AMM[${v}]`) &&  name.endsWith(`.LP`) || false,
-  isRPT: (t: TokenSymbol) => ({name}: Meta) =>
+  isRPT: (t: TokenSymbol) => ({name}: any) =>
     name?.startsWith(`${t}.RPT`),
-  isRPTPFR: (t: TokenSymbol) => ({name}: Meta)=>
+  isRPTPFR: (t: TokenSymbol) => ({name}: any)=>
     name?.startsWith(`${t}.RPT[v2]`),
   /** Matches IDOs by name. */
-  isIDO: (v: Launchpad.Version) => ({name}: Meta) =>
+  isIDO: (v: Launchpad.Version) => ({name}: any) =>
     name?.startsWith(`${Names.Launchpad(v)}.IDO[`),
-  isRewardPool: (v: Rewards.Version) => ({name}: Meta) =>
+  isRewardPool: (v: Rewards.Version) => ({name}: any) =>
     name?.includes(`Rewards[${v}]`)
 }
 

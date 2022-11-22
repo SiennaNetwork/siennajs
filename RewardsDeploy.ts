@@ -1,11 +1,13 @@
-import type { Address, DeployContract } from './Core'
-import { bold, Names, Versions, VersionedSubsystem } from './Core'
+import type { SiennaDeployment } from './index'
+import type { Name, Address, Contract, IntoLink } from './Core'
+import { bold, Names, Versions, VersionedSubsystem, Snip20 } from './Core'
 import { SiennaConsole } from './Console'
 import type { Version } from './RewardsConfig'
-import { AuthVersions, AMMVersions } from './RewardsConfig'
+import { AuthVersions, AMMVersions, RewardsCtor } from './RewardsConfig'
 import type { AuthProviderDeployment } from './AuthDeploy'
 import { RewardPool } from './RewardsBase'
 import type { TGERPT } from './VestingRPT'
+import type { RPTConfig } from './VestingConfig'
 
 export class RewardsDeployment extends VersionedSubsystem<Version> {
 
@@ -18,10 +20,10 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   admin: Address = this.agent!.address!
 
   /** The token distributed by the reward pools. */
-  reward: DeployContract<Snip20>
+  reward: Contract<Snip20>
 
   /** The RPT contract that will fund the reward pools. */
-  rpt: DeployContract<TGERPT>
+  rpt: Contract<TGERPT>
 
   /** Whether to update the RPT contract's config after deploying the new pools. */
   adjustRpt: boolean = true
@@ -48,58 +50,28 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   /** The version of the Rewards client to use. */
   client: RewardsCtor = RewardPool[this.version] as unknown as RewardsCtor
 
-  /** Auth provider to use if required. */
-  auth: AuthProviderDeployment = this.authVersion
-    ? this.context.auth[this.authVersion].provider(`Rewards[${this.version}]`)
-    : null
-
   /** Which reward pairs should exist, and what portion of rewards should they receive. */
   pairs: [Name, number][] = []//Object.entries(settings(this.chain?.mode).rewardPairs??{})
 
   /** The reward pools in this deployment. */
   pools = this.defineContract({
     client: this.client,
-    match: Names.isRewardPool(this.version),
+    //match: Names.isRewardPool(this.version),
     crate: 'sienna-rewards',
-    revision: this.revision,
-    inits: async () => {
-      // resolve dependencies
-      const authProvider = this.auth ? (await this.auth.provider.deployed).asLink : undefined
-      const rewardToken  = (await this.reward.deployed).asLink
-      const template     = await this.pools.asTemplate.uploaded
-      // collect deploy-ready init configurations
-      const inits: Record<string, any> = {}
-      for (const [name] of this.pairs) {
-        // define the name of the reward pool from the staked token
-        const { tokenName, poolName } = this.getNames(name)
-        // collect
-        inits[poolName] = template.instance({
-          name: poolName,
-          initMsg: async () => {
-            const stakedToken = (await this.context.tokens.define(tokenName).deployed).asLink
-            const admin       = this.admin
-            const timekeeper  = this.admin
-            return RewardPool[this.version].init({
-              rewardToken, stakedToken, admin, timekeeper, authProvider
-            })
-          }
-        })
-      }
-      return inits
-    }
   })//.findMany()
 
   constructor (
     context: SiennaDeployment,
     options: {
       version: Version,
-      reward:  DeployContract<Snip20>
+      reward:  Contract<Snip20>
     }
   ) {
     super(context, options.version)
     this.reward = options.reward
+    console.log(this.pool)
     this.addCommand('deploy one',  'deploy one reward pool',   this.deployOne.bind(this))
-        .addCommand('deploy all',  'deploy all reward pools',  this.deployAll.bind(this))
+        .addCommand('deploy all',  'deploy all reward pools',  this.deploy.bind(this))
         .addCommand('upgrade all', 'upgrade all reward pools', this.upgradeAll.bind(this))
   }
 
@@ -108,7 +80,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   }
 
   /** Having deployed the pools, get the [Address, Uint128] pairs representing the RPT config. */
-  async getRptConfig (pairs = this.pairs): Promise<API.Vesting.RPTConfig> {
+  async getRptConfig (pairs = this.pairs): Promise<RPTConfig> {
     const rewards = await this.pools.deployed
     return this.pairs.map(([name, rewardAmount])=>{
       const { poolName } = this.getNames(name)
@@ -129,9 +101,32 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
     return { tokenName, poolName }
   }
 
-  async deployAll () {
-    const pools   = await this.pools.deployed
+  async deploy () {
+    const template = await this.pools.uploaded
     const rptConf = await this.getRptConfig()
+
+    // resolve dependencies
+    const authProvider = this.auth ? (await this.auth.provider.deployed).asLink : undefined
+    const rewardToken  = (await this.reward.deployed).asLink
+    // collect deploy-ready init configurations
+    const inits: Record<string, any> = {}
+    for (const [name] of this.pairs) {
+      // define the name of the reward pool from the staked token
+      const { tokenName, poolName } = this.getNames(name)
+      // collect
+      inits[poolName] = template.instance({
+        id: poolName,
+        initMsg: async () => {
+          const stakedToken = (await this.context.tokens.define(tokenName)).asLink
+          const admin       = this.admin
+          const timekeeper  = this.admin
+          return RewardPool[this.version].init({
+            rewardToken, stakedToken, admin, timekeeper, authProvider
+          })
+        }
+      })
+    }
+
     if (this.adjustRpt) {
       if (this.isMainnet) {
         this.log.info('Now set this config in RPT by multisig:')
@@ -181,7 +176,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
     const NewRewards: Rewards.RewardsCtor = RewardPool[newVer]
     const newRewards = await this.defineContracts({
       crate:    'sienna-rewards',
-      revision: Pinned.Rewards[newVer],
+      revision: Versions.Rewards[newVer],
       client:   NewRewards,
       inits:    async () => Object.fromEntries(oldRewards.map(old=>{
         const stakedToken = stakedTokens.get(old)

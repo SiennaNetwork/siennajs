@@ -1,8 +1,13 @@
+import type { Address, IntoLink, Message, Snip20, ClientClass } from './Core'
+import type { Version as AMMVersion } from './AMMConfig'
+import type { Version as AuthVersion } from './AuthConfig'
+import type { RewardPool } from './Rewards'
+
 /** Supported versions of the Rewards subsystem. */
 export type Version = 'v2' | 'v3' | 'v3.1' | 'v4.1'
 
 /** Which version of AMM corresponds to which version of rewards. */
-export const AMMVersions: Record<Version, AMM.Version> = {
+export const AMMVersions: Record<Version, AMMVersion> = {
   'v2':   'v1',
   'v3':   'v2',
   'v3.1': 'v2',
@@ -10,7 +15,7 @@ export const AMMVersions: Record<Version, AMM.Version> = {
 };
 
 /** Which version of Auth Provider corresponds to which version of rewards. */
-export const AuthVersions: Partial<Record<Version, Auth.Version>> = {
+export const AuthVersions: Partial<Record<Version, AuthVersion>> = {
   'v4.1': 'v1'
 }
 

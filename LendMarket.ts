@@ -1,5 +1,10 @@
-import type { Uint256, Address, ContractLink, Decimal256 } from './Core'
+import type {
+  Uint128, Uint256, Address, ContractLink, Decimal256, ViewingKey, TokenInfo,
+  Pagination, PaginatedResponse
+} from './Core'
 import { Fee, Client, ViewingKeyClient, Snip20 } from './Core'
+
+import type { MarketPermissions, MarketState, MarketBorrower } from './LendConfig'
 import { LendAuth } from './LendAuth'
 
 export class Market extends Client {

@@ -1,7 +1,8 @@
+import type { SiennaDeployment } from './index'
 import { SiennaConsole } from './Console'
 import { Names, Versions, VersionedSubsystem, Snip20, bold, randomBase64 } from './Core'
 import type {
-  Agent, Uint128, Address, Contract, DeployContract, ViewingKey, TokenSymbol
+  Agent, Uint128, Address, Contract, ViewingKey, TokenSymbol
 } from './Core'
 
 import { VestingReporter } from './VestingConsole'
@@ -22,19 +23,19 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   log = new SiennaConsole(`Vesting ${this.version}`)
 
   /** The token that will be distributed. */
-  abstract token:   DeployContract<Snip20>
+  abstract token:   Contract<Snip20>
 
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  abstract mgmt:    DeployContract<BaseMGMT>
+  abstract mgmt:    Contract<BaseMGMT>
 
   /** The deployed RPT contract, which claims tokens from MGMT
     * and distributes them to the reward pools.  */
-  abstract rpt:     DeployContract<BaseRPT>
+  abstract rpt:     Contract<BaseRPT>
 
   /** TODO: RPT vesting can be split between multiple contracts
     * in order to vest to more addresses than the gas limit allows. */
-  //abstract subRPTs: DeployContracts<BaseRPT>
+  //abstract subRPTs: Contracts<BaseRPT>
 
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
@@ -87,26 +88,26 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
   symbol:   TokenSymbol
 
   /** The main SIENNA token. */
-  token:    DeployContract<Snip20>
+  token:    Contract<Snip20>
 
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt:     DeployContract<TGEMGMT>
+  mgmt:     Contract<TGEMGMT>
 
   /** The vesting schedule for the TGE. */
   schedule: Schedule
 
   /** The deployed RPT contracts, which claim tokens from MGMT
     * and distributes them to the reward pools.  */
-  rpt:      DeployContract<TGERPT>
+  rpt:      Contract<TGERPT>
 
   /** TODO: RPT vesting can be split between multiple contracts
     * in order to vest to more addresses than the gas limit allows. */
-  //subRPTs:  DeployContracts<TGERPT>
+  //subRPTs:  Contracts<TGERPT>
 
   /** The initial single-sided staking pool.
     * Stake TOKEN to get rewarded more TOKEN from the RPT. */
-  staking:  DeployContract<RewardPool_v4_1>
+  staking:  Contract<RewardPool_v4_1>
 
   constructor (
     context: SiennaDeployment,
@@ -185,11 +186,14 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
     'deploy and launch a token generation event',
     async (): Promise<TGEDeployment> => {
       if (!this.agent) throw new Error('no deploy agent')
+      console.log({token:this.token})
+      console.log({mgmt:this.mgmt})
       const token = await this.token()        // find or deploy vested token
       this.rptAccount!.address = this.admin   // fix rpt account pt. 1 (mutates this.schedule)
       const mgmt  = await this.mgmt()         // find or deploy mgmt
       const rpt   = await this.rpt()          // find or deploy rpt
       this.rptAccount!.address = rpt.address! // fix rpt account pt. 2 (mutates this.schedule)
+      console.log({mgmt})
       const { status: { launched } } = await mgmt.status() // check if vesting is launched
       if (launched) {
         this.log.info('TGE already launched.')
@@ -258,9 +262,9 @@ interface PFRVesting {
   staking: RewardPool_v4_1
 }
 
-type DeployContractGroup<T> = T
+type ContractGroup<T> = T
 
-type DeployContractGroups<T, U extends DeployContractGroup<T>> = Record<string, T>
+type ContractGroups<T, U extends ContractGroup<T>> = Record<string, T>
 
 /** Partner-funded rewards manager. Deploys multiple PFR vestings. */
 export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
@@ -276,7 +280,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
   rewardsVersion: RewardsVersion
 
   /** A collection of all currently defined PFR vestings. */
-  vestings:       DeployContractGroups<PFRVesting>
+  vestings:       ContractGroups<PFRVesting>
 
   constructor (
     context: SiennaDeployment,
@@ -304,7 +308,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
   }
 
   /** The template for a partner-funded rewards vesting. */
-  vesting = this.defineContractGroup(function pfrVestingContracts (
+  vesting = this.defineGroup(function pfrVestingContracts (
     this: PFRDeployment, symbol: TokenSymbol
   ) {
 

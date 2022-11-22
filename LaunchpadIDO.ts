@@ -1,4 +1,8 @@
-import { ViewingKeyClient } from './Core'
+import { Snip20, ViewingKeyClient } from './Core'
+import type {
+  CallbackMsgType, Project, IdoPermissions, MerkleAuth, SaleStatus
+} from './LaunchpadConfig'
+import type { Uint128, Address } from './Core'
 
 export class IDO extends ViewingKeyClient {
     /**

@@ -1,5 +1,5 @@
 import { bold, colors } from '@hackbg/konzola'
-import type { Address, Snip20, TokenInfo, TokenOptions, Contract } from './Core'
+import type { Address, Snip20, Token, TokenInfo, TokenOptions, Contract } from './Core'
 import { Deployment, TokenManager, ClientConsole } from './Core'
 
 import * as Vesting     from './Vesting'
@@ -18,6 +18,20 @@ Rewards.RewardPool['v2']   = RewardPool_v2
 Rewards.RewardPool['v3']   = RewardPool_v3
 Rewards.RewardPool['v3.1'] = RewardPool_v3_1
 Rewards.RewardPool['v4.1'] = RewardPool_v4_1
+
+export interface SiennaSettings {
+  amm:         AMM.Settings
+  auth:        Auth.Settings
+  governance:  Governance.Settings
+  rewardPairs: Record<string, number>
+  schedule:    Vesting.Schedule
+  swapPairs:   Array<string>
+  swapTokens:  Record<string, Partial<Snip20>>
+  swapRoutes:  { tokens: Array<Token> }
+  vesting:     Vesting.PFRConfig[]
+  timekeeper:  Address
+  launchpad:   Launchpad.Settings
+}
 
 export class SiennaDeployment extends Deployment {
 
@@ -130,18 +144,4 @@ export {
   Governance,
   Lend,
   Launchpad
-}
-
-export interface SiennaSettings {
-  amm:         AMMSettings
-  auth:        AuthSettings
-  governance:  GovernanceSettings
-  rewardPairs: Record<string, number>
-  schedule:    Vesting.Schedule
-  swapPairs:   Array<string>
-  swapTokens:  Record<string, Partial<Snip20>>
-  swapRoutes:  { tokens: Array<Token> }
-  vesting:     PFR.Config[]
-  timekeeper:  Address
-  launchpad:   LaunchpadSettings
 }

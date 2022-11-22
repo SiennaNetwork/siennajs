@@ -1,4 +1,5 @@
-import type { DeployContract } from './Core'
+import type { SiennaDeployment } from './index'
+import type { Contract } from './Core'
 import { Names, Versions, VersionedSubsystem, randomBase64 } from './Core'
 import { SiennaConsole } from './Console'
 
@@ -12,7 +13,7 @@ export class LendDeployment extends VersionedSubsystem<Version> {
   log = new SiennaConsole(`Lend ${this.version}`)
 
   /** The lend interest model contract. */
-  interestModel: DeployContract<InterestModel> = this.defineContract({
+  interestModel: Contract<InterestModel> = this.defineContract({
     client:  InterestModel,
     name:    Names.InterestModel(this.version),
     crate:   'lend-interest-model',
@@ -20,7 +21,7 @@ export class LendDeployment extends VersionedSubsystem<Version> {
   })
 
   /** The lend overseer factory. */
-  overseer: DeployContract<Overseer> = this.defineContract({
+  overseer: Contract<Overseer> = this.defineContract({
     client: Overseer,
     name:   Names.LendOverseer(this.version),
     crate: 'lend-overseer',

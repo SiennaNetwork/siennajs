@@ -1,4 +1,10 @@
-import { Client } from './Core'
+import type { Moment, Address, SortingDirection } from './Core'
+import { Client, Fee } from './Core'
+import * as Auth from './Auth'
+import type {
+  PollId, PollConfig, PollMetadata, PollInfo,
+  PaginatedPollList, PollUser, PollVote, VoteStatus
+} from './GovernanceConfig'
 
 export class Polls extends Client {
   fees = {

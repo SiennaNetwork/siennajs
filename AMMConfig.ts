@@ -7,7 +7,7 @@ import type { LPToken } from './AMMLPToken'
 /** Supported versions of the AMM subsystem. */
 export type Version = 'v1'|'v2'
 
-export interface AMMSettings {
+export interface Settings {
   admin: Address|null
   exchange_settings: {
     swap_fee:      { nom: number, denom: number }

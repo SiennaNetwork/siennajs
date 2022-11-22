@@ -1,8 +1,8 @@
-import type { Uint128, Decimal, Moment, ContractLink, Address } from './Core'
+import type { Uint128, Decimal, Moment, Duration, ContractLink, Address } from './Core'
 
 export type Version = 'v1';
 
-export interface GovernanceSettings {
+export interface Settings {
   config: {
     threshold:        Uint128
     voting_threshold: Uint128
