@@ -301,7 +301,7 @@ export class LendMarket extends Client {
     block?: number
   ): Promise<LendSimulatedLiquidation> {
     block = block || await this.agent!.height
-    return this.query({ block, borrower, collateral, amount })
+    return this.query({ simulate_liquidation: { block, borrower, collateral, amount } })
   }
 
   async getTokenInfo (): Promise<TokenInfo> {
