@@ -23,7 +23,8 @@
     "@fadroma/tokens": "^5.2.4",
     "@hackbg/formati": "^5.1.1",
     "crypto-js":       "^4.1.1",
-    "merkletreejs":    "^0.2.32"
+    "merkletreejs":    "^0.2.32",
+    "@waiting/base64": "4.2.9"
   },
   "devDependencies": {
     "@hackbg/ubik":                "^1.2",
