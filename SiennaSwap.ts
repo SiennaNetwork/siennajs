@@ -3,6 +3,7 @@ import {
   ClientConsole,
   CustomToken,
   Fee,
+  Coin,
   Snip20,
   Token,
   TokenAmount,
@@ -28,6 +29,8 @@ import type {
   ExecOpts,
   Uint128,
 } from "./Core";
+
+import { b64encode } from '@waiting/base64'
 
 export type AMMVersion = "v1" | "v2";
 
@@ -214,18 +217,14 @@ export abstract class AMMFactory extends Client {
 
   async listExchangesFull(): Promise<AMMExchange[]> {
     const exchanges = await this.listExchanges();
+
     return Promise.all(
       exchanges.map((info) => {
-        const {
-          pair: { token_0, token_1 },
-        } = info;
-        // @ts-ignore
-        const address = info.address || info.contract.address;
         return AMMExchange.fromAddressAndTokens(
           this.agent!,
-          address,
-          token_0,
-          token_1
+          info.contract.address,
+          info.pair.token_0,
+          info.pair.token_1
         );
       })
     );
@@ -282,7 +281,7 @@ AMMFactory.v1 = AMMFactory_v1;
 AMMFactory.v2 = AMMFactory_v2;
 
 export interface AMMFactoryExchangeInfo {
-  address: string,
+  contract: ContractLink,
   pair: {
     token_0: Token,
     token_1: Token
@@ -578,6 +577,9 @@ export class AMMRouter extends Client {
     new Error("AMMRouter#assemble: could not find route for given pair");
   static E03 = () =>
     new Error("AMMRouter#assemble: a pair for the provided tokens already exists");
+  static E04 = () =>
+    new Error("AMMRouter#swap: route length cannot be less than 2 hops");
+
   supportedTokens: Token[] | null = null;
   /** Register one or more supported tokens to router contract. */
   async register (...tokens: (Snip20|Token)[]) {
@@ -698,7 +700,39 @@ export class AMMRouter extends Client {
     return null
   }
 
-  async swap(route: AMMRouterHop[], amount: Uint128) {}
+  async swap(
+    route: AMMRouterHop[],
+    amount: Uint128,
+    expected_return?: Decimal,
+    recipient: Address | undefined = this.agent?.address
+  ) {
+    if (route.length < 2) {
+      throw AMMRouter.E04()
+    }
+
+    const first = route[0]
+    const receive_msg = { hops: route, to: recipient, expected_return }
+    
+    if (isNativeToken(first.from_token)) {
+      const msg = {
+        receive: {
+          from: this.agent?.address,
+          msg: b64encode(JSON.stringify(receive_msg)),
+          amount
+        }
+      }
+
+      const opt = {
+        send: [new Coin(amount, 'uscrt')]
+      }
+
+      return this.execute(msg, opt)
+    }
+
+    return this.agent!
+      .getClient(Snip20, first.from_token.custom_token.contract_addr)
+      .send(amount, this.address!, receive_msg);
+  }
 }
 
 /** Represents a single step of the exchange */
