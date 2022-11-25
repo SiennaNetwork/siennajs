@@ -30,7 +30,7 @@ Subclass this to add the contract&#39;s methods.</p>
 <li><a href="AMMFactory_v1.html" class="tsd-signature-type" data-tsd-kind="Class">AMMFactory_v1</a></li>
 <li><a href="AMMFactory_v2.html" class="tsd-signature-type" data-tsd-kind="Class">AMMFactory_v2</a></li></ul></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L110">SiennaSwap.ts:110</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L132">SiennaSwap.ts:132</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -68,8 +68,10 @@ Subclass this to add the contract&#39;s methods.</p>
 <a href="AMMFactory.html#createExchanges" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>create<wbr/>Exchanges</span></a>
 <a href="AMMFactory.html#execute" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>execute</span></a>
 <a href="AMMFactory.html#fetchCodeHash" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>fetch<wbr/>Code<wbr/>Hash</span></a>
+<a href="AMMFactory.html#getConfig" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Config</span></a>
 <a href="AMMFactory.html#getExchange" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Exchange</span></a>
 <a href="AMMFactory.html#getExchangeForPair" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Exchange<wbr/>For<wbr/>Pair</span></a>
+<a href="AMMFactory.html#getExchangeSettings" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Exchange<wbr/>Settings</span></a>
 <a href="AMMFactory.html#getExchanges" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Exchanges</span></a>
 <a href="AMMFactory.html#getFee" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Fee</span></a>
 <a href="AMMFactory.html#getTemplates" class="tsd-index-link tsd-kind-method tsd-parent-kind-class"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>get<wbr/>Templates</span></a>
@@ -173,17 +175,17 @@ Subclass this to add the contract&#39;s methods.</p>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <code class="tsd-tag ts-flagAbstract">Abstract</code> <span>version</span><a href="#version" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">version<span class="tsd-signature-symbol">:</span> <a href="../types/AMMVersion.html" class="tsd-signature-type" data-tsd-kind="Type alias">AMMVersion</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L112">SiennaSwap.ts:112</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L134">SiennaSwap.ts:134</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="v1" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>v1</span><a href="#v1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">v1<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">typeof </span><a href="AMMFactory_v1.html" class="tsd-signature-type" data-tsd-kind="Class">AMMFactory_v1</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L114">SiennaSwap.ts:114</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L136">SiennaSwap.ts:136</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class"><a id="v2" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagStatic">Static</code> <span>v2</span><a href="#v2" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">v2<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">typeof </span><a href="AMMFactory_v2.html" class="tsd-signature-type" data-tsd-kind="Class">AMMFactory_v2</a></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L116">SiennaSwap.ts:116</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L138">SiennaSwap.ts:138</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Accessors</h2>
 <section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="asLink" class="tsd-anchor"></a>
@@ -285,7 +287,7 @@ Subclass this to add the contract&#39;s methods.</p>
 <h5>token_1: <a href="../types/Token.html" class="tsd-signature-type" data-tsd-kind="Type alias">Token</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L125">SiennaSwap.ts:125</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L147">SiennaSwap.ts:147</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="createExchanges" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>create<wbr/>Exchanges</span><a href="#createExchanges" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -300,7 +302,7 @@ Subclass this to add the contract&#39;s methods.</p>
 <h5>__namedParameters: <a href="../interfaces/AMMCreateExchangesRequest.html" class="tsd-signature-type" data-tsd-kind="Interface">AMMCreateExchangesRequest</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../types/AMMCreateExchangesResults.html" class="tsd-signature-type" data-tsd-kind="Type alias">AMMCreateExchangesResults</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L134">SiennaSwap.ts:134</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L156">SiennaSwap.ts:156</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="execute" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>execute</span><a href="#execute" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
@@ -335,6 +337,14 @@ Subclass this to add the contract&#39;s methods.</p>
 <p>Inherited from <a href="Client.html">Client</a>.<a href="Client.html#fetchCodeHash">fetchCodeHash</a></p>
 <ul>
 <li>Defined in node_modules/.pnpm/@fadroma+client@6.3.1/node_modules/@fadroma/client/client.dist.d.ts:369</li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getConfig" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>get<wbr/>Config</span><a href="#getConfig" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+<li class="tsd-signature tsd-anchor-link" id="getConfig.getConfig-1">get<wbr/>Config<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/AMMFactoryConfig.html" class="tsd-signature-type" data-tsd-kind="Interface">AMMFactoryConfig</a><span class="tsd-signature-symbol">&gt;</span><a href="#getConfig.getConfig-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/AMMFactoryConfig.html" class="tsd-signature-type" data-tsd-kind="Interface">AMMFactoryConfig</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L246">SiennaSwap.ts:246</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getExchange" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Exchange</span><a href="#getExchange" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -352,7 +362,7 @@ the exchange contract between two tokens.</p>
 <h5>token_1: <a href="../types/Token.html" class="tsd-signature-type" data-tsd-kind="Type alias">Token</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="AMMExchange.html" class="tsd-signature-type" data-tsd-kind="Class">AMMExchange</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L163">SiennaSwap.ts:163</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L185">SiennaSwap.ts:185</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getExchangeForPair" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Exchange<wbr/>For<wbr/>Pair</span><a href="#getExchangeForPair" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -365,7 +375,15 @@ the exchange contract between two tokens.</p>
 <h5>pair: <a href="TokenPair.html" class="tsd-signature-type" data-tsd-kind="Class">TokenPair</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="AMMExchange.html" class="tsd-signature-type" data-tsd-kind="Class">AMMExchange</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L176">SiennaSwap.ts:176</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L198">SiennaSwap.ts:198</a></li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getExchangeSettings" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>get<wbr/>Exchange<wbr/>Settings</span><a href="#getExchangeSettings" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+<li class="tsd-signature tsd-anchor-link" id="getExchangeSettings.getExchangeSettings-1">get<wbr/>Exchange<wbr/>Settings<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ExchangeSettings.html" class="tsd-signature-type" data-tsd-kind="Interface">ExchangeSettings</a><span class="tsd-signature-symbol">&gt;</span><a href="#getExchangeSettings.getExchangeSettings-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/ExchangeSettings.html" class="tsd-signature-type" data-tsd-kind="Interface">ExchangeSettings</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L240">SiennaSwap.ts:240</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="getExchanges" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Exchanges</span><a href="#getExchanges" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -381,7 +399,7 @@ the passed token pairs.</p>
 <h5>pairs: <span class="tsd-signature-symbol">[</span><a href="../types/Token.html" class="tsd-signature-type" data-tsd-kind="Type alias">Token</a><span class="tsd-signature-symbol">, </span><a href="../types/Token.html" class="tsd-signature-type" data-tsd-kind="Type alias">Token</a><span class="tsd-signature-symbol">]</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="AMMExchange.html" class="tsd-signature-type" data-tsd-kind="Class">AMMExchange</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L190">SiennaSwap.ts:190</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L212">SiennaSwap.ts:212</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="getFee" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>get<wbr/>Fee</span><a href="#getFee" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
@@ -409,7 +427,7 @@ uses to instantiate contracts.</p>
 </div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/AMMFactoryInventory.html" class="tsd-signature-type" data-tsd-kind="Interface">AMMFactoryInventory</a><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L236">SiennaSwap.ts:236</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L270">SiennaSwap.ts:270</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="listExchanges" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>list<wbr/>Exchanges</span><a href="#listExchanges" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -424,7 +442,7 @@ uses to instantiate contracts.</p>
 <h5>limit: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 30</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/AMMFactoryExchangeInfo.html" class="tsd-signature-type" data-tsd-kind="Interface">AMMFactoryExchangeInfo</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L197">SiennaSwap.ts:197</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L219">SiennaSwap.ts:219</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class"><a id="listExchangesFull" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>list<wbr/>Exchanges<wbr/>Full</span><a href="#listExchangesFull" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -432,7 +450,7 @@ uses to instantiate contracts.</p>
 <li class="tsd-description">
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="AMMExchange.html" class="tsd-signature-type" data-tsd-kind="Class">AMMExchange</a><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L218">SiennaSwap.ts:218</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L252">SiennaSwap.ts:252</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a id="populate" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>populate</span><a href="#populate" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
@@ -483,7 +501,7 @@ uses to instantiate contracts.</p>
 <h5>reason: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = &quot;&quot;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">unknown</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/8a96022/SiennaSwap.ts#L119">SiennaSwap.ts:119</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/SiennaNetwork/siennajs/blob/1cada0a/SiennaSwap.ts#L141">SiennaSwap.ts:141</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-protected tsd-is-inherited tsd-is-external"><a id="validate" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagProtected">Protected</code> <span>validate</span><a href="#validate" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-protected tsd-is-inherited tsd-is-external">
@@ -568,8 +586,10 @@ uses to instantiate contracts.</p>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="AMMFactory.html#createExchanges" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>create<wbr/>Exchanges</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="AMMFactory.html#execute" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>execute</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="AMMFactory.html#fetchCodeHash" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>fetch<wbr/>Code<wbr/>Hash</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class"><a href="AMMFactory.html#getConfig" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Config</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="AMMFactory.html#getExchange" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Exchange</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="AMMFactory.html#getExchangeForPair" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Exchange<wbr/>For<wbr/>Pair</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class"><a href="AMMFactory.html#getExchangeSettings" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Exchange<wbr/>Settings</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="AMMFactory.html#getExchanges" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Exchanges</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="AMMFactory.html#getFee" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Fee</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class"><a href="AMMFactory.html#getTemplates" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>get<wbr/>Templates</a></li>
