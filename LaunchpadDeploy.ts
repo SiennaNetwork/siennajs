@@ -1,3 +1,4 @@
+import type { Sienna } from './index'
 import { SiennaConsole } from './Console'
 import { Names, Versions, VersionedSubsystem, randomBase64 } from './Core'
 import { Version } from './LaunchpadConfig'
@@ -58,7 +59,7 @@ export class LaunchpadDeployment extends VersionedSubsystem<Version> {
   /** The known IDOs, matched by name */
   idos = []//this.defineContracts({ client: IDO, match: Names.isIDO(this.version) })
 
-  constructor (context: SiennaDeployment, version: Version) {
+  constructor (context: Sienna, version: Version) {
     super(context, version)
     context.attachSubsystem(this, `lpd ${version}`, `Sienna Launch ${version}`)
   }

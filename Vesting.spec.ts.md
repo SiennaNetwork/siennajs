@@ -20,7 +20,12 @@ schedule.pools[0].accounts[0].amount  = schedule.pools[0].accounts[1].amount  = 
 schedule.pools[0].accounts[0].address = schedule.pools[0].accounts[1].address = context.agent.address
 ```
 
-## Token Generation Event
+If the number of accounts in the RPT is greater than a certain fixed limit,
+the list of RPT-funded accounts is split into subRPTs.
+
+## Types of vestings
+
+### Token Generation Event
 
 The SIENNA Token Generation Event creates the SIENNA SNIP20 token
 and the MGMT and RPT contracts.
@@ -37,10 +42,7 @@ const tge = new TGE(context, {
 await tge.deploy()
 ```
 
-If the number of accounts in the RPT is greater than a certain fixed limit,
-the list of RPT-funded accounts is split into subRPTs.
-
-## Partner-Funded Rewards
+### Partner-Funded Rewards
 
 The PFR vestings use the updated MGMT and RPT, and vest a certain pre-existing token.
 In test mode, they use the Fadroma Token Manager to provide a mock token.
@@ -65,4 +67,12 @@ const pfr = new PFR(context, {
 })
 
 await pfr.deploy()
+```
+
+## Managing vestings
+
+### Getting the schedule
+
+```typescript
+assert.deepEqual(await tge.getSchedule(), schedule)
 ```

@@ -1,3 +1,4 @@
+import type { Sienna } from './index'
 import { randomHex } from '@hackbg/formati'
 import {
   Snip20, Names, Versions, VersionedSubsystem, randomBase64, getMaxLength, bold,
@@ -88,7 +89,7 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
   })//.find(Names.isExchange(this.version))
 
   constructor (
-    context: SiennaDeployment,
+    context: Sienna,
     options: {
       version:   Version,
       swapPairs: PairName[],

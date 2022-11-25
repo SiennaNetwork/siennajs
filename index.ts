@@ -19,7 +19,7 @@ Rewards.RewardPool['v3']   = RewardPool_v3
 Rewards.RewardPool['v3.1'] = RewardPool_v3_1
 Rewards.RewardPool['v4.1'] = RewardPool_v4_1
 
-export interface SiennaSettings {
+export interface Settings {
   amm:         AMM.Settings
   auth:        Auth.Settings
   governance:  Governance.Settings
@@ -33,7 +33,7 @@ export interface SiennaSettings {
   launchpad:   Launchpad.Settings
 }
 
-export class SiennaDeployment extends Deployment {
+export class Sienna extends Deployment {
 
   tokens:     TokenManager
 
@@ -61,7 +61,7 @@ export class SiennaDeployment extends Deployment {
   /** Sienna Launch: Launchpad/IDO system. */
   launchpad:  Record<Launchpad.Version,  Launchpad.Deployment>
 
-  constructor (public context: Deployment, public settings: SiennaSettings) {
+  constructor (public context: Deployment, public settings: Settings) {
     super(context)
     this.tokens = new TokenManager(this as Deployment)
     this.auth = {
@@ -131,7 +131,7 @@ export class SiennaDeployment extends Deployment {
   }
 }
 
-export default SiennaDeployment
+export default Sienna
 
 export * from './Core'
 

@@ -2,7 +2,7 @@ import * as Scrt from '@fadroma/scrt'
 import { TokenManager, Snip20 } from '@fadroma/tokens'
 import type { TokenSymbol } from '@fadroma/tokens'
 import { SecureRandom } from '@hackbg/formati'
-import type { SiennaDeployment } from './index'
+import type { Sienna } from './index'
 
 import type * as Auth       from './Auth'
 import type * as AMM        from './AMM'
@@ -14,7 +14,12 @@ import type * as Launchpad  from './Launchpad'
 /** All subsystems of the Sienna DeFi system are versioned. */
 export abstract class VersionedSubsystem<V> extends Scrt.VersionedDeployment<V> {
 
-  constructor (public context: SiennaDeployment, public version: V) {
+  workspace = this.config?.build?.project
+
+  /** Whether the final bundle should be broadcast or saved for multisig signing. */
+  multisig = false
+
+  constructor (public context: Sienna, public version: V) {
     super(context, version)
     this.context.tokens.template = this.context.defineContract({
       client:   Snip20,
@@ -26,8 +31,6 @@ export abstract class VersionedSubsystem<V> extends Scrt.VersionedDeployment<V> 
   get config () {
     return this.context.config
   }
-
-  workspace = this.config?.build?.project
 
   async deploy (): Promise<this> {
     throw new Error('This method must be implemented by the subclass.')

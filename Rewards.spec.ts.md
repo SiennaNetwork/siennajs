@@ -16,7 +16,7 @@ const context = await new Fadroma({ chain: 'Mocknet_CW0' }).ready
 import { Rewards } from 'siennajs'
 
 const rewards = new Rewards.Deployment(context, {
-  version: 'v4'
+  version: 'v4.2'
 })
 
 await rewards.deploy()

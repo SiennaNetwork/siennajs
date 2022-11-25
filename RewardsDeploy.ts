@@ -1,4 +1,4 @@
-import type { SiennaDeployment } from './index'
+import type { Sienna } from './index'
 import type { Name, Address, Contract, IntoLink } from './Core'
 import { bold, Names, Versions, VersionedSubsystem, Snip20 } from './Core'
 import { SiennaConsole } from './Console'
@@ -27,9 +27,6 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
 
   /** Whether to update the RPT contract's config after deploying the new pools. */
   adjustRpt: boolean = true
-
-  /** Whether to emit a multisig TX instead of broadcasting. */
-  multisig: boolean  = false
 
   /** Which version of Auth Provider should these rewards use. */
   authVersion? = AuthVersions[this.version]
@@ -61,7 +58,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   })//.findMany()
 
   constructor (
-    context: SiennaDeployment,
+    context: Sienna,
     options: {
       version: Version,
       reward:  Contract<Snip20>
@@ -69,7 +66,6 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   ) {
     super(context, options.version)
     this.reward = options.reward
-    console.log(this.pool)
     this.addCommand('deploy one',  'deploy one reward pool',   this.deployOne.bind(this))
         .addCommand('deploy all',  'deploy all reward pools',  this.deploy.bind(this))
         .addCommand('upgrade all', 'upgrade all reward pools', this.upgradeAll.bind(this))

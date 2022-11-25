@@ -1,4 +1,4 @@
-import type { SiennaDeployment } from './index'
+import type { Sienna } from './index'
 import { SiennaConsole } from './Console'
 import { Names, Versions, VersionedSubsystem, Snip20, bold, randomBase64 } from './Core'
 import type {
@@ -110,7 +110,7 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
   staking:  Contract<RewardPool_v4_1>
 
   constructor (
-    context: SiennaDeployment,
+    context: Sienna,
     options: {
       /** The version of the subsystem. */
       version:   TGEVersion,
@@ -186,14 +186,11 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
     'deploy and launch a token generation event',
     async (): Promise<TGEDeployment> => {
       if (!this.agent) throw new Error('no deploy agent')
-      console.log({token:this.token})
-      console.log({mgmt:this.mgmt})
       const token = await this.token()        // find or deploy vested token
       this.rptAccount!.address = this.admin   // fix rpt account pt. 1 (mutates this.schedule)
       const mgmt  = await this.mgmt()         // find or deploy mgmt
       const rpt   = await this.rpt()          // find or deploy rpt
       this.rptAccount!.address = rpt.address! // fix rpt account pt. 2 (mutates this.schedule)
-      console.log({mgmt})
       const { status: { launched } } = await mgmt.status() // check if vesting is launched
       if (launched) {
         this.log.info('TGE already launched.')
@@ -283,7 +280,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
   vestings:       ContractGroups<PFRVesting>
 
   constructor (
-    context: SiennaDeployment,
+    context: Sienna,
     options?: Partial<{
       admin:          Address,
       version:        PFRVersion,

@@ -1,3 +1,4 @@
+import type { Sienna } from './index'
 import type { Contract, Client, IntoArray, ContractLink } from './Core'
 import { Names, VersionedSubsystem, intoArray } from './Core'
 import { SiennaConsole } from './Console'
@@ -17,7 +18,7 @@ export class AuthDeployment extends VersionedSubsystem<Version> {
     }
   })
 
-  constructor (context: SiennaDeployment, version: Version = 'v1',) {
+  constructor (context: Sienna, version: Version = 'v1',) {
     super(context, version)
     context.attach(this, `auth ${this.version}`, `Sienna Auth Provider ${this.version}`)
   }

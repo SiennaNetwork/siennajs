@@ -1,4 +1,4 @@
-import type { SiennaDeployment } from './index'
+import type { Sienna } from './index'
 import type { Contract } from './Core'
 import { Names, Versions, VersionedSubsystem, randomBase64 } from './Core'
 import { SiennaConsole } from './Console'
@@ -48,7 +48,7 @@ export class LendDeployment extends VersionedSubsystem<Version> {
   /** The reward token for Lend. Defaults to SIENNA. */
   reward = this.context.tokens.define('SIENNA')
 
-  constructor (context: SiennaDeployment, version: Version) {
+  constructor (context: Sienna, version: Version) {
     super(context, version)
     context.attachSubsystem(this, `lend ${version}`, `Sienna Lend ${version}`)
   }

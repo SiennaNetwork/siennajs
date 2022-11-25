@@ -1,21 +1,57 @@
+import type { Sienna } from './index'
 import { SiennaConsole } from './Console'
 import { VersionedSubsystem } from './Core'
-import type { Uint128 } from './Core'
-import type { Uint128 } from './Core'
+import type { Uint128, Contract } from './Core'
 import type { Version } from './GovernanceConfig'
+import { Polls } from './GovernancePolls'
+import { Names, Versions } from './Core'
+import { RewardPool } from './Rewards'
 
 export class GovernanceDeployment extends VersionedSubsystem<Version> {
 
   log = new SiennaConsole(`Governance ${this.version}`)
+
+  /** Git commit from which to build the sources if needed. */
+  revision = Versions.Rewards['v4.2']
+
   /** The token staked in the governance pool for voting power. */
   token = this.context.tge['v1'].token
+
   /** The RPT contract which needs to be reconfigured when we upgrade
     * the staking pool, so that the new pool gets rewards budget. */
   rpt = this.context.tge['v1'].rpt
-  /** The up-to-date Rewards v4 staking pool with governance support. */
-  staking = this.context.tge['v1'].staking
+
+  /** Suffix to enable faster iteration in the same deployment. */
+  suffix   = this.isTestnet ? `@${Math.floor(+ new Date/1000)}` : ''
+
+  /** TODO use multisig address here for mainnet */
+  admin    = this.agent?.address
+
+  /** Config for the voting contract. */
+  pollsConfig = settings(this.chain?.mode).governance.config
+
+  /** The up-to-date Rewards v4 staking pool with governance support.
+    * The amount of SIENNA staked in this contract determines the voting power. */
+  staking: Contract<RewardPool> = (this.context.tge['v1']?.staking) ?? this.defineContract({
+    crate:    'sienna-rewards',
+    client:   RewardPool['v4.1'],
+    initMsg:  async () => this.staking.client!.init({
+      authProvider: (await (await this.auth).provider).asLink,
+      stakedToken:  (await this.token.deployed).asLink,
+      rewardToken:  (await this.token.deployed).asLink
+    })
+  })
+
   /** The governance voting contract. */
-  voting = this.contract({ client: Polls })
+  voting = this.defineContract({
+    crate: 'sienna-poll',
+    client: Polls,
+    initMsg: async () => ({
+      provider: (await (await this.auth).provider).asLink,
+      config:   { ...this.pollsConfig, rewards: (await this.staking.deployed).asLink },
+    })
+  })
+
   /** The auth provider and oracle used to give
     * the voting contract access to the balances in the
     * staking contract, which it uses to compute voting power. */
@@ -26,9 +62,9 @@ export class GovernanceDeployment extends VersionedSubsystem<Version> {
       //(await this.staking.deployed).asLink
     //])
 
-  constructor (context: SiennaDeployment, version: Version,) {
+  constructor (context: Sienna, version: Version,) {
     super(context, version)
-    context.attach(this, `gov ${version}`, `Sienna Governance ${version}`)
+    context.attachSubsystem(this, `gov ${version}`, `Sienna Governance ${version}`)
     this.voting.provide({ name: Names.Polls('SIENNA', 'v4.1', this.version) })
   }
 
@@ -46,36 +82,6 @@ export class GovernanceDeployment extends VersionedSubsystem<Version> {
     this.log.pollsConfig(await voting.getPollConfig())
     this.log.activePolls(await voting.getPolls(+ new Date() / 1000, 0, 10, 0))
   }
-
-  revision = Pinned.Rewards['v4.2']
-  /** Suffix to enable faster iteration in the same deployment. */
-  suffix   = this.isTestnet ? `@${Math.floor(+ new Date/1000)}` : ''
-  /** TODO use multisig address here for mainnet */
-  admin    = this.agent?.address
-  /** Whether the final bundle should be broadcast or saved for multisig signing. */
-  multisig = false
-  /** Deploy settings for the staking contract where voting power is established. */
-  staking = this.staking.provide({
-    crate:    'sienna-rewards',
-    revision: this.revision,
-    client:   API.Rewards.RewardPool['v4.1'],
-    initMsg:  async () => this.staking.client.init({
-      authProvider: (await (await this.auth).provider).asLink,
-      stakedToken:  (await this.token.deployed).asLink,
-      rewardToken:  (await this.token.deployed).asLink
-    })
-  })
-  /** Deploy settings for the poll contract where voting is conducted. */
-  voting = this.voting.provide({
-    crate: 'sienna-poll',
-    revision: this.revision,
-    initMsg: async () => ({
-      provider: (await (await this.auth).provider).asLink,
-      config:   { ...this.pollsConfig, rewards: (await this.staking.deployed).asLink },
-    })
-  })
-  /** Config for the voting contract. */
-  pollsConfig = settings(this.chain?.mode).governance.config
 
   deploy = this.command('deploy', 'deploy Sienna Governance', async () => {
     // Need AuthProvider
@@ -109,7 +115,7 @@ export class GovernanceDeployment extends VersionedSubsystem<Version> {
     client:   API.Rewards.RewardPool['v3.1']
   }).provide(this.devMode ? { // in dev mode, deploy a new old pool for testing
     crate:    'sienna-rewards',
-    revision: Pinned.Rewards['v3.1'],
+    revision: Versions.Rewards['v3.1'],
     initMsg:  async () => API.Rewards.RewardPool['v3.1'].init({
       rewardToken: (await this.token.deployed).asLink,
       stakedToken: (await this.token.deployed).asLink,

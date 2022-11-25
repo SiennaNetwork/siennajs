@@ -139,10 +139,11 @@ export async function mintTestBudget (
   ]
 ) {
   context.log.warn(`Dev mode: minting initial balances for ${testers.length} testers.`)
-  context.log.warn(`Minting will not be possible after launch.`)
+  context.log.warn(`(Minting will not be possible after launch.)`)
   const token = (await context.token.deployed).as(agent)
   try {
     await token.setMinters([admin])
+    await token.query({ minters: {} })
     await agent.bundle().wrap(async bundle => {
       for (const addr of testers) {
         context.log.warn(bold('Minting'), bold(`${amount}u`), 'to', bold(addr))

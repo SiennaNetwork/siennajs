@@ -13,14 +13,12 @@ You can run the whole test suite with the command `pnpm test all`:
 ```typescript
 import { CommandContext } from '@hackbg/komandi'
 const context = new CommandContext()
-context.command('all', 'run all test suites in parallel', async()=>{
-  await Promise.allSettled([
-    import('./Vesting.spec.ts.md')
-    import('./AMM.spec.ts.md')
-    import('./Rewards.spec.ts.md')
-    import('./Lend.spec.ts.md')
-    import('./Launchpad.spec.ts.md')
-  ])
+context.command('all', 'run all test suites', async()=>{
+  await import('./Vesting.spec.ts.md')
+  await import('./AMM.spec.ts.md')
+  await import('./Rewards.spec.ts.md')
+  await import('./Lend.spec.ts.md')
+  await import('./Launchpad.spec.ts.md')
 })
 ```
 
@@ -71,5 +69,5 @@ context.command('launchpad', 'test the launchpad subsystem', ()=>import('./Launc
 ## Entrypoint
 
 ```typescript
-context.run(process.argv.slice(3))
+await context.run(process.argv.slice(3))
 ```
