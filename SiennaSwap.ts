@@ -103,8 +103,30 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
 export type AMMFactoryStatus = "Operational" | "Paused" | "Migrating";
 
 export interface IContractTemplate {
-  id: number;
-  code_hash: CodeHash;
+  id: number
+  code_hash: CodeHash
+}
+
+export interface AMMFactoryConfig {
+  lp_token_contract: ContractInstantiationInfo
+  pair_contract: ContractInstantiationInfo
+  exchange_settings: ExchangeSettings
+}
+
+export interface ExchangeSettings {
+  sienna_burner?: Address | undefined
+  sienna_fee: ExchangeFee
+  swap_fee: ExchangeFee
+}
+
+export interface ExchangeFee {
+  denom: number
+  nom: number
+}
+
+export interface ContractInstantiationInfo {
+  id: number
+  code_hash: string
 }
 
 export abstract class AMMFactory extends Client {
@@ -213,6 +235,18 @@ export abstract class AMMFactory extends Client {
       }
     }
     return result;
+  }
+
+  async getExchangeSettings(): Promise<ExchangeSettings> {
+    const resp: any = await this.query('get_exchange_settings')
+
+    return resp.get_exchange_settings.settings
+  }
+
+  async getConfig(): Promise<AMMFactoryConfig> {
+    const resp: any = await this.query({ get_config: { } })
+
+    return resp.config
   }
 
   async listExchangesFull(): Promise<AMMExchange[]> {
