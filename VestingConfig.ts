@@ -1,9 +1,21 @@
-import {
-  bold, assertAddress, codeHashOf, Agent, Address, CodeHash, Uint128, Duration, IntoLink
-} from './Core'
+import { bold, assertAddress, codeHashOf } from './Core'
+import type { TokenSymbol, Address, CodeHash, Uint128, Duration, IntoLink, Agent } from './Core'
 import type { TGEDeployment } from './VestingDeploy'
 
 export type TGEVersion = 'v1'
+
+export interface TGEOptions {
+  /** The version of the subsystem. */
+  version:   TGEVersion,
+  /** The Git reference from which to build. */
+  revision?: string,
+  /** The token to be created. */
+  symbol:    TokenSymbol
+  /** The vesting schedule to be loaded in MGMT. */
+  schedule?: Schedule,
+  /** The address that will own the contracts. */
+  admin?:    Address
+}
 
 export type PFRVersion = 'v1'
 

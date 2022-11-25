@@ -1,15 +1,13 @@
 import type { Sienna } from './index'
 import { SiennaConsole } from './Console'
 import { Names, Versions, VersionedSubsystem, Snip20, bold, randomBase64 } from './Core'
-import type {
-  Agent, Uint128, Address, Contract, ViewingKey, TokenSymbol
-} from './Core'
+import type { Agent, Uint128, Address, Contract, ViewingKey, TokenSymbol, Named } from './Core'
 
 import { VestingReporter } from './VestingConsole'
 import {
   Schedule, findInSchedule, mintingPoolName, rptAccountName, lpfAccountName, mintTestBudget
 } from './VestingConfig'
-import type { RPTConfig, TGEVersion, PFRVersion } from './VestingConfig'
+import type { TGEVersion, TGEOptions, RPTConfig, PFRVersion } from './VestingConfig'
 import { BaseMGMT, TGEMGMT, PFRMGMT } from './VestingMGMT'
 import { BaseRPT, TGERPT, PFRRPT } from './VestingRPT'
 
@@ -38,8 +36,8 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   //abstract subRPTs: Contracts<BaseRPT>
 
   /** Fetch the current schedule of MGMT. */
-  getSchedule () {
-    return this.mgmt.get().schedule()
+  async getSchedule () {
+    return (await this.mgmt()).schedule()
   }
 
   setSchedule () {
@@ -51,18 +49,18 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   }
 
   /** Fetch the current schedule of MGMT. */
-  getMgmtStatus () {
-    return this.mgmt.get().status()
+  async getMgmtStatus () {
+    return (await this.mgmt()).status()
   }
 
   /** Fetch the current progress of the vesting. */
-  getMgmtProgress (addr: Address) {
-    return this.mgmt.get().progress(addr)
+  async getMgmtProgress (addr: Address) {
+    return (await this.mgmt()).progress(addr)
   }
 
   /** Fetch the current status of RPT. */
   async getRptStatus () {
-    return await this.rpt.get().status()
+    return (await this.rpt()).status()
   }
 
   /** Update the RPT configuration. */
@@ -111,36 +109,22 @@ export class TGEDeployment extends VestingDeployment<TGEVersion> {
 
   constructor (
     context: Sienna,
-    options: {
-      /** The version of the subsystem. */
-      version:   TGEVersion,
-      /** The Git reference from which to build. */
-      revision?: string,
-      /** The token to be created. */
-      symbol:    TokenSymbol
-      /** The vesting schedule to be loaded in MGMT. */
-      schedule?: Schedule,
-      /** The address that will own the contracts. */
-      admin?:    Address
-    } = {
-      version:  'v1',
-      symbol:   'SIENNA',
-    }
+    { version, revision, symbol, schedule, admin }: TGEOptions
   ) {
-    super(context, options.version!)
-    this.version  = options.version
-    this.symbol   = options.symbol
-    this.admin    = options.admin ?? context.agent?.address
-    this.schedule = options.schedule ?? settings(context.chain?.mode).schedule
-    this.revision = options.revision ?? Versions.TGE[this.version]
+    super(context, version)
+    this.version  = version
+    this.symbol   = symbol
+    this.admin    = admin ?? context.agent?.address
+    this.schedule = schedule ?? settings(context.chain?.mode).schedule
+    this.revision = revision ?? Versions.TGE[this.version]
     this.token = this.defineContract<Snip20>({
-      id: options.symbol,
+      id: symbol,
       crate: 'snip20-sienna',
       revision: this.revision,
       client: Snip20,
       initMsg: {
-        name: options.symbol,
-        symbol: options.symbol,
+        name: symbol,
+        symbol: symbol,
         decimals: 18,
         admin: this.admin,
         config: { public_total_supply: true },
@@ -277,7 +261,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
   rewardsVersion: RewardsVersion
 
   /** A collection of all currently defined PFR vestings. */
-  vestings:       ContractGroups<PFRVesting>
+  vestings:       Named<PFRVesting>
 
   constructor (
     context: Sienna,
@@ -294,7 +278,6 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
     this.rewardsVersion = options?.rewardsVersion ?? 'v3.1'
     this.admin = options?.admin ?? this.agent?.address
     this.schedules = options?.schedules ?? settings(this.chain?.mode).vesting
-    console.log(this.vesting)
     this.vestings = this.vesting.many({
       //alter: 'ALTER',
       //shade: 'SHADE'
@@ -311,7 +294,7 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
 
     const { ammVersion, rewardsVersion } = this
 
-    const token = this.defineContract({
+    const token = this.defineContract<Snip20>({
       id:      symbol,
       client:  Snip20,
       crate:   'amm-snip20',

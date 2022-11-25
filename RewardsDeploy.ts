@@ -1,13 +1,16 @@
 import type { Sienna } from './index'
 import type { Name, Address, Contract, IntoLink } from './Core'
-import { bold, Names, Versions, VersionedSubsystem, Snip20 } from './Core'
+import { bold, Names, Versions, VersionedSubsystem, Snip20, linkStruct } from './Core'
 import { SiennaConsole } from './Console'
-import type { Version } from './RewardsConfig'
-import { AuthVersions, AMMVersions, RewardsCtor } from './RewardsConfig'
-import type { AuthProviderDeployment } from './AuthDeploy'
-import { RewardPool } from './RewardsBase'
+
 import type { TGERPT } from './VestingRPT'
 import type { RPTConfig } from './VestingConfig'
+import type { Version as AMMVersion } from './AMMConfig'
+import type { AuthProviderDeployment } from './AuthDeploy'
+
+import type { Version } from './RewardsConfig'
+import { AuthVersions, AMMVersions, RewardsCtor } from './RewardsConfig'
+import { RewardPool } from './RewardsBase'
 
 export class RewardsDeployment extends VersionedSubsystem<Version> {
 
@@ -147,7 +150,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
       * Rewards pool not recorded in the receipt will be unaffected by the upgrade. */
     const oldRewards = await this.defineContracts<Rewards.RewardPool>({
       match:  ({name})=>name.endsWith(`.Rewards[${oldVer}]`),
-      client: Rewards.RewardPool[oldVer]
+      client: RewardPool[oldVer]
     })
 
     const rewardToken      = await this.defineContract({ name: 'SIENNA', client: Snip20 })
@@ -176,15 +179,15 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
       client:   NewRewards,
       inits:    async () => Object.fromEntries(oldRewards.map(old=>{
         const stakedToken = stakedTokens.get(old)
-        const newAmmVer: AMM.Version = Rewards.AMMVersions[newVer]
+        const newAmmVer: AMMVersion = AMMVersions[newVer]
         const name = (stakedToken.address === rewardToken.address)
           ? `SIENNA.Rewards[${newVer}]`
           : `AMM[${newAmmVer}].${stakedTokenNames.get(stakedToken)}.LP.Rewards[${newVer}]`
         return [name, [name, NewRewards.init({
           rewardToken: rewardToken as IntoLink,
           stakedToken: stakedToken,
-          admin:       this.agent.address,
-          timekeeper:  this.agent.address
+          admin:       this.agent!.address,
+          timekeeper:  this.agent!.address
         })]]
       }))
     })
@@ -200,9 +203,9 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
     timekeeper?: Address
   ): Promise<Rewards.RewardPool> {
     return this.defineContract<RewardPool>({
-      name, crate: 'sienna-rewards', client: Rewards[this.version] as any,
+      name, crate: 'sienna-rewards', client: RewardPool[this.version] as any,
     }).deploy(() => ({
-      admin: this.agent.address,
+      admin: this.agent!.address,
       config: {
         reward_vk:    null,
         lp_token:     linkStruct(staked),
@@ -218,7 +221,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
     this.log.info(`Enabling user migration`)
     this.log.info(`  from ${bold(oldPool.address!)}`)
     this.log.info(`  into ${bold(newPool.address!)}`)
-    await this.agent.bundle().wrap(async bundle=>{
+    await this.agent!.bundle().wrap(async bundle=>{
       await oldPool.as(bundle).emigration.enableTo(newPool.asLink)
       await newPool.as(bundle).immigration.enableFrom(oldPool.asLink)
     }, undefined, this.multisig)

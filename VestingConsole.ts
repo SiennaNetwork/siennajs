@@ -70,7 +70,11 @@ export class VestingReporter {
 
   /** Show the current status of the RPT. */
   async showRptStatus () {
-    const rpt    = await this.vesting.rpt.expect()
+    if (!this.vesting.rpt.address) {
+      this.log.info('RPT contract not found.')
+      return null
+    }
+    const rpt    = await this.vesting.rpt()
     const status = await rpt.status() as { config: any[] }
     this.log.rptStatus(rpt, status)
     this.log.rptRecipients((await Promise.all(status.config.map(

@@ -26,10 +26,7 @@ export abstract class VersionedSubsystem<V> extends Scrt.VersionedDeployment<V> 
       crate:    'amm-snip20',
       revision: 'dev'
     })
-  }
-
-  get config () {
-    return this.context.config
+    Object.defineProperty(this, 'config', { get () { return this.context.config } })
   }
 
   async deploy (): Promise<this> {

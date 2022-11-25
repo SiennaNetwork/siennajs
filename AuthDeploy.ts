@@ -20,7 +20,7 @@ export class AuthDeployment extends VersionedSubsystem<Version> {
 
   constructor (context: Sienna, version: Version = 'v1',) {
     super(context, version)
-    context.attach(this, `auth ${this.version}`, `Sienna Auth Provider ${this.version}`)
+    context.attachSubsystem(this, `auth ${this.version}`, `Sienna Auth Provider ${this.version}`)
   }
 
   /** The auth provider contract. */

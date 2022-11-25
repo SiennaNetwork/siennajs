@@ -1,11 +1,12 @@
 import type { Sienna } from './index'
 import { SiennaConsole } from './Console'
 import { VersionedSubsystem } from './Core'
-import type { Uint128, Contract } from './Core'
+import type { Uint128, Contract, Agent, Address } from './Core'
 import type { Version } from './GovernanceConfig'
 import { Polls } from './GovernancePolls'
 import { Names, Versions } from './Core'
 import { RewardPool } from './Rewards'
+import type { RPTConfig } from './VestingConfig'
 
 export class GovernanceDeployment extends VersionedSubsystem<Version> {
 
@@ -91,7 +92,7 @@ export class GovernanceDeployment extends VersionedSubsystem<Version> {
     // Need a link to the staking contract
     const staking = await this.staking.deployed
     // Create the auth group and connect the pool to the polls
-    await this.agent.bundle().wrap(async bundle => {
+    await this.agent!.bundle().wrap(async bundle => {
       // Create auth group
       const members = [ polls.asLink, staking.asLink ]
       console.log({members})
@@ -100,7 +101,7 @@ export class GovernanceDeployment extends VersionedSubsystem<Version> {
       await staking.as(bundle).setGovernanceLink(polls.asLink)
     })
     // Update RPT config and enable migrations: this part needs to be multisig on mainnet
-    await this.agent.bundle().wrap(async bundle => {
+    await this.agent!.bundle().wrap(async bundle => {
       await this.configureRpt(bundle)
       await this.enableMigration(bundle)
     }, undefined, this.multisig)
@@ -112,11 +113,11 @@ export class GovernanceDeployment extends VersionedSubsystem<Version> {
     * deploy a whole crop of legacy reward pools. */
   oldPool = this.contract({
     name:     'SIENNA.Rewards[v3]',
-    client:   API.Rewards.RewardPool['v3.1']
+    client:   RewardPool['v3.1']
   }).provide(this.devMode ? { // in dev mode, deploy a new old pool for testing
     crate:    'sienna-rewards',
     revision: Versions.Rewards['v3.1'],
-    initMsg:  async () => API.Rewards.RewardPool['v3.1'].init({
+    initMsg:  async () => RewardPool['v3.1'].init({
       rewardToken: (await this.token.deployed).asLink,
       stakedToken: (await this.token.deployed).asLink,
       admin:       await this.admin,
@@ -142,7 +143,7 @@ export class GovernanceDeployment extends VersionedSubsystem<Version> {
       this.oldPool.deployed,
       this.staking.deployed
     ])
-    const { config } = await rpt.status() as { config: API.Vesting.RPTConfig }
+    const { config } = await rpt.status() as { config: RPTConfig }
     this.log.log('Current RPT config:', config)
     const entry = await this.findRPTEntry(config, oldPool.address)
     this.log.info(`Replacing ${entry[0]} with ${newPool.address} in RPT config`)
@@ -153,7 +154,7 @@ export class GovernanceDeployment extends VersionedSubsystem<Version> {
 
   /** If old pool is not defined, pick an address from the RPT config */
   async findRPTEntry (
-    config:  API.Vesting.RPTConfig,
+    config:  RPTConfig,
     oldAddr: Address
   ): Promise<[Address, Uint128]> {
     let entry = config.find(([addr, sum])=>addr===oldAddr)
