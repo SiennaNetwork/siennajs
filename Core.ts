@@ -1,6 +1,5 @@
 import * as Scrt from '@fadroma/scrt'
 import { TokenManager } from '@fadroma/tokens'
-import { SecureRandom } from '@hackbg/formati'
 
 /** Get the current time in seconds since the Unix epoch. */
 export const now = () => Math.floor(+new Date() / 1000);
