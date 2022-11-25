@@ -3,7 +3,7 @@ import type { Contract } from './Core'
 import { Names, Versions, VersionedSubsystem, randomBase64 } from './Core'
 import { SiennaConsole } from './Console'
 
-import type { Version } from './LendConfig'
+import type { LendOptions, Version } from './LendConfig'
 import { InterestModel } from './LendInterestModel'
 import { Overseer } from './LendOverseer'
 import { Oracle, MockOracle } from './LendOracle'
@@ -15,40 +15,39 @@ export class LendDeployment extends VersionedSubsystem<Version> {
   /** The lend interest model contract. */
   interestModel: Contract<InterestModel> = this.defineContract({
     client:  InterestModel,
-    name:    Names.InterestModel(this.version),
+    id:      Names.InterestModel(this.version),
     crate:   'lend-interest-model',
     initMsg: () => this.interestModelSettings
+  })
+
+  market = this.defineTemplate({ crate: 'lend-market' })
+
+  /** The lend oracle. */
+  oracle: Contract<any> = this.defineContract({
+    client: MockOracle,
+    id:     Names.LendOracle(this.version),
+    crate:  this.devMode ? 'lend-mock-oracle' : 'lend-oracle'
   })
 
   /** The lend overseer factory. */
   overseer: Contract<Overseer> = this.defineContract({
     client: Overseer,
-    name:   Names.LendOverseer(this.version),
+    id:     Names.LendOverseer(this.version),
     crate: 'lend-overseer',
     initMsg: async () => ({
       ...this.overseerSettings,
-      market_contract: ((await this.defineContract({ crate: 'lend-market' }).uploaded)).asInfo,
-      oracle_contract: ((await this.defineContract({ crate: 'lend-oracle' }).uploaded)).asInfo,
-      oracle_source:   (await this.oracle.deployed).asLink,
+      market_contract: (await this.market()).asInfo,
+      oracle_contract: (await this.oracle.uploaded).asInfo,
+      oracle_source:   (await this.oracle()).asLink,
       rewards_token:   (await this.reward.deployed).asLink,
       rewards_rate: "1"
     })
   })
 
-  /** The known lend markets. */
-  markets = Promise.resolve([])
-
-  /** The lend oracle. */
-  oracle: Contract<any> = this.defineContract({
-    client: MockOracle,
-    name:   Names.LendOracle(this.version),
-    crate:  this.devMode ? 'lend-mock-oracle' : 'lend-oracle'
-  })
-
   /** The reward token for Lend. Defaults to SIENNA. */
   reward = this.context.tokens.define('SIENNA')
 
-  constructor (context: Sienna, version: Version) {
+  constructor (context: Sienna, { version }: LendOptions) {
     super(context, version)
     context.attachSubsystem(this, `lend ${version}`, `Sienna Lend ${version}`)
   }

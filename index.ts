@@ -68,41 +68,23 @@ export class Sienna extends Deployment {
       'v1': new Auth.Deployment(this, 'v1')
     }
     this.tge = {
-      'v1': new Vesting.TGEDeployment(this, {
-        version: 'v1'
-      })
+      'v1': new Vesting.TGEDeployment(this, { version: 'v1', symbol:  'SIENNA' })
     }
     this.amm = {
-      'v1': new AMM.Deployment(this, {
-        version: 'v1'
-      }),
-      'v2': new AMM.Deployment(this, {
-        version: 'v2'
-      })
+      'v1': new AMM.Deployment(this, { version: 'v1' }),
+      'v2': new AMM.Deployment(this, { version: 'v2' })
     }
     this.rewards = {
-      'v2':   new Rewards.Deployment(this, {
-        version: 'v2'
-      }),
-      'v3':   new Rewards.Deployment(this, {
-        version: 'v3'
-      }),
-      'v3.1': new Rewards.Deployment(this, {
-        version: 'v3.1'
-      }),
-      'v4.1': new Rewards.Deployment(this, {
-        version: 'v4.1'
-      }),
+      'v2':   new Rewards.Deployment(this, { version: 'v2',   reward: this.tge['v1'].token }),
+      'v3':   new Rewards.Deployment(this, { version: 'v3',   reward: this.tge['v1'].token }),
+      'v3.1': new Rewards.Deployment(this, { version: 'v3.1', reward: this.tge['v1'].token }),
+      'v4.1': new Rewards.Deployment(this, { version: 'v4.1', reward: this.tge['v1'].token }),
     }
     this.pfr = {
-      'v1': new Vesting.PFRDeployment(this, {
-        version: 'v1'
-      })
+      'v1': new Vesting.PFRDeployment(this, { version: 'v1' })
     }
     this.lend = {
-      'v1': new Lend.Deployment(this, {
-        version: 'v1'
-      })
+      'v1': new Lend.Deployment(this, { version: 'v1' })
     }
     this.governance = {
       'v1': new Governance.Deployment(this, 'v1')

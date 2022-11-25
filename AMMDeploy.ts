@@ -5,7 +5,7 @@ import {
   fetchLabel, fetchCodeHash, fetchCodeId
 } from './Core'
 import type { Address, Contract, TokenSymbol } from './Core'
-import type { Version, PairName } from './AMMConfig'
+import type { Version, Options, PairName } from './AMMConfig'
 import { Factory } from './AMMFactory'
 import { Exchange } from './AMMExchange'
 import { LPToken } from './AMMLPToken'
@@ -20,13 +20,13 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
   /** Git revision corresponding to subsystem version. */
   revision = Versions.AMM[this.version]
 
-  swapPairs: PairName[]
+  swapPairs:  PairName[] = []
 
-  swapFee:   [number, number]
+  swapFee?:   [number, number]
 
-  siennaFee: [number, number]
+  siennaFee?: [number, number]
 
-  burner:    Address|null = null
+  burner?:    Address|null = null
 
   /** The AMM factory is the hub of Sienna Swap.
     * It keeps track of all exchange pair contracts,
@@ -36,6 +36,8 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     crate:    'factory',
     client:   Factory[this.version],
     initMsg: async () => {
+      if (!this.swapFee)   throw new Error("Can't deploy AMM factory without configuring swapFee")
+      if (!this.siennaFee) throw new Error("Can't deploy AMM factory without configuring siennaFee")
       const exchange = await this.exchanges.uploaded
       const lpToken  = await this.lpTokens.uploaded
       const config: any = {
@@ -90,20 +92,14 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
 
   constructor (
     context: Sienna,
-    options: {
-      version:   Version,
-      swapPairs: PairName[],
-      swapFee:   [number, number],
-      siennaFee: [number, number],
-      burner:    Address,
-    }
+    { version, swapPairs, swapFee, siennaFee, burner }: Options
   ) {
-    super(context, options.version)
-    this.swapFee   = options.swapFee
-    this.siennaFee = options.siennaFee
-    this.burner    = options.burner
-    this.swapPairs = options.swapPairs
-    context.attachSubsystem(this, `amm ${options.version}`, `Sienna Swap AMM ${options.version}`)
+    super(context, version)
+    this.swapFee   = swapFee
+    this.siennaFee = siennaFee
+    this.burner    = burner
+    this.swapPairs = swapPairs
+    context.attachSubsystem(this, `amm ${version}`, `Sienna Swap AMM ${version}`)
     this.addCommand('deploy',  'deploy Sienna Swap',
                     this.deploy.bind(this)) 
         .addCommand('upgrade', 'upgrade Sienna Swap factory and exchanges',
