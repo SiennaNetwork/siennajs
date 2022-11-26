@@ -4,7 +4,9 @@ import type {
 } from './Core'
 import { Fee, Client, ViewingKeyClient, Snip20 } from './Core'
 
-import type { MarketPermissions, MarketAccount, MarketState, MarketBorrower } from './LendConfig'
+import type {
+  MarketPermissions, MarketAccount, MarketState, MarketBorrower, SimulatedLiquidation
+} from './LendConfig'
 import { LendAuth } from './LendAuth'
 
 export class Market extends Client {

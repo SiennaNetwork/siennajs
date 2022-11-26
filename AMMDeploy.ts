@@ -32,9 +32,9 @@ export class AMMDeployment extends VersionedSubsystem<Version> {
     * It keeps track of all exchange pair contracts,
     * and allows anyone to create new ones. */
   factory: Contract<Factory> = this.defineContract<Factory>({
-    id:       Names.Factory(this.version),
-    crate:    'factory',
-    client:   Factory[this.version],
+    id:      Names.Factory(this.version),
+    crate:   'factory',
+    client:  Factory[this.version],
     initMsg: async () => {
       if (!this.swapFee)   throw new Error("Can't deploy AMM factory without configuring swapFee")
       if (!this.siennaFee) throw new Error("Can't deploy AMM factory without configuring siennaFee")

@@ -1,4 +1,4 @@
-import type { Address, ViewingKey, Permit, Signer } from './Core'
+import type { Address, ViewingKey, Permit, Signer, ContractLink } from './Core'
 
 export type Version = 'v1'
 

@@ -1,6 +1,8 @@
 import type { Sienna } from './index'
 import { SiennaConsole } from './Console'
-import { Names, Versions, VersionedSubsystem, Snip20, bold, randomBase64 } from './Core'
+import {
+  ClientError as Error, Names, Versions, VersionedSubsystem, Snip20, bold, randomBase64
+} from './Core'
 import type { Agent, Uint128, Address, Contract, ViewingKey, TokenSymbol, Named } from './Core'
 
 import { VestingReporter } from './VestingConsole'
@@ -21,15 +23,15 @@ export abstract class VestingDeployment<V> extends VersionedSubsystem<V> {
   log = new SiennaConsole(`Vesting ${this.version}`)
 
   /** The token that will be distributed. */
-  abstract token:   Contract<Snip20>
+  abstract token: Contract<Snip20>
 
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  abstract mgmt:    Contract<BaseMGMT>
+  abstract mgmt: Contract<BaseMGMT>
 
   /** The deployed RPT contract, which claims tokens from MGMT
     * and distributes them to the reward pools.  */
-  abstract rpt:     Contract<BaseRPT>
+  abstract rpt: Contract<BaseRPT>
 
   /** TODO: RPT vesting can be split between multiple contracts
     * in order to vest to more addresses than the gas limit allows. */
@@ -373,9 +375,10 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
   })
 
   deploy = this.command('deploy', 'deploy and launch a partner-funded vesting', async () => {
-    const vestings = await this.vestings()
-    await this.agent!.bundle().wrap(async bundle => {
-      for (const [vesting, { mgmt, rpt }] of Object.entries(vestings)) {
+    throw new Error.NotImplemented()
+    //const vestings = await this.vestings()
+    //await this.agent!.bundle().wrap(async bundle => {
+      //for (const [vesting, { mgmt, rpt }] of Object.entries(vestings)) {
         //await this.agent.bundle().wrap(async bundle => {
           //const mgmtBundleClients = mgmts.map(mgmt => mgmt.as(bundle))
           //await Promise.all(this.vestings.map(async ({ schedule, account }, i) => {
@@ -383,9 +386,9 @@ export class PFRDeployment extends VersionedSubsystem<PFRVersion> {
             //await mgmtBundleClients[i].add(schedule.pools[0].name, account)
           //}))
         //})
-      }
-    })
-    return this
+      //}
+    //})
+    //return this
   })
 
 }

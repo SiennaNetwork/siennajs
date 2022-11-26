@@ -9,7 +9,8 @@ import type {
   Decimal, ExecOpts,
 } from './Core'
 import { LPToken } from './AMMLPToken'
-import type { ExchangeClass, PairName } from './AMMConfig'
+import type { ExchangeClass, ExchangeOpts, PairName, PairInfo } from './AMMConfig'
+import { RouterPair } from './AMMRouter'
 
 export class Exchange extends Client {
 
@@ -193,14 +194,10 @@ export class Exchange extends Client {
 
   get asRouterPair (): RouterPair {
     if (this.token_0 === null) {
-      throw new Error(
-        "Exchange: cannot convert to RouterPair if token_0 is null"
-      );
+      throw new Error("Exchange: cannot convert to RouterPair if token_0 is null");
     }
     if (this.token_1 === null) {
-      throw new Error(
-        "Exchange: cannot convert to RouterPair if token_1 is null"
-      );
+      throw new Error("Exchange: cannot convert to RouterPair if token_1 is null");
     }
     if (!this.address) {
       throw new Error('Exchange: cannot convert to RouterPair if address is missing')
@@ -208,12 +205,7 @@ export class Exchange extends Client {
     if (!this.codeHash) {
       throw new Error('Exchange: cannot convert to RouterPair if codeHash is missing')
     }
-    return new RouterPair(
-      this.token_0!,
-      this.token_1!,
-      this.address,
-      this.codeHash
-    );
+    return new RouterPair(this.token_0!, this.token_1!, this.address, this.codeHash);
   }
 
 }

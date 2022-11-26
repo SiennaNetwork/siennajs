@@ -13,7 +13,7 @@ export abstract class Factory extends Client {
 
   constructor (...args: ConstructorParameters<typeof Client>) {
     super(...args)
-    setImmediate(()=>this.log.name = `AMM Factory ${this.version}`)
+    setImmediate(()=>this.log.label = `AMM Factory ${this.version}`)
   }
 
   /** Pause or terminate the factory. */

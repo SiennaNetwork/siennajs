@@ -7,8 +7,9 @@ import { linkTuple } from './VestingConfig'
 export abstract class BaseMGMT extends Client {
 
   /** See the full schedule */
-  schedule  () {
-    return this.query({ schedule: {} })
+  async schedule () {
+    const { schedule: { schedule } } = await this.query({ schedule: {} })
+    return schedule
   }
 
   /** Load a schedule */

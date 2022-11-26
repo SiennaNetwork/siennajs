@@ -38,15 +38,16 @@ export class LaunchpadDeployment extends VersionedSubsystem<Version> {
     crate: 'launchpad',
     revision: this.revision,
     initMsg: async () => {
+      const auth = await this.auth()
       const [provider, staking, tokenTemplate, idoTemplate] = await Promise.all([
-        (await this.auth).provider.deployed,
+        auth.provider.deployed,
         this.staking.deployed,
         this.tokenTemplate.deployed,
         this.idoTemplate.deployed
       ])
       return {
         ...this.config,
-        admin:          this.agent.address,
+        admin:          this.agent!.address,
         prng_seed:      randomBase64(64),
         auth_provider:  provider.asLink,
         rewards_pool:   staking.asLink,

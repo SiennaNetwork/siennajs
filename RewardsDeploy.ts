@@ -6,6 +6,7 @@ import { SiennaConsole } from './Console'
 import type { TGERPT } from './VestingRPT'
 import type { RPTConfig } from './VestingConfig'
 import type { Version as AMMVersion } from './AMMConfig'
+import type { Version as AuthVersion } from './AuthConfig'
 import type { AuthProviderDeployment } from './AuthDeploy'
 
 import type { Version } from './RewardsConfig'
@@ -32,7 +33,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   adjustRpt: boolean = true
 
   /** Which version of Auth Provider should these rewards use. */
-  authVersion? = AuthVersions[this.version]
+  authVersion?: AuthVersion = AuthVersions[this.version]
 
   /** The name of the auth provider, if used. */
   authProviderName = this.authVersion
@@ -55,7 +56,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
 
   /** The reward pools in this deployment. */
   pools = this.defineContract({
-    client: this.client,
+    client: this.client as RewardPool,
     //match: Names.isRewardPool(this.version),
     crate: 'sienna-rewards',
   })//.findMany()
@@ -63,7 +64,7 @@ export class RewardsDeployment extends VersionedSubsystem<Version> {
   constructor (
     context: Sienna,
     options: {
-      version: Version,
+      version: V,
       reward:  Contract<Snip20>
     }
   ) {

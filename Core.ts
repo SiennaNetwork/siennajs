@@ -1,6 +1,7 @@
 import * as Scrt from '@fadroma/scrt'
 import { TokenManager, Snip20 } from '@fadroma/tokens'
 import type { TokenSymbol } from '@fadroma/tokens'
+import { addZeros } from '@fadroma/core'
 import { SecureRandom } from '@hackbg/formati'
 import type { Sienna } from './index'
 
@@ -10,6 +11,9 @@ import type * as Rewards    from './Rewards'
 import type * as Governance from './Governance'
 import type * as Lend       from './Lend'
 import type * as Launchpad  from './Launchpad'
+
+export const SIENNA_DECIMALS = 18
+export const ONE_SIENNA = BigInt(addZeros(1, SIENNA_DECIMALS))
 
 /** All subsystems of the Sienna DeFi system are versioned. */
 export abstract class VersionedSubsystem<V> extends Scrt.VersionedDeployment<V> {
@@ -89,7 +93,7 @@ export const Versions = {
     'v3.1': 'legacy/rewards-3.1.0',
     'v4.1': 'legacy/rewards-4.1.2',
     'v4.2': 'legacy/rewards-4.2.0'
-  }
+  } as Record<Rewards.Version, string>
 
 }
 
