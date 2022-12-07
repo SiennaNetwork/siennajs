@@ -380,11 +380,11 @@ export class AMMExchange extends Client {
   }
 
   fees = {
-    add_liquidity: new Fee("100000", "uscrt"),
-    remove_liquidity: new Fee("110000", "uscrt"),
-    swap_native: new Fee("55000", "uscrt"),
-    swap_snip20: new Fee("100000", "uscrt"),
-  };
+    add_liquidity: new Fee("250000", "uscrt"),
+    remove_liquidity: new Fee("250000", "uscrt"),
+    swap_native: new Fee("100000", "uscrt"),
+    swap_snip20: new Fee("220000", "uscrt")
+  }
 
   name?:     string
   token_0?:  Token
@@ -614,6 +614,10 @@ export class AMMRouter extends Client {
   static E04 = () =>
     new Error("AMMRouter#swap: route length cannot be less than 2 hops");
 
+  fees = {
+    swap: new Fee("270000", "uscrt")
+  }
+
   supportedTokens: Token[] | null = null;
   /** Register one or more supported tokens to router contract. */
   async register (...tokens: (Snip20|Token)[]) {
@@ -734,6 +738,12 @@ export class AMMRouter extends Client {
     return null
   }
 
+  /** 
+   * Will use the `swap` fee set under the `this.fees` object,
+   * multiplied by the length of the route i.e `this.fees.swap`
+   * should be set to a slightly higher gas cost than that of a
+   * direct pair swap (when not using the router).
+   * */
   async swap(
     route: AMMRouterHop[],
     amount: Uint128,
@@ -763,8 +773,12 @@ export class AMMRouter extends Client {
       return this.execute(msg, opt)
     }
 
+    const fee = this.getFee('swap')!
+    const gas = parseInt(fee.gas) * route.length
+
     return this.agent!
       .getClient(Snip20, first.from_token.custom_token.contract_addr)
+      .withFee(new Fee(gas, 'uscrt'))
       .send(amount, this.address!, receive_msg);
   }
 }
