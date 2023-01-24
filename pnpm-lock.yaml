@@ -4,8 +4,8 @@ importers:
 
   .:
     specifiers:
-      '@fadroma/scrt': ^7.0.0
-      '@fadroma/tokens': ^6.0.0
+      '@fadroma/scrt': ^7.0.2
+      '@fadroma/tokens': ^6.0.1
       '@hackbg/4mat': ^1.0.0
       '@hackbg/ubik': ^1.2
       '@rollup/plugin-commonjs': ^23
@@ -22,8 +22,8 @@ importers:
       ts-jest: ^28.0.8
       typescript: ^4.7.4
     dependencies:
-      '@fadroma/scrt': 7.0.0
-      '@fadroma/tokens': 6.0.0
+      '@fadroma/scrt': 7.0.2
+      '@fadroma/tokens': 6.0.1
       '@hackbg/4mat': 1.0.0
       '@waiting/base64': 4.2.9
       crypto-js: 4.1.1
@@ -393,37 +393,37 @@ packages:
       bn.js: 5.2.1
     dev: false
 
-  /@fadroma/core/1.0.0:
-    resolution: {integrity: sha512-eR8+woreN9cIDfTol1RfUbLfVEb0w9Pa+3vOX6R4BSlpB2A84nBq9hUWjiF5y/d0qScKOGV/XqOORhIq8em3xg==}
+  /@fadroma/core/1.0.1:
+    resolution: {integrity: sha512-s18HIwLt3Eesj9UDdlE+tL0lFH+ahqb22iaZxIZRUom7YE2NRu1aPwRf0CQE/6nyaMgDzcFAQQ6d1RxLdqjxSA==}
     dependencies:
       '@hackbg/allo': 1.0.1
       '@hackbg/cmds': 1.0.0
       '@hackbg/hide': 1.0.0
-      '@hackbg/into': 1.0.0
+      '@hackbg/into': 1.0.1
       '@hackbg/logs': 1.0.0
       '@hackbg/many': 1.0.0
       '@hackbg/oops': 1.0.0
-      '@hackbg/over': 1.0.0
+      '@hackbg/over': 1.0.1
       '@hackbg/task': 1.0.0
     dev: false
 
-  /@fadroma/scrt/7.0.0:
-    resolution: {integrity: sha512-lAiS/DOV9EwYXLZop6LznIg3DqtVrRunn6E74X29z1QG2Pk+PQEOaWNXfZ9PlFBv1gtdcjn/3Agxwq8EDCYKRw==}
+  /@fadroma/scrt/7.0.2:
+    resolution: {integrity: sha512-bk7LM6mSJX5NbfziJz7zDVNCcLA9tOhObfQIz73rspu/B9YUIoPNrVwOfowoNm1tPYFNv0Ux1FEBzZtUsE5/Rw==}
     dependencies:
-      '@fadroma/core': 1.0.0
-      '@hackbg/formati': 5.1.1
-      '@hackbg/konfizi': 3.0.1
+      '@fadroma/core': 1.0.1
+      '@hackbg/4mat': 1.0.0
+      '@hackbg/conf': 1.0.0
       '@ungap/structured-clone': 1.0.1
       secretjs: 1.7.1-beta.0
     transitivePeerDependencies:
       - encoding
     dev: false
 
-  /@fadroma/tokens/6.0.0:
-    resolution: {integrity: sha512-wpLKPJC6oOnvjM5s0jMHg6gv8wBNrm8yQQiybJ1FIC7wUSQxaLpnCWEYW28rEoxhKUMvHgoTbBCbmYHoxOPfKg==}
+  /@fadroma/tokens/6.0.1:
+    resolution: {integrity: sha512-Xd13FwQmL9PyupV7TGjmuVafvd+p9r/t3/IpvHpvg+ANfedYkX1ZlZiwr7E0BtChqU/7QEH43MKVvKH4QRGKTQ==}
     dependencies:
-      '@fadroma/core': 1.0.0
-      '@fadroma/scrt': 7.0.0
+      '@fadroma/core': 1.0.1
+      '@fadroma/scrt': 7.0.2
       '@hackbg/4mat': 1.0.0
       '@hackbg/logs': 1.0.0
       '@hackbg/many': 1.0.0
@@ -458,27 +458,16 @@ packages:
       '@hackbg/time': 1.0.0
     dev: false
 
-  /@hackbg/formati/5.1.1:
-    resolution: {integrity: sha512-aVP3PsSfS/NuX0aCAKNUp0L5m16oK+2vV5PrbeYX+pK35yLshpAmvidbLjlJfMYSX2R1+pxJE3pLmAvfoTlFfQ==}
-    dependencies:
-      '@noble/hashes': 1.1.2
-      '@scure/base': 1.1.1
-      '@scure/bip32': 1.1.0
-      '@scure/bip39': 1.1.0
-      '@types/secure-random': 1.1.0
-      secure-random: 1.1.2
+  /@hackbg/conf/1.0.0:
+    resolution: {integrity: sha512-X8t4UTvKtZMeyQoXot+Jq3DkRDQi7Ae7FooM5on4j8dI4VYq+IW07Pg3U/iepxCqbxMiLyUREF5dJVSOA57hmQ==}
     dev: false
 
   /@hackbg/hide/1.0.0:
     resolution: {integrity: sha512-xmuxl5l2ptEACoF8oXAu/cwXN/cK7Gkw+bZQJt2A+hl/g6mOJuer5fL91WYgxfUxNrZWlR15oT69LW8P7tGH5g==}
     dev: false
 
-  /@hackbg/into/1.0.0:
-    resolution: {integrity: sha512-X85NrHtaesTZEcUbIoCtHekWep71eTRsRGHoDWpER0d5hDV8MdHieTqj5acXHjcp6zPWGH4JtG7o3jdP0q/F2g==}
-    dev: false
-
-  /@hackbg/konfizi/3.0.1:
-    resolution: {integrity: sha512-3DURTgtJ5V7CkX+82x5ct+LY7alPOVjLGW76ux8jUhsVosiZV5+jgAOwi1s/nqNpMAHc1cpaZEdHUXW2++KPcg==}
+  /@hackbg/into/1.0.1:
+    resolution: {integrity: sha512-GVy+9McV7r8yDqTJDxEjQz18Hdkxtz3ZcaTMOsrjXs6gWaH1G4/xSjTmHUaQLctdm3G/941ieB6IGhcXaO22Ow==}
     dev: false
 
   /@hackbg/logs/1.0.0:
@@ -497,8 +486,8 @@ packages:
     resolution: {integrity: sha512-slBptYwFdUAJ6ZQsfd7+IRt0ybLnA1dLbV6ygwnmOOXvrLJm/mpd910QCXMie7pQHlN7U9ve+o5n+Hhc7k6Hnw==}
     dev: false
 
-  /@hackbg/over/1.0.0:
-    resolution: {integrity: sha512-istHr8qmz16JkL+reoLjBDNu8QYua4o27TwL3qZf6MMkgVWQps0pmZMExT+C3YkiwF6Yqo1MGW7C4geD/3Wvtw==}
+  /@hackbg/over/1.0.1:
+    resolution: {integrity: sha512-E5dW2Jh5yTJcDa8w3lFabnurNl70/VH/WkgFhTVrNprOAtN9tAKSadUwyN+CIbYVTUoJRz973ftj1P0Ey9w5WQ==}
     dev: false
 
   /@hackbg/task/1.0.0:
@@ -797,16 +786,8 @@ packages:
     resolution: {integrity: sha512-DZVbtY62kc3kkBtMHqwCOfXrT/hnoORy5BJ4+HU1IR59X0KWAOqsfzQPcUl/lQLlG7qXbe/fZ3r/emxtAl+sqg==}
     dev: false
 
-  /@noble/hashes/1.1.2:
-    resolution: {integrity: sha512-KYRCASVTv6aeUi1tsF8/vpyR7zpfs3FUzy2Jqm+MU+LmUKhQ0y2FpfwqkCcxSg2ua4GALJd8k2R76WxwZGbQpA==}
-    dev: false
-
   /@noble/hashes/1.1.5:
     resolution: {integrity: sha512-LTMZiiLc+V4v1Yi16TD6aX2gmtKszNye0pQgbaLqkvhIqP7nVsSaJsWloGQjJfJ8offaoP5GtX3yY5swbcJxxQ==}
-    dev: false
-
-  /@noble/secp256k1/1.6.3:
-    resolution: {integrity: sha512-T04e4iTurVy7I8Sw4+c5OSN9/RkPlo1uKxAomtxQNLq8j1uPAqnsqG1bqvY3Jv7c13gyr6dui0zmh/I3+f/JaQ==}
     dev: false
 
   /@noble/secp256k1/1.7.0:
@@ -923,14 +904,6 @@ packages:
 
   /@scure/base/1.1.1:
     resolution: {integrity: sha512-ZxOhsSyxYwLJj3pLZCefNitxsj093tb2vq90mp2txoYeBqbcjDjqFhyM8eUjq/uFm6zJ+mUuqxlS2FkuSY1MTA==}
-    dev: false
-
-  /@scure/bip32/1.1.0:
-    resolution: {integrity: sha512-ftTW3kKX54YXLCxH6BB7oEEoJfoE2pIgw7MINKAs5PsS6nqKPuKk1haTF/EuHmYqG330t5GSrdmtRuHaY1a62Q==}
-    dependencies:
-      '@noble/hashes': 1.1.5
-      '@noble/secp256k1': 1.6.3
-      '@scure/base': 1.1.1
     dev: false
 
   /@scure/bip32/1.1.3:
