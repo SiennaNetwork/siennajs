@@ -46,13 +46,13 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   /** Collection of all tokens known to the swap. */
   tokens = new TokenManager(this as Deployment)
   /** The AMM factory. */
-  factory = this.contract({ name: this.names.factory, client: AMMFactory[this.version!] }).get()
+  factory = this.contract({ name: this.names.factory, client: AMMFactory[this.version!] })
   /** The AMM exchanges. */
   exchanges = this.contracts(this.names.exchanges, AMMExchange as any)
   /** Create a new exchange through the factory. */
   async createExchange (name: string) {
     log.creatingExchange(name)
-    const factory = await this.factory
+    const factory = await this.factory()
     const { token_0, token_1 } = await this.tokens.pair(name)
     await factory.createExchange(token_0, token_1)
     log.createdExchange(name)
@@ -62,7 +62,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   async createExchanges (names: string[]) {
     log.creatingExchanges(names)
     const result = this.agent!.bundle().wrap(async bundle => {
-      const factory = (await this.factory).as(bundle)
+      const factory = (await this.factory()).as(bundle)
       for (const name of names) {
         const { token_0, token_1 } = await this.tokens.pair(name)
         await factory.createExchange(token_0, token_1)
@@ -74,7 +74,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   /** The LP tokens. */
   lpTokens = this.contracts(this.names.lpTokens, LPToken)
   /** The AMM router. */
-  router = this.contract({ name: this.names.router, client: AMMRouter }).get()
+  router = this.contract({ name: this.names.router, client: AMMRouter })
 
   showStatus = this.command('status', 'Display the status of this AMM', async () => {
     await this.showFactoryStatus()
@@ -87,8 +87,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
   }
   /** Display the status of the exchanges. */
   async showExchangesStatus () {
-    const factory = await this.factory
-    console.log({factory})
+    const factory = await this.factory()
     const exchanges = await factory.listExchangesFull()
     if (!(exchanges.length > 0)) return log.noExchanges()
     const column1 = 15

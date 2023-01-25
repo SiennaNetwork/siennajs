@@ -1,8 +1,10 @@
 import {
   Address,
   Client,
+  Contract,
   ContractLink,
   Decimal256,
+  Deployment,
   Fee,
   PaginatedResponse,
   Pagination,
@@ -32,15 +34,9 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
     rewardToken:   `Lend[${this.version}].Placeholder.SIENNA`,
   }
   /** The lend interest model contract. */
-  interestModel = this.contract({
-    name:   this.names.interestModel,
-    client: LendInterestModel
-  }).get()
+  interestModel = this.contract({ name: this.names.interestModel, client: LendInterestModel })
   /** The lend overseer factory. */
-  overseer = this.contract({
-    name:   this.names.overseer,
-    client: LendOverseer
-  }).get()
+  overseer = this.contract({ name: this.names.overseer, client: LendOverseer })
   /** Configure the overseer whitelist. */
   whitelist = async () => {
     const MARKET_INITIAL_EXCHANGE_RATE = "0.2";
@@ -48,8 +44,8 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
     const MARKET_SEIZE_FACTOR          = "0.9";
     const MARKET_LTV_RATIO             = "0.7";
     const MARKET_TOKEN_SYMBOL          = "SSCRT";
-    const overseer      = await this.overseer
-    const interestModel = await this.interestModel
+    const overseer      = await this.overseer()
+    const interestModel = await this.interestModel()
     const config        = {
       initial_exchange_rate: MARKET_INITIAL_EXCHANGE_RATE,
       reserve_factor:        MARKET_RESERVE_FACTOR,
@@ -80,7 +76,7 @@ export default class LendDeployment extends VersionedDeployment<LendVersions> {
   /** The lend mock oracle. */
   mockOracle?: Promise<MockOracle>   = undefined
   /** The TGE containing the token and RPT used by the deployment. */
-  tge = new TGEDeployment(this)
+  tge = new TGEDeployment(this as Deployment)
   /** The reward token for Lend. Defaults to SIENNA. */
   get rewardToken () { return this.tge.token }
 

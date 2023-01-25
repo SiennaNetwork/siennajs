@@ -2,6 +2,7 @@ import {
   Address,
   Client,
   CodeHash,
+  Contract,
   ContractLink,
   Deployment,
   IntoLink,
@@ -36,9 +37,9 @@ export default class SiennaAuth extends VersionedDeployment<AuthProviderVersion>
     oracle:   `Auth[${this.version}].Oracle`
   }
   /** The auth provider contract. */
-  provider = this.contract({ name: this.names.provider, client: AuthProvider }).get()
+  provider = this.contract({ name: this.names.provider, client: AuthProvider })
   /** The auth provider's RNG oracle. */
-  oracle = this.contract({ name: this.names.oracle }).get()
+  oracle = this.contract({ name: this.names.oracle })
 }
 
 export type AuthStrategy =

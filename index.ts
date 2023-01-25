@@ -1,4 +1,4 @@
-import { Deployment } from './Core'
+import { Contract, Deployment } from './Core'
 
 import SiennaTGE,     { SiennaSnip20 }      from './SiennaTGE'
 import SiennaSwap,    { AMMVersion }        from './SiennaSwap'
@@ -12,7 +12,7 @@ import SiennaPFR        from './SiennaPFR'
 export default class Sienna extends Deployment {
 
   /** The SIENNA token. */
-  get token (): SiennaSnip20 { return this.tge.token }
+  get token (): Contract<SiennaSnip20> { return this.tge.token }
 
   /** The SIENNA Token Generation Event. */
   tge = new SiennaTGE(this as Deployment)
