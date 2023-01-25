@@ -25,7 +25,7 @@ export default class LaunchpadDeployment extends Deployment {
     ido: (name: string) => name.startsWith(`${this.names.launchpad}.IDO[`)
   }
   /** The TGE containing the token and RPT used by the deployment. */
-  tge = new TGE(this)
+  tge = new TGE(this as Deployment)
   /** The token staked in the launchpad pool. */
   get token () { return this.tge.token }
   /** TODO: What does launchpad use RPT for? */
@@ -33,7 +33,7 @@ export default class LaunchpadDeployment extends Deployment {
   /** The auth provider and oracle used by the deployment. */
   auth = new Auth(this, 'v1', this.names.authGroup)
   /** The launchpad contract. */
-  launchpad = this.contract({ name: this.names.launchpad, client: Launchpad }).get()
+  launchpad = this.contract({ name: this.names.launchpad, client: Launchpad })
   /** The known IDOs, matched by name */
   idos: Contract<IDO>[] = this.filter(this.names.ido)
     .map(receipt=>this.contract({ ...receipt, client: IDO }))
@@ -41,7 +41,7 @@ export default class LaunchpadDeployment extends Deployment {
   /** Display the status of the Launchpad/IDO system. */
   showStatus = this.command('status', 'display the status of the Launchpad/IDO system.',
     async () => {
-      const launchpad = await this.launchpad
+      const launchpad = await this.launchpad()
       log.authProvider(await launchpad.auth.getProvider())
       log.saleConstraints(await launchpad.saleConstraints())
       log.latestIdos(await launchpad.getIdos())

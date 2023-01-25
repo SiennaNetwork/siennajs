@@ -3,6 +3,7 @@ import {
   Client,
   ClientConsole,
   CodeHash,
+  Contract,
   Deployment,
   Duration,
   IntoLink,
@@ -24,27 +25,27 @@ export default class SiennaTGE extends Deployment {
   names = { token: 'SIENNA', mgmt: 'SIENNA.MGMT', rpt: 'SIENNA.RPT' }
 
   /** The deployed SIENNA SNIP20 token contract. */
-  token = this.contract({ name: this.names.token, client: Snip20 }).get()
+  token = this.contract({ name: this.names.token, client: Snip20 })
 
   /** Get the balance of an address in the vested token. */
   async getBalance (addr: Address, vk: ViewingKey) {
     this.log.info(`Querying balance of ${addr}...`)
-    return await (await this.token).getBalance(addr, vk)
+    return await (await this.token()).getBalance(addr, vk)
   }
 
   /** Set the VK of the calling address in the vested token. */
   async setVK (vk: ViewingKey) {
     this.log.info('Setting VK...')
-    return await (await this.token).vk.set(vk)
+    return await (await this.token()).vk.set(vk)
   }
 
   /** The deployed MGMT contract, which unlocks tokens
     * for claiming according to a pre-defined schedule.  */
-  mgmt = this.contract({ name: this.names.mgmt, client: MGMT_TGE }).get()
+  mgmt = this.contract({ name: this.names.mgmt, client: MGMT_TGE })
 
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
-    return this.mgmt.then((mgmt: MGMT)=>mgmt.schedule())
+    return this.mgmt().then((mgmt: MGMT)=>mgmt.schedule())
   }
   setSchedule () {
     throw new Error('TODO')
@@ -54,17 +55,17 @@ export default class SiennaTGE extends Deployment {
   }
   /** Fetch the current schedule of MGMT. */
   getMgmtStatus () {
-    return this.mgmt.then((mgmt: MGMT_TGE)=>mgmt.status())
+    return this.mgmt().then((mgmt: MGMT_TGE)=>mgmt.status())
   }
   /** Fetch the current progress of the vesting. */
   getMgmtProgress (addr: Address) {
-    return this.mgmt.then((mgmt: MGMT_TGE)=>mgmt.progress(addr))
+    return this.mgmt().then((mgmt: MGMT_TGE)=>mgmt.progress(addr))
   }
 
   /** Show the current progress of the vesting. */
   /** The deployed RPT contract, which claims tokens from MGMT
     * and distributes them to the reward pools.  */
-  rpt = this.contract({ name: this.names.rpt, client: RPT_TGE }).get()
+  rpt = this.contract({ name: this.names.rpt, client: RPT_TGE })
 
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) {
@@ -73,7 +74,7 @@ export default class SiennaTGE extends Deployment {
 
   /** Fetch the current status of RPT. */
   getRptStatus () {
-    return this.rpt.then((rpt: RPT_TGE)=>rpt.status())
+    return this.rpt().then((rpt: RPT_TGE)=>rpt.status())
   }
 
   showStatus = this.command('status', 'show the status of this TGE', async (
@@ -106,7 +107,7 @@ export default class SiennaTGE extends Deployment {
   }
   /** Show the current status of the RPT. */
   async showRptStatus () {
-    const status = await (await this.rpt).status() as { config: any[] }
+    const status = await (await this.rpt()).status() as { config: any[] }
     log.rptStatus(this.rpt, status)
     log.rptRecipients((await Promise.all(status.config.map(
       async ([address])=>({
@@ -120,7 +121,7 @@ export default class SiennaTGE extends Deployment {
 
   /** Make MGMT admin of token, load final config into MGMT, and irreversibly launch MGMT. */
   async launch (schedule: VestingSchedule) {
-    const [token, mgmt, rpt] = await Promise.all([this.token, this.mgmt, this.rpt])
+    const [token, mgmt, rpt] = await Promise.all([this.token(), this.mgmt(), this.rpt()])
     await this.agent!.bundle().wrap(async bundle => {
       // Make MGMT admin and sole minter of token;
       await mgmt.as(bundle).acquire(token)
