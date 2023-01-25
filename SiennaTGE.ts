@@ -26,9 +26,6 @@ export default class SiennaTGE extends Deployment {
   /** The deployed SIENNA SNIP20 token contract. */
   token = this.contract({ name: this.names.token, client: Snip20 }).get()
 
-  /** Collection of all tokens known to the swap. */
-  tokens = new TokenManager(this as Deployment)
-
   /** Get the balance of an address in the vested token. */
   async getBalance (addr: Address, vk: ViewingKey) {
     this.log.info(`Querying balance of ${addr}...`)
@@ -57,11 +54,11 @@ export default class SiennaTGE extends Deployment {
   }
   /** Fetch the current schedule of MGMT. */
   getMgmtStatus () {
-    return this.mgmt.then((mgmt: MGMT)=>mgmt.status())
+    return this.mgmt.then((mgmt: MGMT_TGE)=>mgmt.status())
   }
   /** Fetch the current progress of the vesting. */
   getMgmtProgress (addr: Address) {
-    return this.mgmt.then((mgmt: MGMT)=>mgmt.progress(addr))
+    return this.mgmt.then((mgmt: MGMT_TGE)=>mgmt.progress(addr))
   }
 
   /** Show the current progress of the vesting. */
@@ -76,7 +73,7 @@ export default class SiennaTGE extends Deployment {
 
   /** Fetch the current status of RPT. */
   getRptStatus () {
-    return this.rpt.then((rpt: RPT)=>rpt.status())
+    return this.rpt.then((rpt: RPT_TGE)=>rpt.status())
   }
 
   showStatus = this.command('status', 'show the status of this TGE', async (

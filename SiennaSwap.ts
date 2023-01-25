@@ -8,6 +8,7 @@ import {
   Token,
   TokenAmount,
   TokenInfo,
+  TokenManager,
   TokenPair,
   TokenPairAmount,
   VersionedDeployment,
@@ -21,11 +22,12 @@ import {
 import type {
   Address,
   Agent, 
-  ContractMetadata,
   CodeHash,
+  Contract,
   ContractInfo,
   ContractLink,
   Decimal,
+  Deployment,
   ExecOpts,
   Uint128,
 } from "./Core";
@@ -41,6 +43,8 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     exchanges: (name: string) => name.startsWith(`AMM[${this.version}]`) && !name.endsWith(`.LP`),
     lpTokens:  (name: string) => name.startsWith(`AMM[${this.version}]`) &&  name.endsWith(`.LP`)
   }
+  /** Collection of all tokens known to the swap. */
+  tokens = new TokenManager(this as Deployment)
   /** The AMM factory. */
   factory = this.contract({ name: this.names.factory, client: AMMFactory[this.version!] }).get()
   /** The AMM exchanges. */
@@ -369,7 +373,7 @@ export class AMMExchange extends Client {
     agent?:    Agent,
     address?:  Address,
     codeHash?: CodeHash,
-    metadata?: ContractMetadata,
+    metadata?: Contract<AMMExchange>,
     options:   Partial<AMMExchangeOpts> = {}
   ) {
     super(agent, address, codeHash, metadata)

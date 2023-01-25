@@ -13,6 +13,7 @@ import type {
   ClientClass,
   Contract,
   ContractLink,
+  Deployment,
   Emigration,
   Immigration,
   IntoLink,
@@ -41,13 +42,13 @@ export const RewardsToAMMVersion: Record<RewardsAPIVersion, AMMVersion> = {
 
 export default class SiennaRewards extends VersionedDeployment<RewardsAPIVersion> {
 
-  tge = new SiennaTGE(this)
+  tge = new SiennaTGE(this as Deployment)
 
   rewardPools: Promise<Contract<Rewards>[]> = Promise.all(this
     .filter((name: string)=>name.includes('Rewards'))
     .map((receipt: object)=>this.contract(receipt)))
 
-  showStatus = async () => log.rewardsContracts(this.name, this.state)
+  showStatus = async () => { log.rewardsContracts(this.name, this.state) }
 
 }
 
