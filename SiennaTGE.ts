@@ -14,6 +14,8 @@ import {
   validatedCodeHashOf
 } from './Core'
 
+import { TokenManager } from '@fadroma/tokens'
+
 /** Connect to an existing TGE. */
 export default class SiennaTGE extends Deployment {
 
@@ -23,6 +25,9 @@ export default class SiennaTGE extends Deployment {
 
   /** The deployed SIENNA SNIP20 token contract. */
   token = this.contract({ name: this.names.token, client: Snip20 }).get()
+
+  /** Collection of all tokens known to the swap. */
+  tokens = new TokenManager(this as Deployment)
 
   /** Get the balance of an address in the vested token. */
   async getBalance (addr: Address, vk: ViewingKey) {
@@ -42,7 +47,7 @@ export default class SiennaTGE extends Deployment {
 
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
-    return this.mgmt.then(mgmt=>mgmt.schedule())
+    return this.mgmt.then((mgmt: MGMT)=>mgmt.schedule())
   }
   setSchedule () {
     throw new Error('TODO')
@@ -52,11 +57,11 @@ export default class SiennaTGE extends Deployment {
   }
   /** Fetch the current schedule of MGMT. */
   getMgmtStatus () {
-    return this.mgmt.then(mgmt=>mgmt.status())
+    return this.mgmt.then((mgmt: MGMT)=>mgmt.status())
   }
   /** Fetch the current progress of the vesting. */
   getMgmtProgress (addr: Address) {
-    return this.mgmt.then(mgmt=>mgmt.progress(addr))
+    return this.mgmt.then((mgmt: MGMT)=>mgmt.progress(addr))
   }
 
   /** Show the current progress of the vesting. */
@@ -71,7 +76,7 @@ export default class SiennaTGE extends Deployment {
 
   /** Fetch the current status of RPT. */
   getRptStatus () {
-    return this.rpt.then(rpt=>rpt.status())
+    return this.rpt.then((rpt: RPT)=>rpt.status())
   }
 
   showStatus = this.command('status', 'show the status of this TGE', async (

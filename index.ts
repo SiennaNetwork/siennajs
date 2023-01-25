@@ -1,6 +1,6 @@
 import { Deployment } from './Core'
 
-import SiennaTGE        from './SiennaTGE'
+import SiennaTGE,     { SiennaSnip20 }      from './SiennaTGE'
 import SiennaSwap,    { AMMVersion }        from './SiennaSwap'
 import SiennaRewards, { RewardsAPIVersion } from './SiennaRewards'
 import SiennaAuth       from './Auth'
@@ -10,11 +10,12 @@ import SiennaLend       from './SiennaLend'
 import SiennaPFR        from './SiennaPFR'
 
 export default class Sienna extends Deployment {
+
   /** The SIENNA token. */
-  get token () { return this.tge.token }
+  get token (): SiennaSnip20 { return this.tge.token }
 
   /** The SIENNA Token Generation Event. */
-  tge = new SiennaTGE(this)
+  tge = new SiennaTGE(this as Deployment)
 
   /** The Sienna Swap AMM. */
   amm = {
@@ -37,10 +38,10 @@ export default class Sienna extends Deployment {
   pfr    = new SiennaPFR(this, 'v3.1')
 
   /** Sienna Governance system. */
-  gov    = new SiennaGovernance(this)
+  gov    = new SiennaGovernance(this as Deployment)
 
   /** Sienna Launch: Launchpad/IDO system. */
-  launch = new SiennaLaunch(this)
+  launch: SiennaLaunch = new SiennaLaunch(this as Deployment)
 
   static Auth       = SiennaAuth
   static TGE        = SiennaTGE
@@ -50,6 +51,7 @@ export default class Sienna extends Deployment {
   static PFR        = SiennaPFR
   static Governance = SiennaGovernance
   static Launch     = SiennaLaunch
+
 }
 
 export * from './Core'
