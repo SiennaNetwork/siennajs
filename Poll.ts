@@ -35,7 +35,7 @@ export default class GovernanceDeployment extends Deployment {
     Polls: Polls
   }
   /** The TGE containing the token and RPT used by the deployment. */
-  tge = new TGEDeployment(this)
+  tge = new TGEDeployment(this as Deployment)
   /** The token staked in the governance pool. */
   get token () { return this.tge.token }
   /** The RPT contract which needs to be reconfigured when we upgrade

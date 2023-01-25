@@ -1,16 +1,12 @@
 import * as Scrt from '@fadroma/scrt'
 import { TokenManager } from '@fadroma/tokens'
 
+export { randomBase64, SecureRandom } from '@hackbg/4mat'
+export * from '@fadroma/scrt'
+export * from '@fadroma/tokens'
+
 /** Get the current time in seconds since the Unix epoch. */
 export const now = () => Math.floor(+new Date() / 1000);
-
-export class Deployment extends Scrt.Deployment {
-  tokens: TokenManager = new TokenManager(()=>this as Scrt.Deployment)
-}
-
-export class VersionedDeployment<V> extends Scrt.VersionedDeployment<V> {
-  tokens: TokenManager = new TokenManager(()=>this as Scrt.Deployment)
-}
 
 export function validatedAddressOf (instance?: { address?: Scrt.Address }): Scrt.Address {
   if (!instance)         throw new Error("Can't create an inter-contract link without a target")
@@ -82,8 +78,3 @@ export class Immigration extends Scrt.Client {
 }
 
 export type TxResult = any
-
-export { randomBase64, SecureRandom } from '@hackbg/formati'
-export { bold, colors } from '@fadroma/scrt'
-export * from '@fadroma/scrt'
-export * from '@fadroma/tokens'
