@@ -29,14 +29,14 @@ export default class SiennaPFR extends Deployment {
     rpts:    ({ name }: { name: string }) => `${name}.RPT[v2]`
   }
 
-  mgmts: Promise<MGMT_PFR[]> = Promise.all(this.vestings.map(this.names.mgmts)
-    .map(name=>this.contract(name).getClient(MGMT_PFR) as Promise<MGMT_PFR>))
+  mgmts: Contract<MGMT_PFR>[] = this.vestings.map(this.names.mgmts)
+    .map(name=>this.contract({ name, client: MGMT_PFR }))
 
-  rpts: Promise<RPT_PFR[]> = Promise.all(this.vestings.map(this.names.rpts)
-    .map(name=>this.contract(name).getClient(RPT_PFR) as Promise<RPT_PFR>))
+  rpts: Contract<RPT_PFR>[] = this.vestings.map(this.names.rpts)
+    .map(name=>this.contract({ name, client: RPT_PFR }))
 
-  rewardPools: Promise<Rewards[]> = Promise.all(this.vestings.map(this.names.rewards)
-    .map(name=>this.contract(name).getClient(Rewards[this.rewardsVersion!]) as Promise<Rewards>))
+  rewardPools: Contract<Rewards>[] = this.vestings.map(this.names.rewards)
+    .map(name=>this.contract({ name, client: Rewards[this.rewardsVersion!] as any }))
 
   showStatus = this.command('status', 'display the status of PFR vestings', async () => {})
 
