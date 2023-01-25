@@ -4,8 +4,8 @@ importers:
 
   .:
     specifiers:
-      '@fadroma/scrt': ^7.0.2
-      '@fadroma/tokens': ^6.0.1
+      '@fadroma/scrt': ^7.0.3
+      '@fadroma/tokens': ^6.0.2
       '@hackbg/4mat': ^1.0.0
       '@hackbg/ubik': ^1.2
       '@rollup/plugin-commonjs': ^23
@@ -22,8 +22,8 @@ importers:
       ts-jest: ^28.0.8
       typescript: ^4.7.4
     dependencies:
-      '@fadroma/scrt': 7.0.2
-      '@fadroma/tokens': 6.0.1
+      '@fadroma/scrt': 7.0.3
+      '@fadroma/tokens': 6.0.2
       '@hackbg/4mat': 1.0.0
       '@waiting/base64': 4.2.9
       crypto-js: 4.1.1
@@ -393,8 +393,8 @@ packages:
       bn.js: 5.2.1
     dev: false
 
-  /@fadroma/core/1.0.1:
-    resolution: {integrity: sha512-s18HIwLt3Eesj9UDdlE+tL0lFH+ahqb22iaZxIZRUom7YE2NRu1aPwRf0CQE/6nyaMgDzcFAQQ6d1RxLdqjxSA==}
+  /@fadroma/core/1.0.2:
+    resolution: {integrity: sha512-WxEZppYMnfVJb8Hw/pEAhu2rSRAuHf7rwyQBiFblqvm9LP2EYqd+gaos+7ws604Q4aWlyAhArT3ZtzsAQkWWRQ==}
     dependencies:
       '@hackbg/allo': 1.0.1
       '@hackbg/cmds': 1.0.0
@@ -407,10 +407,10 @@ packages:
       '@hackbg/task': 1.0.0
     dev: false
 
-  /@fadroma/scrt/7.0.2:
-    resolution: {integrity: sha512-bk7LM6mSJX5NbfziJz7zDVNCcLA9tOhObfQIz73rspu/B9YUIoPNrVwOfowoNm1tPYFNv0Ux1FEBzZtUsE5/Rw==}
+  /@fadroma/scrt/7.0.3:
+    resolution: {integrity: sha512-W3Q6LZyNOHZSB6z0JnPvkW9mvlKa7yYazOe8An/ehTk/O7zzdnW6cMj1jdA/KyBkBuT+ZcXrCkHWBOidXLYLVA==}
     dependencies:
-      '@fadroma/core': 1.0.1
+      '@fadroma/core': 1.0.2
       '@hackbg/4mat': 1.0.0
       '@hackbg/conf': 1.0.0
       '@ungap/structured-clone': 1.0.1
@@ -419,11 +419,11 @@ packages:
       - encoding
     dev: false
 
-  /@fadroma/tokens/6.0.1:
-    resolution: {integrity: sha512-Xd13FwQmL9PyupV7TGjmuVafvd+p9r/t3/IpvHpvg+ANfedYkX1ZlZiwr7E0BtChqU/7QEH43MKVvKH4QRGKTQ==}
+  /@fadroma/tokens/6.0.2:
+    resolution: {integrity: sha512-2zCf2903K9tIMEqhTyj+gTAEqUrhCqOGzUUhq+6A6BK3ue1i5aHzm1eFywvsoQj8DDt/BzHWbpPMVQZOCwKJnQ==}
     dependencies:
-      '@fadroma/core': 1.0.1
-      '@fadroma/scrt': 7.0.2
+      '@fadroma/core': 1.0.2
+      '@fadroma/scrt': 7.0.3
       '@hackbg/4mat': 1.0.0
       '@hackbg/logs': 1.0.0
       '@hackbg/many': 1.0.0
