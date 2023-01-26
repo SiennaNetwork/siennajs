@@ -35,8 +35,8 @@ export default class LaunchpadDeployment extends Deployment {
   /** The launchpad contract. */
   launchpad = this.contract({ name: this.names.launchpad, client: Launchpad })
   /** The known IDOs, matched by name */
-  idos: Contract<IDO>[] = this.filter(this.names.ido)
-    .map(receipt=>this.contract({ ...receipt, client: IDO }))
+  idos: Contract<IDO>[] = Object.keys(this.state).filter(this.names.ido)
+    .map(name=>this.contract({ ...this.state[name], client: IDO }))
 
   /** Display the status of the Launchpad/IDO system. */
   showStatus = this.command('status', 'display the status of the Launchpad/IDO system.',
