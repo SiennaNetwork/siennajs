@@ -20,7 +20,7 @@
   },
   "files": [ "*.ts" ],
   "dependencies": {
-    "@fadroma/scrt":   "^7.0.4",
+    "@fadroma/scrt":   "^7.0.5",
     "@fadroma/tokens": "^6.0.4",
     "@hackbg/4mat":    "^1.0.0",
     "crypto-js":       "^4.1.1",

@@ -2,8 +2,14 @@
 
 ```typescript
 import Sienna from '.'
+import { Scrt } from '@fadroma/scrt'
 import TESTNET from './deployments/pulsar-2.json'
-const app = new Sienna({ state: TESTNET })
+const app = new Sienna({
+  state: TESTNET,
+  agent: await Scrt.Testnet().getAgent({
+    mnemonic: 'genius supply lecture echo follow that silly meadow used gym nerve together'
+  })
+})
 ```
 
 ## The TGE (Sienna Token Generation Event)
