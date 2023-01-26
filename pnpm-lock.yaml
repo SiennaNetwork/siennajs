@@ -7,6 +7,7 @@ importers:
       '@fadroma/scrt': ^7.0.3
       '@fadroma/tokens': ^6.0.2
       '@hackbg/4mat': ^1.0.0
+      '@hackbg/ensuite': ^1.1.1
       '@hackbg/ubik': ^1.2
       '@rollup/plugin-commonjs': ^23
       '@rollup/plugin-json': ^5
@@ -29,6 +30,7 @@ importers:
       crypto-js: 4.1.1
       merkletreejs: 0.2.32
     devDependencies:
+      '@hackbg/ensuite': 1.1.1
       '@hackbg/ubik': 1.2.0
       '@rollup/plugin-commonjs': 23.0.0_rollup@2.79.1
       '@rollup/plugin-json': 5.0.0_rollup@2.79.1
@@ -433,6 +435,35 @@ packages:
       - encoding
     dev: false
 
+  /@ganesha/core/2.0.1:
+    resolution: {integrity: sha512-eaYn9IpHWc8gzPB3sHgksAkluB0/lYKm41KrY+6vwGeUjCp6S6D/Rk5pRqpbQ0RsRyM5ah2ZmkBfnKpOVsyqUg==}
+    dependencies:
+      joycon: 3.1.1
+      jsonc-parser: 3.2.0
+      typescript: 4.8.3
+    dev: true
+
+  /@ganesha/node-legacy/3.0.2:
+    resolution: {integrity: sha512-w4genePLoho8CSqj5xg6f8qMFkLs1XCI+SZuQ/qLgusXoO35vpUgMy22eKDg9JwDNSSH7VdsOm57QX65UP3fRA==}
+    dependencies:
+      '@ganesha/core': 2.0.1
+      front-matter: 4.0.2
+      joycon: 3.1.1
+      jsonc-parser: 3.2.0
+      pirates: 4.0.5
+      source-map-support: 0.5.21
+    dev: true
+
+  /@ganesha/node/2.3.3:
+    resolution: {integrity: sha512-/8mp/vqGHEv7KjzV8lCfIdQ3NWqgtIU7/h0iNqlF3QiMJKD3OaesafBs9/HrTfi31rYu9rOV/awCFlGUWkLmgg==}
+    dependencies:
+      '@ganesha/core': 2.0.1
+      front-matter: 4.0.2
+      joycon: 3.1.1
+      jsonc-parser: 3.2.0
+      source-map-support: 0.5.21
+    dev: true
+
   /@hackbg/4mat/1.0.0:
     resolution: {integrity: sha512-UpjcC0noqD0kBPkKLC7WwQ8OKryaoiwvceYrBkPHHjf3mV9exNszeaZWl5CizpnzLbkkHx2BU8NMD6vK4oMblw==}
     dependencies:
@@ -462,6 +493,26 @@ packages:
     resolution: {integrity: sha512-X8t4UTvKtZMeyQoXot+Jq3DkRDQi7Ae7FooM5on4j8dI4VYq+IW07Pg3U/iepxCqbxMiLyUREF5dJVSOA57hmQ==}
     dev: false
 
+  /@hackbg/ensuite/1.1.1:
+    resolution: {integrity: sha512-/Svcc5wrgypolr1kppSK+OER486qx9QNcdxg59p+w5BjjmokqKEfjxApZk+medDTfRQcMrYKzpHy8BuxA6/ccw==}
+    hasBin: true
+    dependencies:
+      '@hackbg/ganesha': 2.3.0
+      '@hackbg/spec': 1.0.0
+      c8: 7.12.0
+      why-is-node-still-running: 1.0.0
+    dev: true
+
+  /@hackbg/ganesha/2.3.0:
+    resolution: {integrity: sha512-kpSgGTooNwWg5ROR6TMrh+9xKRjGLRy0MWE7L3M/cltZQpvJQ83b5Pf5QM7UiVboaW9iXCSKZTrC8/lNjk1e/w==}
+    hasBin: true
+    dependencies:
+      '@ganesha/core': 2.0.1
+      '@ganesha/node': 2.3.3
+      '@ganesha/node-legacy': 3.0.2
+      cross-spawn: 7.0.3
+    dev: true
+
   /@hackbg/hide/1.0.0:
     resolution: {integrity: sha512-xmuxl5l2ptEACoF8oXAu/cwXN/cK7Gkw+bZQJt2A+hl/g6mOJuer5fL91WYgxfUxNrZWlR15oT69LW8P7tGH5g==}
     dev: false
@@ -489,6 +540,11 @@ packages:
   /@hackbg/over/1.0.1:
     resolution: {integrity: sha512-E5dW2Jh5yTJcDa8w3lFabnurNl70/VH/WkgFhTVrNprOAtN9tAKSadUwyN+CIbYVTUoJRz973ftj1P0Ey9w5WQ==}
     dev: false
+
+  /@hackbg/spec/1.0.0:
+    resolution: {integrity: sha512-YlruR8UORlr9YF1a6eSMEVRSXrUGK397xErPSKkJnJ6VCQK35ULp3Hkf1HCc7wptZZI1+oRl1QG5wFwYOkET1w==}
+    hasBin: true
+    dev: true
 
   /@hackbg/task/1.0.0:
     resolution: {integrity: sha512-32hgxaQvVY3pPfDPrby8IDCLefeYmert+8V/rVYe4mL91selzRSDYgQYzhhsSw8Djj8gOLQ6006imuFnp8oL1Q==}
@@ -1424,6 +1480,25 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
+  /c8/7.12.0:
+    resolution: {integrity: sha512-CtgQrHOkyxr5koX1wEUmN/5cfDa2ckbHRA4Gy5LAL0zaCFtVWJS5++n+w4/sr2GWGerBxgTjpKeDclk/Qk6W/A==}
+    engines: {node: '>=10.12.0'}
+    hasBin: true
+    dependencies:
+      '@bcoe/v8-coverage': 0.2.3
+      '@istanbuljs/schema': 0.1.3
+      find-up: 5.0.0
+      foreground-child: 2.0.0
+      istanbul-lib-coverage: 3.2.0
+      istanbul-lib-report: 3.0.0
+      istanbul-reports: 3.1.5
+      rimraf: 3.0.2
+      test-exclude: 6.0.0
+      v8-to-istanbul: 9.0.1
+      yargs: 16.2.0
+      yargs-parser: 20.2.9
+    dev: true
+
   /callsites/3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
@@ -1827,6 +1902,28 @@ packages:
     dependencies:
       locate-path: 5.0.0
       path-exists: 4.0.0
+    dev: true
+
+  /find-up/5.0.0:
+    resolution: {integrity: sha512-78/PXT1wlLLDgTzDs7sjq9hzz0vXD+zn+7wypEe4fXQxCmdmqfGsEPQxmiCSQI3ajFV91bVSsvNtrJRiW6nGng==}
+    engines: {node: '>=10'}
+    dependencies:
+      locate-path: 6.0.0
+      path-exists: 4.0.0
+    dev: true
+
+  /foreground-child/2.0.0:
+    resolution: {integrity: sha512-dCIq9FpEcyQyXKCkyzmlPTFNgrCzPudOe+mhvJU5zAtlBnGVy2yKxtfsxK2tQBThwq225jcvBjpw1Gr40uzZCA==}
+    engines: {node: '>=8.0.0'}
+    dependencies:
+      cross-spawn: 7.0.3
+      signal-exit: 3.0.7
+    dev: true
+
+  /front-matter/4.0.2:
+    resolution: {integrity: sha512-I8ZuJ/qG92NWX8i5x1Y8qyj3vizhXS31OxjKDu3LKP+7/qBgfIKValiZIEwoVoJKUHlhWtYrktkxV1XsX+pPlg==}
+    dependencies:
+      js-yaml: 3.14.1
     dev: true
 
   /fs.realpath/1.0.0:
@@ -2485,6 +2582,11 @@ packages:
       - ts-node
     dev: true
 
+  /joycon/3.1.1:
+    resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
+    engines: {node: '>=10'}
+    dev: true
+
   /js-sha3/0.8.0:
     resolution: {integrity: sha512-gF1cRrHhIzNfToc802P800N8PpXS+evLLXfsVpowqmAFR9uwbi89WvXg2QspOmXL8QL86J4T1EpFu+yUkwJY3Q==}
     dev: false
@@ -2515,6 +2617,10 @@ packages:
     resolution: {integrity: sha512-1hqLFMSrGHRHxav9q9gNjJ5EXznIxGVO09xQRrwplcS8qs28pZ8s8hupZAmqDwZUmVZ2Qb2jnyPOWcDH8m8dlA==}
     engines: {node: '>=6'}
     hasBin: true
+    dev: true
+
+  /jsonc-parser/3.2.0:
+    resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
     dev: true
 
   /just-extend/4.2.1:
@@ -2550,6 +2656,13 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       p-locate: 4.1.0
+    dev: true
+
+  /locate-path/6.0.0:
+    resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
+    engines: {node: '>=10'}
+    dependencies:
+      p-locate: 5.0.0
     dev: true
 
   /lodash.get/4.4.2:
@@ -2766,6 +2879,13 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       p-limit: 2.3.0
+    dev: true
+
+  /p-locate/5.0.0:
+    resolution: {integrity: sha512-LaNjtRWUBY++zB5nE/NwcaoMylSPk+S+ZHNB1TzdbMJMny6dynpAGt7X/tl/QYq3TIeE6nxHppbo2LGymrG5Pw==}
+    engines: {node: '>=10'}
+    dependencies:
+      p-limit: 3.1.0
     dev: true
 
   /p-try/2.2.0:
@@ -3108,6 +3228,13 @@ packages:
       source-map: 0.6.1
     dev: true
 
+  /source-map-support/0.5.21:
+    resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}
+    dependencies:
+      buffer-from: 1.1.2
+      source-map: 0.6.1
+    dev: true
+
   /source-map/0.6.1:
     resolution: {integrity: sha512-UjgapumWlbMhkBgzT7Ykc5YXUT46F0iKu8SGXq0bcwP5dz/h0Plj6enJqjz1Zbq2l5WaqYnrVbwWOWMyF3F47g==}
     engines: {node: '>=0.10.0'}
@@ -3416,6 +3543,10 @@ packages:
       isexe: 2.0.0
     dev: true
 
+  /why-is-node-still-running/1.0.0:
+    resolution: {integrity: sha512-oLjSBpYU0cY77XUJZzu0acNMaM/23dncjWsMcvSt45ZyyBEUuVXGDV2rH3XOg85xobxIIp1jcrq91r74XT1QDg==}
+    dev: true
+
   /widest-line/4.0.1:
     resolution: {integrity: sha512-o0cyEG0e8GPzT4iGHphIOh0cJOV8fivsXxddQasHPHfoZf1ZexrfeA21w2NaEN1RHE+fXlfISmOE8R9N3u3Qig==}
     engines: {node: '>=12'}
@@ -3468,9 +3599,27 @@ packages:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
     dev: true
 
+  /yargs-parser/20.2.9:
+    resolution: {integrity: sha512-y11nGElTIV+CT3Zv9t7VKl+Q3hTQoT9a1Qzezhhl6Rp21gJ/IVTW7Z3y9EWXhuUBC2Shnf+DX0antecpAwSP8w==}
+    engines: {node: '>=10'}
+    dev: true
+
   /yargs-parser/21.1.1:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
+    dev: true
+
+  /yargs/16.2.0:
+    resolution: {integrity: sha512-D1mvvtDG0L5ft/jGWkLpG1+m0eQxOfaBvTNELraWj22wSVUMWxZUvYgJYcKh6jGGIkJFhH4IZPQhR4TKpc8mBw==}
+    engines: {node: '>=10'}
+    dependencies:
+      cliui: 7.0.4
+      escalade: 3.1.1
+      get-caller-file: 2.0.5
+      require-directory: 2.1.1
+      string-width: 4.2.3
+      y18n: 5.0.8
+      yargs-parser: 20.2.9
     dev: true
 
   /yargs/17.5.1:

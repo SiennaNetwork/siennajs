@@ -47,16 +47,20 @@ export default class SiennaTGE extends Deployment {
   getSchedule () {
     return this.mgmt().then((mgmt: MGMT)=>mgmt.schedule())
   }
+
   setSchedule () {
     throw new Error('TODO')
   }
+
   addToSchedule () {
     throw new Error('TODO')
   }
+
   /** Fetch the current schedule of MGMT. */
   getMgmtStatus () {
     return this.mgmt().then((mgmt: MGMT_TGE)=>mgmt.status())
   }
+
   /** Fetch the current progress of the vesting. */
   getMgmtProgress (addr: Address) {
     return this.mgmt().then((mgmt: MGMT_TGE)=>mgmt.progress(addr))
@@ -92,6 +96,7 @@ export default class SiennaTGE extends Deployment {
   async showBalance (addr: Address, vk: ViewingKey) {
     log.balance(addr, await this.getBalance(addr, vk))
   }
+
   /** Show the current status of the MGMT */
   async showMgmtStatus () {
     const {address} = await this.mgmt
@@ -99,12 +104,14 @@ export default class SiennaTGE extends Deployment {
     log.mgmtStatus(status)
     return status
   }
+
   async showMgmtProgress (user: Address) {
     const {address} = await this.mgmt
     const progress = await this.getMgmtProgress(user)
     log.mgmtProgress(user, address, progress)
     return progress
   }
+
   /** Show the current status of the RPT. */
   async showRptStatus () {
     const status = await (await this.rpt()).status() as { config: any[] }
