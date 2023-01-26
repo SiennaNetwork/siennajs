@@ -4,7 +4,7 @@ importers:
 
   .:
     specifiers:
-      '@fadroma/scrt': ^7.0.4
+      '@fadroma/scrt': ^7.0.5
       '@fadroma/tokens': ^6.0.4
       '@hackbg/4mat': ^1.0.0
       '@hackbg/ensuite': ^1.1.1
@@ -23,7 +23,7 @@ importers:
       ts-jest: ^28.0.8
       typescript: ^4.7.4
     dependencies:
-      '@fadroma/scrt': 7.0.4
+      '@fadroma/scrt': 7.0.5
       '@fadroma/tokens': 6.0.4
       '@hackbg/4mat': 1.0.0
       '@waiting/base64': 4.2.9
@@ -409,8 +409,8 @@ packages:
       '@hackbg/task': 1.0.0
     dev: false
 
-  /@fadroma/scrt/7.0.4:
-    resolution: {integrity: sha512-7hyYtzuqA95rvoVki+z4cnk8EzJZn8Fyc6IXYoM1tZMdNTkfZyE14i2Gm4iLEcvC5R79w0bB1m/Jq39tXPArPQ==}
+  /@fadroma/scrt/7.0.5:
+    resolution: {integrity: sha512-cpx6kXN5EfGCSc94f+4fxedZPoFHW50Vswojuuusv1uj15x8yTCsoLpsKidRDEMZW0kyueXRF++Fzii/XvoMhQ==}
     dependencies:
       '@fadroma/core': 1.0.3
       '@hackbg/4mat': 1.0.0
@@ -425,7 +425,7 @@ packages:
     resolution: {integrity: sha512-5nWRid1qGErCtAdy+GOMeCTH5yZW/DiwqfYfAFFXn+Qzjnl6x8HZeKtbLw9eY0CfmPVYZN+Nl5d4+NMDDXlU5w==}
     dependencies:
       '@fadroma/core': 1.0.3
-      '@fadroma/scrt': 7.0.4
+      '@fadroma/scrt': 7.0.5
       '@hackbg/4mat': 1.0.0
       '@hackbg/logs': 1.0.0
       '@hackbg/many': 1.0.0
