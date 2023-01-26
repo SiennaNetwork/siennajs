@@ -44,9 +44,9 @@ export default class SiennaRewards extends VersionedDeployment<RewardsAPIVersion
 
   tge = new SiennaTGE(this as Deployment)
 
-  rewardPools: Promise<Contract<Rewards>[]> = Promise.all(this
-    .filter((name: string)=>name.includes('Rewards'))
-    .map((receipt: object)=>this.contract(receipt)))
+  rewardPools: Contract<Rewards>[] = Object.entries(this.state)
+    .filter(([name, contract]: [string, unknown])=>name.includes('Rewards'))
+    .map(([name, contract]: [unknown, Contract<any>])=>contract as Contract<Rewards>)
 
   showStatus = async () => { log.rewardsContracts(this.name, this.state) }
 

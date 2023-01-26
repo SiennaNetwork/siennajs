@@ -37,18 +37,25 @@ import { b64encode } from '@waiting/base64'
 export type AMMVersion = "v1" | "v2";
 
 export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
+
   names = {
     factory:   `AMM[${this.version}].Factory`,
     router:    `AMM[${this.version}].Router`,
     exchanges: (name: string) => name.startsWith(`AMM[${this.version}]`) && !name.endsWith(`.LP`),
     lpTokens:  (name: string) => name.startsWith(`AMM[${this.version}]`) &&  name.endsWith(`.LP`)
   }
+
   /** Collection of all tokens known to the swap. */
   tokens = new TokenManager(this as Deployment)
+
   /** The AMM factory. */
   factory = this.contract({ name: this.names.factory, client: AMMFactory[this.version!] })
+
   /** The AMM exchanges. */
-  exchanges = this.contracts(this.names.exchanges, AMMExchange as any)
+  exchanges = Object.keys(this.state)
+    .filter(this.names.exchanges)
+    .map(name=>this.contract({ ...this.state[name], name }))
+
   /** Create a new exchange through the factory. */
   async createExchange (name: string) {
     log.creatingExchange(name)
@@ -58,6 +65,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     log.createdExchange(name)
     return { name, token_0, token_1 }
   }
+
   /** Create multiple exchanges through the factory. */
   async createExchanges (names: string[]) {
     log.creatingExchanges(names)
@@ -71,8 +79,12 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     log.createdExchanges(names.length)
     return result
   }
+
   /** The LP tokens. */
-  lpTokens = this.contracts(this.names.lpTokens, LPToken)
+  lpTokens = Object.keys(this.state)
+    .filter(this.names.lpTokens)
+    .map(name=>this.contract({ ...this.state[name], name }))
+
   /** The AMM router. */
   router = this.contract({ name: this.names.router, client: AMMRouter })
 
@@ -80,11 +92,13 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
     await this.showFactoryStatus()
     await this.showExchangesStatus()
   })
+
   /** Display the status of the factory. */
   async showFactoryStatus () {
     const factory = await this.factory
     log.factoryStatus(factory.address!)
   }
+
   /** Display the status of the exchanges. */
   async showExchangesStatus () {
     const factory = await this.factory()
@@ -101,6 +115,7 @@ export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
       ]))
     }
   }
+
 }
 
 export type AMMFactoryStatus = "Operational" | "Paused" | "Migrating";
