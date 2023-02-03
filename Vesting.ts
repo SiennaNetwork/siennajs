@@ -1,6 +1,6 @@
 import type { Address, CodeHash, Uint128, Duration } from '@fadroma/core'
 
-export interface Config {
+export interface PFRConfig {
   name:         string
   rewards: {
     name:       string
