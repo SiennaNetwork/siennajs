@@ -8,6 +8,16 @@ export * from '@fadroma/tokens'
 /** Get the current time in seconds since the Unix epoch. */
 export const now = () => Math.floor(+new Date() / 1000);
 
+/** Add zeros to the tail of a number represented as a string. */
+export const addZeros = (n: number|Scrt.Uint128, z: number) =>
+  `${n}${[...Array(z)].map(() => '0').join('')}`
+
+/** Precision of the SIENNA token. */
+export const SIENNA_DECIMALS = 18
+
+/** 1 sienna = 1 000 000 000 000 000 000 uSIENNA */
+export const ONE_SIENNA = BigInt(addZeros(1, SIENNA_DECIMALS))
+
 export function validatedAddressOf (instance?: { address?: Scrt.Address }): Scrt.Address {
   if (!instance)         throw new Error("Can't create an inter-contract link without a target")
   if (!instance.address) throw new Error("Can't create an inter-contract link without an address")
