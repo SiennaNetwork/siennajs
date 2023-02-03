@@ -1,4 +1,107 @@
-import type { Address, CodeHash, Uint128, Duration } from '@fadroma/core'
+import {
+  Address,
+  Client,
+  CodeHash,
+  Duration,
+  Uint128,
+  Snip20
+} from './Core'
+
+/** A MGMT vesting contract of either version. */
+export abstract class MGMT extends Client {
+
+  /** See the full schedule */
+  schedule () {
+    return this.query({ schedule: {} })
+  }
+
+  /** Load a schedule */
+  configure (schedule: any) {
+    return this.execute({ configure: { schedule } })
+  }
+
+  /** Add a new account to a pool */
+  add (pool_name: any, account: any) {
+    return this.execute({ add_account: { pool_name, account } })
+  }
+
+  /** Launch the vesting */
+  launch () {
+    return this.execute({ launch: {} })
+  }
+
+  /** Claim accumulated portions */
+  claim () {
+    return this.execute({ claim: {} })
+  }
+
+  /** take over a SNIP20 token */
+  async acquire (token: Snip20) {
+    const tx1 = await token.setMinters([this.address!])
+    const tx2 = await token.changeAdmin(this.address!)
+    return [tx1, tx2]
+  }
+
+  /** Check how much is claimable by someone at a certain time */
+  async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
+    time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
+    const { progress }: { progress: VestingProgress } =
+      await this.query({ progress: { address, time } })
+    return progress
+  }
+
+}
+
+/** A MGMT schedule. */
+export interface VestingSchedule {
+  total: Uint128
+  pools: Array<VestingPool>
+}
+
+export interface VestingPool {
+  name:     string
+  total:    Uint128
+  partial:  boolean
+  accounts: Array<VestingAccount>
+}
+
+export interface VestingAccount {
+  name:         string
+  amount:       Uint128
+  address:      Address
+  start_at:     Duration
+  interval:     Duration
+  duration:     Duration
+  cliff:        Uint128
+  portion_size: Uint128
+  remainder:    Uint128
+}
+
+export interface VestingProgress {
+  time:     number
+  launcher: number
+  elapsed:  number
+  unlocked: string
+  claimed:  string
+}
+
+/** A RPT (redistribution) contract of each version. */
+export abstract class RPT extends Client {
+  /** Claim from mgmt and distribute to recipients. Anyone can call this method as:
+    * - the recipients can only be changed by the admin
+    * - the amount is determined by MGMT */
+  vest() {
+    return this.execute({ vest: {} })
+  }
+}
+
+export type RPTRecipient = string
+
+export type RPTAmount    = string
+
+export type RPTConfig    = [RPTRecipient, RPTAmount][]
+
+export type RPTStatus    = unknown
 
 export interface PFRConfig {
   name:         string
@@ -14,46 +117,19 @@ export interface PFRConfig {
     address:    Address
     codeHash:   CodeHash
   }
-  schedule:     Schedule
-  account:      Account
-}
-
-/** A MGMT schedule. */
-export interface Schedule {
-  total: Uint128
-  pools: Array<Pool>
-}
-
-/** A pool of a Schedule. */
-export interface Pool {
-  name:     string
-  total:    Uint128
-  partial:  boolean
-  accounts: Array<Account>
-}
-
-/** An account in a Pool. */
-export interface Account {
-  name:         string
-  amount:       Uint128
-  address:      Address
-  start_at:     Duration
-  interval:     Duration
-  duration:     Duration
-  cliff:        Uint128
-  portion_size: Uint128
-  remainder:    Uint128
+  schedule:     VestingSchedule
+  account:      VestingAccount
 }
 
 export function findInSchedule (
-  schedule: Schedule|undefined,
+  schedule: VestingSchedule|undefined,
   pool:     string,
   account:  string
-): Account|undefined {
+): VestingAccount|undefined {
   if (!schedule) throw new Error('No schedule.')
   return schedule.pools
-    .filter((x: Pool)=>x.name===pool)[0]?.accounts
-    .filter((x: Account)=>x.name===account)[0]
+    .filter((x: VestingPool)=>x.name===pool)[0]?.accounts
+    .filter((x: VestingAccount)=>x.name===account)[0]
 }
 
 /** The **RPT account** (Remaining Pool Tokens) is a special entry
