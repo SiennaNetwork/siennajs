@@ -8,6 +8,7 @@ import {
   linkStruct,
   randomBase64,
 } from './Core';
+
 import type {
   Address,
   ClientClass,
@@ -21,26 +22,20 @@ import type {
   Snip20,
   Uint128,
 } from './Core';
+
 import { AuthClient, AuthMethod } from './Auth';
+
 import { LPToken } from './SiennaSwap';
+
 import SiennaTGE from './SiennaTGE';
-import type { AMMVersion } from './SiennaSwap';
+
 import type { Rewards_v2 } from './SiennaRewards_v2'
 import type { Rewards_v3, Rewards_v3_1 } from './SiennaRewards_v3'
 import type { Rewards_v4_1 } from './SiennaRewards_v4'
 
-/** Maybe change this to 'v2'|'v3'|'v4' and simplify the classes below? */
-export type RewardsAPIVersion = 'v2' | 'v3' | 'v3.1' | 'v4.1';
+import { RewardsVersion, RewardsToAMMVersion, AMMVersion } from './Versions'
 
-/** Which version of AMM corresponds to which version of rewards. */
-export const RewardsToAMMVersion: Record<RewardsAPIVersion, AMMVersion> = {
-  'v2':   'v1',
-  'v3':   'v2',
-  'v3.1': 'v2',
-  'v4.1': 'v2',
-};
-
-export default class SiennaRewards extends VersionedDeployment<RewardsAPIVersion> {
+export default class SiennaRewards extends VersionedDeployment<RewardsVersion> {
 
   tge = new SiennaTGE(this as Deployment)
 

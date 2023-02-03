@@ -14,9 +14,7 @@ import {
   linkStruct,
 } from "./Core";
 
-export type AuthProviderVersion = 'v1'
-
-export const LatestAuthProviderVersion: AuthProviderVersion = 'v1'
+import { AuthProviderVersion, LatestAuthProviderVersion } from "./Versions";
 
 export default class SiennaAuth extends VersionedDeployment<AuthProviderVersion> {
 

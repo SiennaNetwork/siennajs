@@ -1,14 +1,20 @@
 import { Address, CodeHash, Contract, Deployment, Snip20 } from './Core'
+
 import SiennaTGE, { MGMT, RPT } from './SiennaTGE'
+
 import type { VestingSchedule, VestingAccount } from './SiennaTGE'
+
 import { Rewards } from './SiennaRewards'
-import type { RewardsAPIVersion, StakingTokens } from './SiennaRewards'
+
+import type { StakingTokens } from './SiennaRewards'
+
+import { RewardsVersion } from './Versions'
 
 export default class SiennaPFR extends Deployment {
 
   constructor (
     options: object = {},
-    public rewardsVersion: RewardsAPIVersion|undefined = (options as any)?.rewardsVersion
+    public rewardsVersion: RewardsVersion|undefined = (options as any)?.rewardsVersion
   ) {
     super(options)
     if (!this.rewardsVersion) throw new Error(`${this.constructor.name}: specify rewardsVersion`)
