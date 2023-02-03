@@ -1,5 +1,5 @@
 export * from './Core'
-import { Contract, Deployment } from './Core'
+import { Contract, Deployment, TokenManager } from './Core'
 
 export * as VestingConfig from './Vesting'
 
@@ -46,6 +46,9 @@ import {
 } from './Versions'
 
 export default class Sienna extends Deployment {
+
+  /** All tokens. */
+  tokens = new TokenManager(this as Deployment)
 
   /** The SIENNA token. */
   get token (): Contract<SiennaSnip20> {
