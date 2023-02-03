@@ -67,6 +67,9 @@ export * from './SiennaLend'
 export * from './SiennaRewards_v4'
 export * from './Poll'
 export * from './SiennaLaunch'
+
+export * as VestingConfig from './Vesting'
+
 export {
   SiennaAuth,
   SiennaSwap,
