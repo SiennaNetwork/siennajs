@@ -1,7 +1,7 @@
 export * from './Core'
 import { Contract, Deployment, TokenManager } from './Core'
 
-export * as VestingConfig from './Vesting'
+export * from './Vesting'
 
 export * from './SiennaTGE'
 import SiennaTGE, { SiennaSnip20 }from './SiennaTGE'

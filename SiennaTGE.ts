@@ -15,7 +15,14 @@ import {
   validatedCodeHashOf
 } from './Core'
 
-import { TokenManager } from '@fadroma/tokens'
+import {
+  MGMT,
+  RPT,
+  RPTAmount,
+  RPTConfig,
+  RPTStatus,
+  VestingSchedule,
+} from './Vesting'
 
 /** Connect to an existing TGE. */
 export default class SiennaTGE extends Deployment {
@@ -184,115 +191,6 @@ export const linkTuple = (instance: IntoLink) => (
 
 /** The SIENNA SNIP20 token. */
 export class SiennaSnip20 extends Snip20 {}
-
-/** A MGMT vesting contract of either version. */
-export abstract class MGMT extends Client {
-
-  static MINTING_POOL = "MintingPool"
-
-  static LPF = "LPF"
-
-  static RPT = "RPT"
-
-  static emptySchedule = (address: Address) => ({
-    total: "0",
-    pools: [ { 
-      name: MGMT.MINTING_POOL, total: "0", partial: false, accounts: [
-        { name: MGMT.LPF, amount: "0", address,
-          start_at: 0, interval: 0, duration: 0,
-          cliff: "0", portion_size: "0", remainder: "0" },
-        { name: MGMT.RPT, amount: "0", address,
-          start_at: 0, interval: 0, duration: 0,
-          cliff: "0", portion_size: "0", remainder: "0" }
-      ]
-    } ]
-  })
-
-  /** See the full schedule */
-  schedule  () {
-    return this.query({ schedule: {} })
-  }
-  /** Load a schedule */
-  configure (schedule: any) {
-    return this.execute({ configure: { schedule } })
-  }
-  /** Add a new account to a pool */
-  add       (pool_name: any, account: any) {
-    return this.execute({ add_account: { pool_name, account } })
-  }
-  /** Launch the vesting */
-  launch    () {
-    return this.execute({ launch: {} })
-  }
-  /** Claim accumulated portions */
-  claim     () {
-    return this.execute({ claim: {} })
-  }
-  /** take over a SNIP20 token */
-  async acquire (token: Snip20) {
-    const tx1 = await token.setMinters([this.address!])
-    const tx2 = await token.changeAdmin(this.address!)
-    return [tx1, tx2]
-  }
-  /** Check how much is claimable by someone at a certain time */
-  async progress (address: Address, time = +new Date()): Promise<VestingProgress> {
-    time = Math.floor(time / 1000) // JS msec -> CosmWasm seconds
-    const { progress }: { progress: VestingProgress } =
-      await this.query({ progress: { address, time } }) 
-    return progress
-  }
-}
-
-/** A MGMT schedule. */
-export interface VestingSchedule {
-  total: Uint128
-  pools: Array<VestingPool>
-}
-
-export interface VestingPool {
-  name:     string
-  total:    Uint128
-  partial:  boolean
-  accounts: Array<VestingAccount>
-}
-
-export interface VestingAccount {
-  name:         string
-  amount:       Uint128
-  address:      Address
-  start_at:     Duration
-  interval:     Duration
-  duration:     Duration
-  cliff:        Uint128
-  portion_size: Uint128
-  remainder:    Uint128
-}
-
-export interface VestingProgress {
-  time:     number
-  launcher: number
-  elapsed:  number
-  unlocked: string
-  claimed:  string
-}
-
-/** A RPT (redistribution) contract of each version. */
-export abstract class RPT extends Client {
-  /** Claim from mgmt and distribute to recipients. Anyone can call this method as:
-    * - the recipients can only be changed by the admin
-    * - the amount is determined by MGMT */
-  vest() {
-    return this.execute({ vest: {} })
-  }
-}
-
-export type RPTRecipient = string
-
-export type RPTAmount    = string
-
-export type RPTConfig    = [RPTRecipient, RPTAmount][]
-
-export type RPTStatus    = unknown
 
 export class MGMT_TGE extends MGMT {
 

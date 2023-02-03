@@ -1,14 +1,28 @@
-import { Address, CodeHash, Contract, Deployment, Snip20 } from './Core'
+import {
+  Address,
+  CodeHash,
+  Contract,
+  Deployment,
+  Snip20
+} from './Core'
 
-import SiennaTGE, { MGMT, RPT } from './SiennaTGE'
+import SiennaTGE from './SiennaTGE'
 
-import type { VestingSchedule, VestingAccount } from './SiennaTGE'
+import {
+  VestingSchedule,
+  VestingAccount,
+  MGMT,
+  RPT
+} from './Vesting'
 
-import { Rewards } from './SiennaRewards'
+import {
+  Rewards,
+  StakingTokens
+} from './SiennaRewards'
 
-import type { StakingTokens } from './SiennaRewards'
-
-import { RewardsVersion } from './Versions'
+import {
+  RewardsVersion
+} from './Versions'
 
 export default class SiennaPFR extends Deployment {
 
