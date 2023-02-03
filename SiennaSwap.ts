@@ -600,8 +600,10 @@ export interface AMMPairInfo {
 
 export class AMMSnip20 extends Snip20 {}
 
+export type PairName = string
+
 export class LPToken extends Snip20 {
-  async getPairName(): Promise<string> {
+  async getPairName(): Promise<PairName> {
     const { name } = await this.getTokenInfo();
     const fragments = name.split(" ");
     const [t0addr, t1addr] = fragments[fragments.length - 1].split("-");
