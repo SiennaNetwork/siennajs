@@ -12,6 +12,7 @@ import {
   TokenPair,
   TokenPairAmount,
   VersionedDeployment,
+  assertAgent,
   bold,
   colors,
   getTokenId,
@@ -159,6 +160,15 @@ export abstract class AMMFactory extends Client {
   async setStatus(level: AMMFactoryStatus, new_address?: Address, reason = "") {
     const set_status = { level, new_address, reason };
     return await this.execute({ set_status });
+  }
+
+  async getAllExchanges (): Promise<Record<PairName, AMMExchange>> {
+    const exchanges = await this.listExchangesFull()
+    const result: Record<PairName, AMMExchange> = {}
+    const pairNames = await Promise.all(exchanges.map(exchange=>exchange.pairName))
+    //this.log.info('All exchanges:', pairNames.map(x=>bold(x)).join(', '))
+    await Promise.all(exchanges.map(async exchange=>result[await exchange.pairName] = exchange))
+    return result
   }
 
   /** Create a liquidity pool, i.e. an instance of the AMMExchange contract */
@@ -346,6 +356,20 @@ export type AMMExchanges = Record<TokenPairStr, AMMExchange>;
 
 export class AMMExchange extends Client {
 
+  constructor (
+    agent?:    Agent,
+    address?:  Address,
+    codeHash?: CodeHash,
+    metadata?: Contract<AMMExchange>,
+    options:   Partial<AMMExchangeOpts> = {}
+  ) {
+    super(agent, address, codeHash, metadata)
+    if (options.token_0)  this.token_0 = options.token_0
+    if (options.token_1)  this.token_1 = options.token_1
+    if (options.lpToken)  this.lpToken = options.lpToken
+    if (options.pairInfo) this.pairInfo = options.pairInfo
+  }
+
   static fromAddress = async function getExchangeByAddress (
     agent:   Agent,
     address: Address
@@ -381,20 +405,6 @@ export class AMMExchange extends Client {
     const lpTokenOpts = { codeHash: lpTokenCodeHash, address: lpTokenAddress };
     return self;
     // </dumb>
-  }
-
-  constructor (
-    agent?:    Agent,
-    address?:  Address,
-    codeHash?: CodeHash,
-    metadata?: Contract<AMMExchange>,
-    options:   Partial<AMMExchangeOpts> = {}
-  ) {
-    super(agent, address, codeHash, metadata)
-    if (options.token_0)  this.token_0 = options.token_0
-    if (options.token_1)  this.token_1 = options.token_1
-    if (options.lpToken)  this.lpToken = options.lpToken
-    if (options.pairInfo) this.pairInfo = options.pairInfo
   }
 
   fees = {
@@ -524,6 +534,28 @@ export class AMMExchange extends Client {
       this.address,
       this.codeHash
     );
+  }
+
+  get pairName (): Promise<PairName> {
+    const self = this
+    return new Promise(async (resolve)=>{
+      if (self.name) return resolve(self.name)
+      const agent = assertAgent(self)
+      const { pair, liquidity_token } = await self.getPairInfo()
+      const symbol_0 = isNativeToken(pair.token_0) ? 'SCRT' :
+        (await agent.getClient(
+          Snip20,
+          pair.token_0.custom_token!.contract_addr,
+          pair.token_0.custom_token!.token_code_hash
+        ).getTokenInfo()).symbol
+      const symbol_1 = isNativeToken(pair.token_1) ? 'SCRT' :
+        (await agent.getClient(
+          Snip20,
+          pair.token_1.custom_token!.contract_addr,
+          pair.token_1.custom_token!.token_code_hash
+        ).getTokenInfo()).symbol
+      return resolve(self.name = `${symbol_0}-${symbol_1}`)
+    })
   }
 
 }
