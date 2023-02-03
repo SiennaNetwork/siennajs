@@ -34,7 +34,7 @@ import type {
 
 import { b64encode } from '@waiting/base64'
 
-export type AMMVersion = "v1" | "v2";
+import { AMMVersion } from './Versions'
 
 export default class SiennaSwap extends VersionedDeployment<AMMVersion> {
 

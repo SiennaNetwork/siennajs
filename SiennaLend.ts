@@ -19,12 +19,14 @@ import {
   ViewingKeyClient,
   randomBase64,
 } from './Core'
+
 import type { AuthStrategy, AuthMethod } from './Auth'
+
+import { LendVersion } from './Versions'
+
 import TGEDeployment from './SiennaTGE'
 
-export type LendVersions = 'v1'
-
-export default class LendDeployment extends VersionedDeployment<LendVersions> {
+export default class LendDeployment extends VersionedDeployment<LendVersion> {
   /** The names of contract in a Lend group. */
   names = {
     interestModel: `Lend[${this.version}].InterestModel`,

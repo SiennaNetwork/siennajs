@@ -1,5 +1,7 @@
 import { Address, Client } from './Core';
 
+import { MulticallVersion } from './Versions';
+
 export class Multicall extends Client {
   async version(): Promise<MulticallVersion> {
     return this.query({ version: {} });
@@ -22,7 +24,3 @@ export interface MultiQueryResult {
 }
 
 export type ChainResponse = MultiQueryResult[];
-
-export enum MulticallVersion {
-  'v0.0.1',
-}
