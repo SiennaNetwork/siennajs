@@ -32,7 +32,7 @@ import SiennaLend from './SiennaLend'
 
 export * from './Multicall'
 
-export * as Versions from './Versions'
+export * from './Versions'
 
 import {
   TGEVersion,
