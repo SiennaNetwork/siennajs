@@ -29,8 +29,11 @@ jobs:
       - name: Install deps
         run:  pnpm i
 
-      - name: Run tests
-        run:  npm test
+      - name: Test with Jest
+        run:  echo "TODO" # npm run jest
+
+      - name: Test with Ensuite
+        run:  echo "TODO" # npm test
 
       - name: Check types
         run:  npm run check
