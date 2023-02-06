@@ -34,6 +34,15 @@ export default class SiennaTGE extends Deployment {
   /** The deployed SIENNA SNIP20 token contract. */
   token = this.contract({ name: this.names.token, client: Snip20 })
 
+  /** The deployed MGMT contract, which unlocks tokens
+    * for claiming according to a pre-defined schedule.  */
+  mgmt = this.contract({ name: this.names.mgmt, client: MGMT_TGE })
+
+  /** Show the current progress of the vesting. */
+  /** The deployed RPT contract, which claims tokens from MGMT
+    * and distributes them to the reward pools.  */
+  rpt = this.contract({ name: this.names.rpt, client: RPT_TGE })
+
   /** Get the balance of an address in the vested token. */
   async getBalance (addr: Address, vk: ViewingKey) {
     this.log.info(`Querying balance of ${addr}...`)
@@ -45,10 +54,6 @@ export default class SiennaTGE extends Deployment {
     this.log.info('Setting VK...')
     return await (await this.token()).vk.set(vk)
   }
-
-  /** The deployed MGMT contract, which unlocks tokens
-    * for claiming according to a pre-defined schedule.  */
-  mgmt = this.contract({ name: this.names.mgmt, client: MGMT_TGE })
 
   /** Fetch the current schedule of MGMT. */
   getSchedule () {
@@ -72,11 +77,6 @@ export default class SiennaTGE extends Deployment {
   getMgmtProgress (addr: Address) {
     return this.mgmt().then((mgmt: MGMT_TGE)=>mgmt.progress(addr))
   }
-
-  /** Show the current progress of the vesting. */
-  /** The deployed RPT contract, which claims tokens from MGMT
-    * and distributes them to the reward pools.  */
-  rpt = this.contract({ name: this.names.rpt, client: RPT_TGE })
 
   /** Update the RPT configuration. */
   setRptConfig (config: RPTConfig) {
@@ -145,6 +145,7 @@ export default class SiennaTGE extends Deployment {
       await mgmt.as(bundle).launch()
     })
   }
+
 }
 
 const log = new class SiennaVestingConsole extends ClientConsole {
@@ -194,7 +195,7 @@ export class SiennaSnip20 extends Snip20 {}
 
 export class MGMT_TGE extends MGMT {
 
-  /** Generate an init message for Origina MGMT */
+  /** Generate an init message for Original MGMT */
   static init = (
     admin:    Address,
     token:    IntoLink,
