@@ -4,8 +4,8 @@ importers:
 
   .:
     specifiers:
-      '@fadroma/scrt': ^8.0.2
-      '@fadroma/tokens': ^7.0.2
+      '@fadroma/scrt': ^8.0.3
+      '@fadroma/tokens': ^7.0.3
       '@hackbg/4mat': ^1.0.0
       '@hackbg/ensuite': ^1.1.1
       '@hackbg/ubik': ^1.2
@@ -23,8 +23,8 @@ importers:
       ts-jest: ^28.0.8
       typescript: ^4.9
     dependencies:
-      '@fadroma/scrt': 8.0.2
-      '@fadroma/tokens': 7.0.2
+      '@fadroma/scrt': 8.0.3
+      '@fadroma/tokens': 7.0.4
       '@hackbg/4mat': 1.0.0
       '@waiting/base64': 4.2.9
       crypto-js: 4.1.1
@@ -395,8 +395,8 @@ packages:
       bn.js: 5.2.1
     dev: false
 
-  /@fadroma/core/2.0.2:
-    resolution: {integrity: sha512-kf4gb/w5PhHwa9WvP5iGxj0ZSNnuYKfIKWVwDYqRIqPtX1oiw5n1bJxtvQWHCA2CZ7Q4QXEHXhrn5YMi5gH9FQ==}
+  /@fadroma/core/2.0.3:
+    resolution: {integrity: sha512-qbs06XnvA5z9nbZ2HjEPvsocV0dT/a6G/ih1CkDXkYPh1ymgqTV/CDpCiRi+1+iM6eYPemQkHd3fiX75uLr4JA==}
     dependencies:
       '@hackbg/allo': 1.0.1
       '@hackbg/cmds': 1.0.0
@@ -404,15 +404,15 @@ packages:
       '@hackbg/into': 1.0.1
       '@hackbg/logs': 1.1.1
       '@hackbg/many': 1.0.0
-      '@hackbg/oops': 1.0.0
+      '@hackbg/oops': 1.0.1
       '@hackbg/over': 1.0.1
       '@hackbg/task': 1.0.0
     dev: false
 
-  /@fadroma/scrt/8.0.2:
-    resolution: {integrity: sha512-AF4hTok1ORDEYdLZLzskEozqU0u1g7v5Zl2CrjzV13x/Aq1Cz9hFsj0Nun+JVStbf+EQXk3F/igMHegWbntr9A==}
+  /@fadroma/scrt/8.0.3:
+    resolution: {integrity: sha512-myMhD3Q9P7SGHUbDlyb/U/tLRGjOWkLl2nDCkQv4WK0tKcBQWEU4NrIOhflCRKg54KkU/Bay4/Kk2lmwYoICaQ==}
     dependencies:
-      '@fadroma/core': 2.0.2
+      '@fadroma/core': 2.0.3
       '@hackbg/4mat': 1.0.0
       '@hackbg/conf': 1.0.0
       '@hackbg/into': 1.0.1
@@ -422,15 +422,15 @@ packages:
       - encoding
     dev: false
 
-  /@fadroma/tokens/7.0.2:
-    resolution: {integrity: sha512-+OmsVrq4+6lO9V3642P+GfvCw7FRbVXa0AddvjQx8V0Xwy6HlCJQ3WLYi67vRe6r1s95IldXrkyjU2+XmJfGig==}
+  /@fadroma/tokens/7.0.4:
+    resolution: {integrity: sha512-h/6JvNWo/io5V3I257GXalzVxASy4Fnu/OesAcVdv8hkUXzvaOJdzI5O/CitJDKzOH1tUrF2Ln+9k60BFgHJOg==}
     dependencies:
-      '@fadroma/core': 2.0.2
-      '@fadroma/scrt': 8.0.2
+      '@fadroma/core': 2.0.3
+      '@fadroma/scrt': 8.0.3
       '@hackbg/4mat': 1.0.0
       '@hackbg/logs': 1.1.1
       '@hackbg/many': 1.0.0
-      '@hackbg/oops': 1.0.0
+      '@hackbg/oops': 1.0.1
       '@hackbg/task': 1.0.0
     transitivePeerDependencies:
       - encoding
@@ -534,8 +534,8 @@ packages:
     resolution: {integrity: sha512-4U9CnKdTbG1uNX9yyLLSlOsOvEMQtxm+oCLg4mNk4VxY+/94G8BlOnWJesiTTLon4baMYnL6ILwoQDtZ7oD5yQ==}
     dev: false
 
-  /@hackbg/oops/1.0.0:
-    resolution: {integrity: sha512-slBptYwFdUAJ6ZQsfd7+IRt0ybLnA1dLbV6ygwnmOOXvrLJm/mpd910QCXMie7pQHlN7U9ve+o5n+Hhc7k6Hnw==}
+  /@hackbg/oops/1.0.1:
+    resolution: {integrity: sha512-tdoDeRl17mXwr8zi/XQ2K5FgbhjjD4EOqObY1Ui0hOkHnv/Bi/vqhnW8eEIa3MlksTbsSPaqX/ZvWD88ZenREg==}
     dev: false
 
   /@hackbg/over/1.0.1:
