@@ -8,7 +8,7 @@ See the [SiennaJS releases page](https://github.com/SiennaNetwork/siennajs/relea
 
 ## Usage
 
-> TODO
+See the [API documentation](https://siennanetwork.github.io/siennajs/modules.html).
 
 ### Updating the SecretJS dependency
 
