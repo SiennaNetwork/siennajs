@@ -59,12 +59,11 @@ jobs:
           node -e 'console.log(require("siennajs"))'
           npm i --save typescript
           echo 'import * as SiennaJS from "siennajs"' > index.ts
-          echo '{"compilerOptions":{"target":"es5"},"esModuleInterop":true}' > tsconfig.json
-          npm exec tsc index.ts
+          npm exec tsc -- --target es5 --esModuleInterop true index.ts
           echo "{\"type\":\"module\",\"dependencies\":{\"siennajs\":\"$URL/$TAG/siennajs-$TAG.tgz\"}}" > package.json
           node -e 'import("siennajs").then(console.log)'
           node -e 'console.log(require("siennajs"))'
-          npm exec tsc index.ts
+          npm exec tsc -- --target es5 --esModuleInterop true index.ts
           cd $SRC
           rm -rf /tmp/downstream
 
@@ -107,8 +106,8 @@ jobs:
           npm i --save typescript
           echo 'import * as SiennaJS from "siennajs"' > index.ts
           echo '{"compilerOptions":{"target":"es5"},"esModuleInterop":true}' > tsconfig.json
-          npm exec tsc index.ts
+          npm exec tsc -- --target es5 --esModuleInterop true index.ts
           echo "{\"type\":\"module\",\"dependencies\":{\"siennajs\":\"$URL/$TAG/siennajs-$TAG.tgz\"}}" > package.json
           node -e 'import("siennajs").then(console.log)'
           node -e 'console.log(require("siennajs"))'
-          npm exec tsc index.ts
+          npm exec tsc -- --target es5 --esModuleInterop true index.ts
