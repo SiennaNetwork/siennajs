@@ -5,7 +5,7 @@ importers:
   .:
     specifiers:
       '@fadroma/scrt': ^8.0.3
-      '@fadroma/tokens': ^7.0.3
+      '@fadroma/tokens': ^7.1
       '@hackbg/4mat': ^1.0.0
       '@hackbg/ensuite': ^1.1.1
       '@hackbg/ubik': ^1.2
@@ -24,7 +24,7 @@ importers:
       typescript: ^4.9
     dependencies:
       '@fadroma/scrt': 8.0.3
-      '@fadroma/tokens': 7.0.4
+      '@fadroma/tokens': 7.1.0
       '@hackbg/4mat': 1.0.0
       '@waiting/base64': 4.2.9
       crypto-js: 4.1.1
@@ -422,8 +422,8 @@ packages:
       - encoding
     dev: false
 
-  /@fadroma/tokens/7.0.4:
-    resolution: {integrity: sha512-h/6JvNWo/io5V3I257GXalzVxASy4Fnu/OesAcVdv8hkUXzvaOJdzI5O/CitJDKzOH1tUrF2Ln+9k60BFgHJOg==}
+  /@fadroma/tokens/7.1.0:
+    resolution: {integrity: sha512-5zDM4PHfqnvJuHmFJUdSNkJWICzpXxaH90/yMcyMEiu3Cr7SfcogLmIyo3ykTun+zYtmbqJmQSqwS/7TLQRAMw==}
     dependencies:
       '@fadroma/core': 2.0.3
       '@fadroma/scrt': 8.0.3
