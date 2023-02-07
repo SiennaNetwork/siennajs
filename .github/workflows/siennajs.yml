@@ -12,9 +12,11 @@ jobs:
         with: { submodules: recursive }
 
         #see: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions
-      - name: Get version from package.json
-        run:  echo "::set-output name=version::$(cat package.json | jq -r .version)" # lol
+      - name: Get version from package.json and tag from CI state
         id:   version
+        run:  |
+          echo "::set-output name=tag::$(printf $GITHUB_REF | cut -c11-)"
+          echo "::set-output name=version::$(cat package.json | jq -r .version)"
 
       - name: Get Node 16
         uses: actions/setup-node@v3
@@ -41,6 +43,11 @@ jobs:
       - name: Build for packaging
         run:  npm run ubik fix
 
+      - name: Replace version in package.json with version from tag
+        if:   startsWith(github.ref, 'refs/tags/')
+        run: |
+          PKG="$(jq '.version = "${{ steps.version.outputs.tag }}"' package.json)" && echo -E "${PKG}" > package.json
+
       - name: Package as tarball
         run:  echo "::set-output name=file::$(npm pack | tail -n1)"
         id:   pack
@@ -48,8 +55,7 @@ jobs:
       - name: Check that tarball can be installed
         run: |
           export SRC=$(pwd)
-          export TAG=$(printf $GITHUB_REF | cut -c11-)
-          echo $TAG
+          export TAG=${{ steps.version.outputs.tag }}
           mkdir /tmp/downstream
           cd /tmp/downstream
           echo "{}" > package.json
@@ -76,12 +82,12 @@ jobs:
         if:   startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          name: SiennaJS ${{ steps.version.outputs.version }}
+          name: SiennaJS ${{ steps.version.outputs.tag }}
           body: 'Install from GitHub Releases with NPM:
 
             ```sh
 
-            npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/${{ steps.version.outputs.version }}/siennajs-${{ steps.version.outputs.version }}.tgz
+            npm i --save https://github.com/SiennaNetwork/siennajs/releases/download/${{ steps.version.outputs.tag }}/siennajs-${{ steps.version.outputs.tag }}.tgz
 
             ```
 
@@ -94,7 +100,7 @@ jobs:
       - name: Check that release can be installed
         if:   startsWith(github.ref, 'refs/tags/')
         run: |
-          export TAG=$(printf $GITHUB_REF | cut -c11-)
+          export TAG=${{ steps.version.outputs.tag }}
           export URL=https://github.com/SiennaNetwork/siennajs/releases/download
           mkdir /tmp/downstream
           cd /tmp/downstream
