@@ -38,9 +38,16 @@ and will be available in your usual TS/ESM/CJS context.
 
 ### The pre-commit linter 
  - With great reluctance I introduce `husky` and `lint-staged`.
- - Loose ends from multiple simultaneous refactors can add up to 500 type errors real quick.
- - 500 type errors means you can't publish until you fix them, because there's no point
-   releasing invalid typings, incomplete builds, etc. (TS is annoying enough as it is.)
+ - **Adding `prettier` or other linters that rewrite code is discouraged.**
+ - Loose ends from multiple simultaneous refactors can add up to 500 type errors real quick though.
+   - 500 type errors means you can't publish until you fix them, because there's no point
+     releasing invalid typings, incomplete builds, etc. (TS is annoying enough as it is.)
+   - It also means that if your environment doesn't support ignoring TypeScript errors
+     at some stage of the workflow, you're stuck, sometimes unable to even run your code,
+     until they get fixed.
+   - This wasted an absolutely awful lot of my time as I fixed the 500 type errors
+     and then realized that the code was still broken in the exat same way as before.
+   - So, as of now, every commit should have valid types.
 
 ### Using SiennaJS as a Git submodule
  - In a downstream project: `git submodule add https://github.com/SiennaNetwork/siennajs`
