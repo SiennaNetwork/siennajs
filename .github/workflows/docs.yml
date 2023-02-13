@@ -34,8 +34,7 @@ jobs:
       - name: Generate, collect, and publish TS reference
         run: |
           mkdir -p ../page
-          pnpm i -w typedoc
-          NODE_OPTIONS=--max_old_space_size=8192 time ./node_modules/.bin/typedoc --tsconfig ./tsconfig.json --entryPointStrategy packages --entryPoints . --name SiennaJS
+          pnpm typedoc
           pwd
           ls -al
           ls -al docs

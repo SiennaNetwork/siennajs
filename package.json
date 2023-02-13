@@ -11,10 +11,11 @@
   "main": "./index.ts",
   "engines": { "node": "^12.16 || >=13.7" },
   "scripts": {
-    "check":      "tsc --noEmit",
-    "ubik":       "npm run check && ubik",
-    "test":       "true || ensuite SPEC.ts.md",
-    "jest":       "jest",
+    "check": "tsc --noEmit",
+    "typedoc": "NODE_OPTIONS=--max_old_space_size=8192 time ./node_modules/.bin/typedoc --tsconfig ./tsconfig.json --entryPointStrategy packages --entryPoints . --name SiennaJS",
+    "ubik": "npm run check && ubik",
+    "test": "true || ensuite SPEC.ts.md",
+    "jest": "jest",
     "bundle:cjs": "rollup -c .rollup-cjs.config.mjs",
     "bundle:esm": "rollup -c .rollup-esm.config.mjs"
   },
@@ -41,6 +42,7 @@
 
     "jest":         "^28.1.3",
     "ts-jest":      "^28.0.8",
-    "typescript":   "^4.9"
+    "typescript":   "^4.9",
+    "typedoc":      "^0.23.25"
   }
 }
