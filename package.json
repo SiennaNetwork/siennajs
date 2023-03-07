@@ -3,13 +3,20 @@
   "version": "4.1.0",
   "description": "Sienna Network official API client for JavaScript and TypeScript.",
   "homepage": "https://sienna.network",
-  "repository": { "type": "git", "url": "https://github.com/SiennaNetwork/siennajs" },
-  "bugs": { "url": "https://github.com/SiennaNetwork/siennajs/issues" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SiennaNetwork/siennajs"
+  },
+  "bugs": {
+    "url": "https://github.com/SiennaNetwork/siennajs/issues"
+  },
   "author": "Sienna Network",
   "license": "MIT",
   "type": "module",
   "main": "./index.ts",
-  "engines": { "node": "^12.16 || >=13.7" },
+  "engines": {
+    "node": "^12.16 || >=13.7"
+  },
   "scripts": {
     "prepare": "husky install",
     "check": "tsc --noEmit",
@@ -20,33 +27,33 @@
     "bundle:cjs": "rollup -c .rollup-cjs.config.mjs",
     "bundle:esm": "rollup -c .rollup-esm.config.mjs"
   },
-  "files": [ "*.ts" ],
+  "files": [
+    "*.ts"
+  ],
   "dependencies": {
-    "@fadroma/scrt":   "^8.0.3",
-    "@fadroma/tokens": "^7.1",
-    "@hackbg/4mat":    "^1.0.0",
-    "crypto-js":       "^4.1.1",
-    "merkletreejs":    "^0.2.32",
-    "@waiting/base64": "4.2.9"
+    "@fadroma/scrt": "^8.0.4",
+    "@fadroma/tokens": "^7.1.1",
+    "@hackbg/4mat": "^1.0.0",
+    "@waiting/base64": "4.2.9",
+    "crypto-js": "^4.1.1",
+    "merkletreejs": "^0.2.32"
   },
   "devDependencies": {
-    "@hackbg/ubik":                "^1.2",
-    "@hackbg/ensuite":             "^1.1.1",
-    "rollup":                      "^2.79.1",
+    "@hackbg/ensuite": "^1.1.1",
+    "@hackbg/ubik": "^1.2",
+    "@rollup/plugin-commonjs": "^23",
+    "@rollup/plugin-json": "^5",
     "@rollup/plugin-node-resolve": "^15",
-    "@rollup/plugin-commonjs":     "^23",
-    "@rollup/plugin-json":         "^5",
-
     "@types/crypto-js": "^4.1.1",
-    "@types/jest":      "^28.1.7",
-    "@types/node":      "latest",
-
-    "jest":         "^28.1.3",
-    "ts-jest":      "^28.0.8",
-    "typescript":   "^4.9",
-    "typedoc":      "^0.23.25",
-    "husky":        "^8.0.3",
-    "lint-staged":  "^13.1.2"
+    "@types/jest": "^28.1.7",
+    "@types/node": "latest",
+    "husky": "^8.0.3",
+    "jest": "^28.1.3",
+    "lint-staged": "^13.1.2",
+    "rollup": "^2.79.1",
+    "ts-jest": "^28.0.8",
+    "typedoc": "^0.23.25",
+    "typescript": "^4.9"
   },
   "lint-staged": {
     "*.ts": "pnpm check"
