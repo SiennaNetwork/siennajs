@@ -24,7 +24,7 @@
 <li><a href="Deployment.html" class="tsd-signature-type" data-tsd-kind="Class">Deployment</a></li>
 <li><a href="TokenManager.html" class="tsd-signature-type" data-tsd-kind="Class">TokenManager</a></li></ul></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:35</li></ul></aside>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:35</li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -58,13 +58,14 @@
 <a href="CommandContext.html#exit" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>exit</span></a>
 <a href="CommandContext.html#parse" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>parse</span></a>
 <a href="CommandContext.html#run" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>run</span></a>
+<a href="CommandContext.html#startREPL" class="tsd-index-link tsd-kind-method tsd-parent-kind-class tsd-is-external"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg><span>startREPL</span></a>
 </div></section></div></details></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Constructors</h2>
 <section class="tsd-panel tsd-member tsd-kind-constructor tsd-parent-kind-class tsd-is-external"><a id="constructor" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>constructor</span><a href="#constructor" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none" id="icon-anchor-a"></path><path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" id="icon-anchor-b"></path><path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" id="icon-anchor-c"></path></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class tsd-is-external">
-<li class="tsd-signature tsd-anchor-link" id="constructor.new_CommandContext">new <wbr/>Command<wbr/>Context<span class="tsd-signature-symbol">(</span>label<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, description<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a><a href="#constructor.new_CommandContext" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-signature tsd-anchor-link" id="constructor.new_CommandContext">new <wbr/>Command<wbr/>Context<span class="tsd-signature-symbol">(</span>label<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, description<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span>, repl<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a><a href="#constructor.new_CommandContext" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -72,10 +73,12 @@
 <li>
 <h5>label: <span class="tsd-signature-type">string</span></h5></li>
 <li>
-<h5><code class="tsd-tag ts-flagOptional">Optional</code> description: <span class="tsd-signature-type">string</span></h5></li></ul></div>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> description: <span class="tsd-signature-type">string</span></h5></li>
+<li>
+<h5><code class="tsd-tag ts-flagOptional">Optional</code> repl: <span class="tsd-signature-type">boolean</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:36</li></ul></aside></li></ul></section></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:36</li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="args" class="tsd-anchor"></a>
@@ -84,7 +87,7 @@
 <div class="tsd-comment tsd-typography"><p>Extra arguments passed from the command line.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:51</li></ul></aside></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:51</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="before" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>before</span><a href="#before" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">before<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span>context<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
@@ -102,50 +105,50 @@
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> context: <span class="tsd-signature-type">any</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:98</li></ul></aside></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:101</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="commandTree" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>command<wbr/>Tree</span><a href="#commandTree" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">command<wbr/>Tree<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Command</span><span class="tsd-signature-symbol">&lt;</span><a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>All registered commands.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:47</li></ul></aside></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:47</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="currentCommand" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>current<wbr/>Command</span><a href="#currentCommand" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">current<wbr/>Command<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>Currently executing command.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:49</li></ul></aside></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:49</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="cwd" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>cwd</span><a href="#cwd" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">cwd<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>Current working directory at launch of process.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:45</li></ul></aside></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:45</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="description" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>description</span><a href="#description" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">description<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:38</li></ul></aside></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:38</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="env" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>env</span><a href="#env" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">env<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div>
 <div class="tsd-comment tsd-typography"><p>Process environment at lauch of process.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:43</li></ul></aside></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:43</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="label" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>label</span><a href="#label" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">label<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:37</li></ul></aside></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:37</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="log" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>log</span><a href="#log" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">log<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">CommandsConsole</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:39</li></ul></aside></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:39</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="task" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>task</span><a href="#task" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">task<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">X</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, cb<span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type" data-tsd-kind="Type parameter">X</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">X</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><a href="Task.html" class="tsd-signature-type" data-tsd-kind="Class">Task</a><span class="tsd-signature-symbol">&lt;</span><a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type" data-tsd-kind="Type parameter">X</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span></div>
@@ -181,14 +184,14 @@ Instead, it evaluates once you <code>await</code> it or call <code>.then(...)</c
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type" data-tsd-kind="Type parameter">X</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">X</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="Task.html" class="tsd-signature-type" data-tsd-kind="Class">Task</a><span class="tsd-signature-symbol">&lt;</span><a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type" data-tsd-kind="Type parameter">X</span><span class="tsd-signature-symbol">&gt;</span></h4></li></ul></li></ul></div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:93</li></ul></aside></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:93</li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-external"><a id="timestamp" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>timestamp</span><a href="#timestamp" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <div class="tsd-signature">timestamp<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 <div class="tsd-comment tsd-typography"><p>Start of command execution.</p>
 </div><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:41</li></ul></aside></section></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:41</li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-external"><a id="addCommand" class="tsd-anchor"></a>
@@ -214,7 +217,7 @@ Instead, it evaluates once you <code>await</code> it or call <code>.then(...)</c
 <h5><code class="tsd-tag ts-flagRest">Rest</code> <span class="tsd-signature-symbol">...</span>steps: <span class="tsd-signature-type">Steps</span><span class="tsd-signature-symbol">&lt;</span><a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a><span class="tsd-signature-symbol">&gt;</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:79</li></ul></aside></li></ul></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:79</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-external"><a id="addCommands" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>add<wbr/>Commands</span><a href="#addCommands" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-external">
@@ -238,7 +241,7 @@ Instead, it evaluates once you <code>await</code> it or call <code>.then(...)</c
 <h5>subtree: <a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:89</li></ul></aside></li></ul></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:89</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-external"><a id="command" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>command</span><a href="#command" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-external">
@@ -267,7 +270,7 @@ Instead, it evaluates once you <code>await</code> it or call <code>.then(...)</c
 <h5>step: <span class="tsd-signature-type" data-tsd-kind="Type parameter">X</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type" data-tsd-kind="Type parameter">X</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:60</li></ul></aside></li></ul></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:60</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-external"><a id="commands" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>commands</span><a href="#commands" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-external">
@@ -296,14 +299,17 @@ Instead, it evaluates once you <code>await</code> it or call <code>.then(...)</c
 <h5>subtree: <span class="tsd-signature-type" data-tsd-kind="Type parameter">C</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type" data-tsd-kind="Type parameter">C</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:71</li></ul></aside></li></ul></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:71</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-external"><a id="entrypoint" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>entrypoint</span><a href="#entrypoint" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-external">
 <li class="tsd-signature tsd-anchor-link" id="entrypoint.entrypoint-1">entrypoint<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, argv<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a><a href="#entrypoint.entrypoint-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
-<div class="tsd-comment tsd-typography"><p><code>export default myCommands.main(import.meta.url)</code>
-once per module after defining all commands</p>
+<div class="tsd-comment tsd-typography"><p>If this command tree is the default export of the process entrypoint,
+run the commands as specified by the process command line.</p>
+
+<h3>Example</h3><pre><code class="language-ts"><span class="hl-4">export</span><span class="hl-1"> </span><span class="hl-4">default</span><span class="hl-1"> </span><span class="hl-2">myCommands</span><span class="hl-1">.</span><span class="hl-0">main</span><span class="hl-1">(</span><span class="hl-4">import</span><span class="hl-1">.</span><span class="hl-2">meta</span><span class="hl-1">.</span><span class="hl-2">url</span><span class="hl-1">)</span>
+</code></pre>
 </div>
 <div class="tsd-parameters">
 <h4 class="tsd-parameters-title">Parameters</h4>
@@ -314,7 +320,7 @@ once per module after defining all commands</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> argv: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:96</li></ul></aside></li></ul></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:98</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-external"><a id="exit" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>exit</span><a href="#exit" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-external">
@@ -327,7 +333,7 @@ once per module after defining all commands</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> code: <span class="tsd-signature-type">number</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:102</li></ul></aside></li></ul></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:105</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-external"><a id="parse" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>parse</span><a href="#parse" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-external">
@@ -343,12 +349,14 @@ then pass the rest as arguments to the found command.</p>
 <h5>args: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Command</span><span class="tsd-signature-symbol">&lt;</span><a href="CommandContext.html" class="tsd-signature-type" data-tsd-kind="Class">CommandContext</a><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">...</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">]</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:101</li></ul></aside></li></ul></section>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:104</li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-external"><a id="run" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>run</span><a href="#run" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-external">
 <li class="tsd-signature tsd-anchor-link" id="run.run-1">run<span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">(</span>argv<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span>, context<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span><a href="#run.run-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
 <li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Run a command from this command tree.</p>
+</div>
 <section class="tsd-panel tsd-type-parameters">
 <h4>Type Parameters</h4>
 <ul class="tsd-type-parameters">
@@ -363,7 +371,19 @@ then pass the rest as arguments to the found command.</p>
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> context: <span class="tsd-signature-type">any</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type" data-tsd-kind="Type parameter">T</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.0.0/node_modules/@hackbg/cmds/cmds.dist.d.ts:97</li></ul></aside></li></ul></section></section></div>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:100</li></ul></aside></li></ul></section>
+<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-external"><a id="startREPL" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><span>startREPL</span><a href="#startREPL" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></h3>
+<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-external">
+<li class="tsd-signature tsd-anchor-link" id="startREPL.startREPL-1">startREPL<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span><a href="#startREPL.startREPL-1" aria-label="Permalink" class="tsd-anchor-icon"><svg class="icon icon-tabler icon-tabler-link" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-anchor-a"></use><use href="#icon-anchor-b"></use><use href="#icon-anchor-c"></use></svg></a></li>
+<li class="tsd-description">
+<div class="tsd-comment tsd-typography"><p>Start an interactive REPL with this deployment as global context.</p>
+
+<h3>Throws</h3><p>if the <code>node:repl</code> and <code>node:vm</code> native modules are unavailable.</p>
+</div>
+<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
+<ul>
+<li>Defined in node_modules/.pnpm/@hackbg+cmds@1.1.4/node_modules/@hackbg/cmds/cmds.dist.d.ts:108</li></ul></aside></li></ul></section></section></div>
 <div class="col-4 col-menu menu-sticky-wrap menu-highlight">
 <div class="tsd-navigation settings">
 <details class="tsd-index-accordion"><summary class="tsd-accordion-summary">
@@ -410,7 +430,8 @@ then pass the rest as arguments to the found command.</p>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-external"><a href="CommandContext.html#entrypoint" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>entrypoint</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-external"><a href="CommandContext.html#exit" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>exit</a></li>
 <li class="tsd-kind-method tsd-parent-kind-class tsd-is-external"><a href="CommandContext.html#parse" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>parse</a></li>
-<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external"><a href="CommandContext.html#run" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>run</a></li></ul></li></ul></nav></div></div>
+<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external"><a href="CommandContext.html#run" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>run</a></li>
+<li class="tsd-kind-method tsd-parent-kind-class tsd-is-external"><a href="CommandContext.html#startREPL" class="tsd-index-link"><svg class="tsd-kind-icon" width="24" height="24" viewBox="0 0 24 24"><use href="#icon-2048-path"></use><use href="#icon-2048-text"></use></svg>startREPL</a></li></ul></li></ul></nav></div></div>
 <div class="container tsd-generator">
 <p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></div>
 <div class="overlay"></div><script src="../assets/main.js"></script></body></html>
