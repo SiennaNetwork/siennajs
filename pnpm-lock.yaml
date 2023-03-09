@@ -7,6 +7,7 @@ importers:
       '@fadroma/scrt': ^8.0.4
       '@fadroma/tokens': ^7.1.1
       '@hackbg/4mat': ^1.0.0
+      '@hackbg/conf': ^1.0.0
       '@hackbg/ensuite': ^1.1.1
       '@hackbg/ubik': ^1.2
       '@rollup/plugin-commonjs': ^23
@@ -29,6 +30,7 @@ importers:
       '@fadroma/scrt': 8.0.4
       '@fadroma/tokens': 7.1.1
       '@hackbg/4mat': 1.0.0
+      '@hackbg/conf': 1.0.0
       '@waiting/base64': 4.2.9
       crypto-js: 4.1.1
       merkletreejs: 0.2.32
