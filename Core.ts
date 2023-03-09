@@ -1,5 +1,4 @@
 import * as Scrt from '@fadroma/scrt'
-import { TokenManager } from '@fadroma/tokens'
 
 export { randomBase64, SecureRandom } from '@hackbg/4mat'
 export * from '@fadroma/scrt'
