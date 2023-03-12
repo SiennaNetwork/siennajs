@@ -12,7 +12,7 @@ import {
   VersionedDeployment,
   ViewingKey,
   linkStruct,
-} from "./Core";
+} from "./core";
 
 import { AuthProviderVersion, LatestAuthProviderVersion } from "./Versions";
 

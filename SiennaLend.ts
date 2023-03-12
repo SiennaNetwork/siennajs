@@ -18,7 +18,7 @@ import {
   ViewingKey,
   ViewingKeyClient,
   randomBase64,
-} from './Core'
+} from './core'
 
 import type { AuthStrategy, AuthMethod } from './Auth'
 

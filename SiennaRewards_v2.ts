@@ -5,7 +5,7 @@ import {
   linkStruct,
   randomBase64,
   now
-} from './Core'
+} from './core'
 import {
   Rewards,
   RewardsInitParams

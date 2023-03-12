@@ -4,7 +4,7 @@ import {
   Contract,
   Deployment,
   Snip20
-} from './Core'
+} from './core'
 
 import SiennaTGE from './SiennaTGE'
 

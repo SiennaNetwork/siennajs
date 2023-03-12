@@ -8,7 +8,7 @@ import {
   Uint128,
   ViewingKeyClient,
   bold,
-} from './Core';
+} from './core';
 import Auth, { AuthClient, AuthMethod } from './Auth';
 import TGE, { RPT_TGE } from './SiennaTGE';
 import CryptoJS from 'crypto-js';

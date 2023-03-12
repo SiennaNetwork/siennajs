@@ -4,7 +4,7 @@ import {
   Emigration,
   Immigration,
   linkStruct
-} from './Core'
+} from './core'
 import type {
   Address,
   ContractLink,
@@ -13,7 +13,7 @@ import type {
   Moment,
   Uint128,
   Uint256
-} from './Core'
+} from './core'
 import { Rewards, RewardsInitParams } from './SiennaRewards'
 import { LPToken } from './SiennaSwap'
 

@@ -5,7 +5,7 @@ import {
   Duration,
   Uint128,
   Snip20
-} from './Core'
+} from './core'
 
 /** A MGMT vesting contract of either version. */
 export abstract class MGMT extends Client {

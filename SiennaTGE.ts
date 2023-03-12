@@ -13,7 +13,7 @@ import {
   bold,
   validatedAddressOf,
   validatedCodeHashOf
-} from './Core'
+} from './core'
 
 import {
   MGMT,

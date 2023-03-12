@@ -1,5 +1,5 @@
-export * from './Core'
-import { Contract, Deployment, TokenManager } from './Core'
+export * from './core'
+import { Contract, Deployment, TokenManager } from './core'
 
 export * from './Vesting'
 

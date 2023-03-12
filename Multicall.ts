@@ -1,4 +1,4 @@
-import { Address, Client } from './Core';
+import { Address, Client } from './core';
 
 import { MulticallVersion } from './Versions';
 

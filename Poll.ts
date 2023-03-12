@@ -11,7 +11,7 @@ import {
   Snip20,
   Uint128,
   bold,
-} from './Core';
+} from './core';
 import AuthProviderDeployment, { Auth, AuthClient } from './Auth';
 import TGEDeployment, { RPT_TGE } from './SiennaTGE';
 import { Rewards_v4_1 } from './SiennaRewards_v4'

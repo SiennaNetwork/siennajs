@@ -19,7 +19,7 @@ import {
   isCustomToken,
   isNativeToken,
   randomBase64,
-} from './Core'
+} from './core'
 import type {
   Address,
   Agent, 
@@ -31,7 +31,7 @@ import type {
   Deployment,
   ExecOpts,
   Uint128,
-} from "./Core";
+} from "./core";
 
 import { b64encode } from '@waiting/base64'
 

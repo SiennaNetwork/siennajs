@@ -7,7 +7,7 @@ import {
   colors,
   linkStruct,
   randomBase64,
-} from './Core';
+} from './core';
 
 import type {
   Address,
@@ -21,7 +21,7 @@ import type {
   Message,
   Snip20,
   Uint128,
-} from './Core';
+} from './core';
 
 import { AuthClient, AuthMethod } from './Auth';
 

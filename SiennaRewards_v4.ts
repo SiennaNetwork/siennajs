@@ -6,7 +6,7 @@ import {
   Uint128,
   linkStruct,
   now,
-} from './Core'
+} from './core'
 import {
   AuthClient,
   AuthMethod
