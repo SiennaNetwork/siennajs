@@ -13,7 +13,7 @@
   "author": "Sienna Network",
   "license": "MIT",
   "type": "module",
-  "main": "./index.dist.js",
+  "main": "./index.ts",
   "engines": {
     "node": "^12.16 || >=13.7"
   },
@@ -28,55 +28,7 @@
     "bundle:esm": "rollup -c .rollup-esm.config.mjs"
   },
   "files": [
-    "*.ts",
-    "Auth.dist.cjs",
-    "Auth.dist.d.ts",
-    "Auth.dist.js",
-    "Core.dist.cjs",
-    "Core.dist.d.ts",
-    "Core.dist.js",
-    "Multicall.dist.cjs",
-    "Multicall.dist.d.ts",
-    "Multicall.dist.js",
-    "Poll.dist.cjs",
-    "Poll.dist.d.ts",
-    "Poll.dist.js",
-    "SiennaLaunch.dist.cjs",
-    "SiennaLaunch.dist.d.ts",
-    "SiennaLaunch.dist.js",
-    "SiennaLend.dist.cjs",
-    "SiennaLend.dist.d.ts",
-    "SiennaLend.dist.js",
-    "SiennaPFR.dist.cjs",
-    "SiennaPFR.dist.d.ts",
-    "SiennaPFR.dist.js",
-    "SiennaRewards.dist.cjs",
-    "SiennaRewards.dist.d.ts",
-    "SiennaRewards.dist.js",
-    "SiennaRewards_v2.dist.cjs",
-    "SiennaRewards_v2.dist.d.ts",
-    "SiennaRewards_v2.dist.js",
-    "SiennaRewards_v3.dist.cjs",
-    "SiennaRewards_v3.dist.d.ts",
-    "SiennaRewards_v3.dist.js",
-    "SiennaRewards_v4.dist.cjs",
-    "SiennaRewards_v4.dist.d.ts",
-    "SiennaRewards_v4.dist.js",
-    "SiennaSwap.dist.cjs",
-    "SiennaSwap.dist.d.ts",
-    "SiennaSwap.dist.js",
-    "SiennaTGE.dist.cjs",
-    "SiennaTGE.dist.d.ts",
-    "SiennaTGE.dist.js",
-    "Versions.dist.cjs",
-    "Versions.dist.d.ts",
-    "Versions.dist.js",
-    "Vesting.dist.cjs",
-    "Vesting.dist.d.ts",
-    "Vesting.dist.js",
-    "index.dist.cjs",
-    "index.dist.d.ts",
-    "index.dist.js"
+    "*.ts"
   ],
   "dependencies": {
     "@fadroma/scrt": "^8.0.3",
@@ -106,14 +58,5 @@
   },
   "lint-staged": {
     "*.ts": "pnpm check"
-  },
-  "ubik": true,
-  "types": "./index.dist.d.ts",
-  "exports": {
-    ".": {
-      "source": "./index.ts",
-      "require": "./index.dist.cjs",
-      "default": "./index.dist.js"
-    }
   }
 }
