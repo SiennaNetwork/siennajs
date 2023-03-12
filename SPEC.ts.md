@@ -2,7 +2,7 @@
 
 ```typescript
 import Sienna from '.'
-import { Scrt } from '@fadroma/scrt'
+import { Scrt } from './fadroma/scrt'
 import TESTNET from './deployments/pulsar-2.json'
 const app = new Sienna({
   state: TESTNET,
