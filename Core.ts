@@ -1,12 +1,14 @@
 import * as Scrt from '@fadroma/scrt'
-import * as SecretJS from 'secretjs'
 
 import { TokenManager } from '@fadroma/tokens'
 
 export { randomBase64, SecureRandom } from '@hackbg/4mat'
 export * from '@fadroma/scrt'
 
+/* import * as SecretJS from 'secretjs'
 export { SecretJS }
+
+ */
 export * from '@fadroma/tokens'
 
 /** Get the current time in seconds since the Unix epoch. */
