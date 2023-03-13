@@ -59,27 +59,6 @@ importers:
       typedoc: 0.23.26_typescript@4.9.5
       typescript: 4.9.5
 
-  fadroma/scrt:
-    specifiers:
-      '@fadroma/core': 2.0.4
-      '@hackbg/4mat': ^1
-      '@hackbg/conf': ^1
-      '@hackbg/ensuite': ^1.0.2
-      '@hackbg/into': ^1
-      '@types/ungap__structured-clone': ^0.3.0
-      '@ungap/structured-clone': ^1.0.1
-      secretjs: 1.7.1-beta.3
-    dependencies:
-      '@fadroma/core': 2.0.4
-      '@hackbg/4mat': 1.0.0
-      '@hackbg/conf': 1.0.0
-      '@hackbg/into': 1.0.1
-      '@ungap/structured-clone': 1.0.2
-      secretjs: 1.7.1-beta.3
-    devDependencies:
-      '@hackbg/ensuite': 1.1.1
-      '@types/ungap__structured-clone': 0.3.0
-
 packages:
 
   /@ampproject/remapping/2.2.0:
@@ -1194,10 +1173,6 @@ packages:
 
   /@types/stack-utils/2.0.1:
     resolution: {integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==}
-    dev: true
-
-  /@types/ungap__structured-clone/0.3.0:
-    resolution: {integrity: sha512-eBWREUhVUGPze+bUW22AgUr05k8u+vETzuYdLYSvWqGTUe0KOf+zVnOB1qER5wMcw8V6D9Ar4DfJmVvD1yu0kQ==}
     dev: true
 
   /@types/yargs-parser/21.0.0:

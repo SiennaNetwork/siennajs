@@ -1,7 +1,8 @@
-import * as Scrt from './fadroma/scrt'
+import * as Scrt from './fadroma/scrt/scrt'
 
 export { randomBase64, SecureRandom } from '@hackbg/4mat'
-export * from './fadroma/scrt'
+
+export * from './fadroma/scrt/scrt'
 export * from '@fadroma/tokens'
 
 /** Get the current time in seconds since the Unix epoch. */
