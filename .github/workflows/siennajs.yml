@@ -64,12 +64,8 @@ jobs:
           node -e 'import("siennajs").then(console.log)'
           node -e 'console.log(require("siennajs"))'
           npm i --save typescript
-          ls /tmp/downstream/node_modules/@fadroma/scrt/
-          echo 'pass 1'
           echo 'import * as SiennaJS from "siennajs"' > index.ts
-          echo 'pass 2'
           npm exec tsc -- --target es5 --esModuleInterop true index.ts
-          echo 'pass 3'
           echo "{\"type\":\"module\",\"dependencies\":{\"siennajs\":\"$URL/$TAG/siennajs-$TAG.tgz\"}}" > package.json
           node -e 'import("siennajs").then(console.log)'
           node -e 'console.log(require("siennajs"))'

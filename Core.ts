@@ -1,11 +1,10 @@
 import * as Scrt from '@fadroma/scrt'
 import * as SecretJS from 'secretjs'
 
-
 export { randomBase64, SecureRandom } from '@hackbg/4mat'
 export * from '@fadroma/scrt'
-export { SecretJS }
 export * from '@fadroma/tokens'
+export { SecretJS }
 
 /** Get the current time in seconds since the Unix epoch. */
 export const now = () => Math.floor(+new Date() / 1000);
